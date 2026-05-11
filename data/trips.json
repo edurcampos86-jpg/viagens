@@ -1,0 +1,671 @@
+{
+  "config": {
+    "owner": "Eduardo Campos",
+    "period": "2021–2026",
+    "title": "Minhas Viagens",
+    "tagline": "Memórias e planos pelo mundo"
+  },
+  "trips": [
+    {
+      "id": "tailandia-2026",
+      "name": "Tailândia",
+      "sub": "Bangkok · Phuket · Krabi · Pattaya",
+      "emoji": "🇹🇭",
+      "year": 2026, "month": 1, "label": "Jan 2026",
+      "lat": 13.0, "lon": 101.0,
+      "color": "#06b6d4", "color2": "#0891b2",
+      "continent": "Asia",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + AirAsia",
+      "nts": 14, "km": 18000,
+      "status": "done", "verified": true,
+      "type": "leisure",
+      "highlights": ["Praias de Phuket", "Templos de Bangkok", "Ilhas de Krabi", "Pattaya Beach Road"],
+      "memory": "Uma aventura incrível pelo sudeste asiático — dos templos dourados de Bangkok ao azul-turquesa das ilhas de Krabi. Cultura, gastronomia e beleza natural em 14 dias inesquecíveis.",
+      "photo": null,
+      "route": [
+        { "name": "Bangkok", "lat": 13.7563, "lon": 100.5018 },
+        { "name": "Pattaya", "lat": 12.9236, "lon": 100.8825 },
+        { "name": "Phuket", "lat": 7.8804, "lon": 98.3923 },
+        { "name": "Krabi", "lat": 8.0863, "lon": 98.9063 }
+      ],
+      "logistics": {
+        "hotels": ["Mandarin Oriental Bangkok", "Hilton Phuket Arcadia", "Rayavadee Krabi"],
+        "restaurants": ["Jay Fai (Bangkok)", "Suay (Phuket)"],
+        "tips": "Combinar 4 noites cidade + 10 noites praia. Evite agosto–outubro (monção)."
+      },
+      "cost": { "total": 42000, "currency": "BRL", "breakdown": { "voos": 16000, "hospedagem": 14000, "passeios": 7000, "comida": 5000 } }
+    },
+    {
+      "id": "africa-do-sul-2026",
+      "name": "África do Sul",
+      "sub": "Johannesburg · Sun City · Pilanesberg · Cape Town",
+      "emoji": "🇿🇦",
+      "year": 2026, "month": 3, "label": "Mar 2026",
+      "lat": -29.0, "lon": 25.0,
+      "color": "#f97316", "color2": "#ea580c",
+      "continent": "Africa",
+      "pax": "Equipe Onix / Yamaha",
+      "air": "Emirates / TAP",
+      "nts": 10, "km": 10000,
+      "status": "done", "verified": true,
+      "type": "business",
+      "highlights": ["Safari no Pilanesberg", "Sun City Resort", "Table Mountain", "V&A Waterfront Cape Town"],
+      "memory": "Viagem especial Kando Yamaha — fusão de negócios e aventura no continente africano. Da emoção do safari ao topo da Table Mountain, uma experiência transformadora.",
+      "photo": null,
+      "route": [
+        { "name": "Johannesburg", "lat": -26.2041, "lon": 28.0473 },
+        { "name": "Sun City", "lat": -25.3411, "lon": 27.1018 },
+        { "name": "Pilanesberg", "lat": -25.2484, "lon": 27.0928 },
+        { "name": "Cape Town", "lat": -33.9249, "lon": 18.4241 }
+      ],
+      "logistics": {
+        "hotels": ["The Palace of the Lost City", "One&Only Cape Town"],
+        "restaurants": ["The Test Kitchen (CT)", "Marble (Joburg)"],
+        "tips": "Voo interno Joburg → Cape Town é obrigatório. Reserve safari ao amanhecer."
+      },
+      "cost": { "total": 38000, "currency": "BRL", "breakdown": { "voos": 14000, "hospedagem": 12000, "passeios": 8000, "comida": 4000 } }
+    },
+    {
+      "id": "mykonos-2025",
+      "name": "Mykonos",
+      "sub": "Mykonos · Ilhas Gregas",
+      "emoji": "🇬🇷",
+      "year": 2025, "month": 7, "label": "~Jul 2025",
+      "lat": 37.45, "lon": 25.37,
+      "color": "#3b82f6", "color2": "#1d4ed8",
+      "continent": "Europe",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + Aegean",
+      "nts": 7, "km": 10500,
+      "status": "done", "verified": false,
+      "type": "leisure",
+      "highlights": ["Praias paradisíacas", "Pôr do sol em Little Venice", "Moinhos de vento", "Restaurantes de frutos do mar"],
+      "memory": "O Mediterrâneo em sua forma mais pura. Casas brancas com janelas azuis, praias de água cristalina e um ritmo de vida que te faz esquecer tudo.",
+      "photo": null,
+      "route": [
+        { "name": "Mykonos Town", "lat": 37.4467, "lon": 25.3289 }
+      ],
+      "logistics": {
+        "hotels": ["Cavo Tagoo Mykonos"],
+        "restaurants": ["Scorpios", "Nammos"],
+        "tips": "Alugue ATV para circular. Jul/Ago é caro mas é a vibe."
+      },
+      "cost": { "total": 35000, "currency": "BRL", "breakdown": { "voos": 12000, "hospedagem": 14000, "passeios": 4000, "comida": 5000 } }
+    },
+    {
+      "id": "japao-2024",
+      "name": "Japão",
+      "sub": "Tokyo · Kyoto · Shibuya · Suzuka",
+      "emoji": "🗾",
+      "year": 2024, "month": 10, "label": "~Out 2024",
+      "lat": 35.5, "lon": 137.0,
+      "color": "#ec4899", "color2": "#be185d",
+      "continent": "Asia",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + Japan Airlines",
+      "nts": 12, "km": 22000,
+      "status": "done", "verified": false,
+      "type": "leisure",
+      "highlights": ["Cruzamento de Shibuya", "Geishas em Kyoto", "Templo Senso-ji", "Circuito de Suzuka"],
+      "memory": "O Japão é um choque cultural positivo. A perfeição no atendimento, a tecnologia futurística e a tradição milenar coexistindo — uma lição de excelência que todo profissional deveria vivenciar.",
+      "photo": null,
+      "route": [
+        { "name": "Tokyo", "lat": 35.6762, "lon": 139.6503 },
+        { "name": "Suzuka", "lat": 34.8821, "lon": 136.5824 },
+        { "name": "Kyoto", "lat": 35.0116, "lon": 135.7681 }
+      ],
+      "logistics": {
+        "hotels": ["Park Hyatt Tokyo", "Aman Kyoto"],
+        "restaurants": ["Sukiyabashi Jiro", "Ichiran Ramen Shibuya"],
+        "tips": "JR Pass 7 dias compensa se cruzar Tokyo–Kyoto. Outubro tem clima perfeito."
+      },
+      "cost": { "total": 45000, "currency": "BRL", "breakdown": { "voos": 18000, "hospedagem": 16000, "passeios": 6000, "comida": 5000 } }
+    },
+    {
+      "id": "havai-2024",
+      "name": "Havaí",
+      "sub": "Honolulu · Waimanalo · Pupukea",
+      "emoji": "🇺🇸",
+      "year": 2024, "month": 7, "label": "~Jul 2024",
+      "lat": 21.3, "lon": -157.8,
+      "color": "#22c55e", "color2": "#15803d",
+      "continent": "Americas",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + American Airlines",
+      "nts": 10, "km": 14000,
+      "status": "done", "verified": false,
+      "type": "leisure",
+      "highlights": ["Praia de Waikiki", "Pipeline em Pupukea", "Diamond Head", "Luau tradicional"],
+      "memory": "O Havaí é diferente de qualquer lugar nos EUA — uma energia única, natureza exuberante e a cultura polinésia que te transporta para outro mundo completamente.",
+      "photo": null,
+      "route": [
+        { "name": "Honolulu", "lat": 21.3069, "lon": -157.8583 },
+        { "name": "Waimanalo", "lat": 21.3356, "lon": -157.7197 },
+        { "name": "Pupukea", "lat": 21.6520, "lon": -158.0531 }
+      ],
+      "logistics": {
+        "hotels": ["The Royal Hawaiian Waikiki", "Turtle Bay Resort"],
+        "restaurants": ["Duke's Waikiki", "Helena's Hawaiian Food"],
+        "tips": "Pegue North Shore inteiro de carro em um dia. Pipeline em dezembro tem ondas brutas."
+      },
+      "cost": { "total": 32000, "currency": "BRL", "breakdown": { "voos": 14000, "hospedagem": 12000, "passeios": 3000, "comida": 3000 } }
+    },
+    {
+      "id": "espanha-ibiza-2024",
+      "name": "Espanha + Ibiza",
+      "sub": "Barcelona · Ibiza · Madrid · Segóvia · Toledo",
+      "emoji": "🇪🇸",
+      "year": 2024, "month": 5, "label": "~Mai 2024",
+      "lat": 40.4, "lon": -3.7,
+      "color": "#ef4444", "color2": "#b91c1c",
+      "continent": "Europe",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + TAP + Vueling",
+      "nts": 12, "km": 9500,
+      "status": "done", "verified": false,
+      "type": "leisure",
+      "highlights": ["Sagrada Família de Gaudí", "Festas em Ibiza", "Museu do Prado", "Alcázar de Segóvia"],
+      "memory": "España em pleno verão — da arte modernista de Gaudí à loucura das festas em Ibiza. Madrid de bônus com a grandiosidade do Prado e história medieval de Toledo.",
+      "photo": null,
+      "route": [
+        { "name": "Barcelona", "lat": 41.3851, "lon": 2.1734 },
+        { "name": "Ibiza", "lat": 38.9067, "lon": 1.4206 },
+        { "name": "Madrid", "lat": 40.4168, "lon": -3.7038 },
+        { "name": "Segóvia", "lat": 40.9429, "lon": -4.1088 },
+        { "name": "Toledo", "lat": 39.8628, "lon": -4.0273 }
+      ],
+      "logistics": {
+        "hotels": ["W Barcelona", "Ushuaïa Ibiza", "Rosewood Villa Magna"],
+        "restaurants": ["Disfrutar (BCN)", "Sublimotion (Ibiza)", "DiverXO (Madrid)"],
+        "tips": "Ibiza fecha em outubro. Toledo+Segóvia bate-volta de Madrid."
+      },
+      "cost": { "total": 40000, "currency": "BRL", "breakdown": { "voos": 11000, "hospedagem": 18000, "passeios": 6000, "comida": 5000 } }
+    },
+    {
+      "id": "alemanha-2023",
+      "name": "Alemanha",
+      "sub": "Berlim · Frankfurt · Potsdam",
+      "emoji": "🇩🇪",
+      "year": 2023, "month": 10, "label": "~Out 2023",
+      "lat": 52.5, "lon": 13.4,
+      "color": "#6b7280", "color2": "#475569",
+      "continent": "Europe",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + TAP + Lufthansa",
+      "nts": 9, "km": 9800,
+      "status": "done", "verified": false,
+      "type": "leisure",
+      "highlights": ["Portão de Brandemburgo", "Muro de Berlim", "Palácio de Sanssouci", "Römerberg em Frankfurt"],
+      "memory": "A Alemanha surpreende com sua história exposta sem vergonha. Berlim respira arte, memória e uma cena cultural vibrante — nada é escondido, tudo é ensinado.",
+      "photo": null,
+      "route": [
+        { "name": "Berlim", "lat": 52.5200, "lon": 13.4050 },
+        { "name": "Potsdam", "lat": 52.3906, "lon": 13.0645 },
+        { "name": "Frankfurt", "lat": 50.1109, "lon": 8.6821 }
+      ],
+      "logistics": {
+        "hotels": ["Hotel Adlon Kempinski Berlin", "Sofitel Frankfurt"],
+        "restaurants": ["Rutz (Berlim)", "Lafleur (Frankfurt)"],
+        "tips": "Trem rápido (ICE) entre cidades. Outubro pega Oktoberfest tardio."
+      },
+      "cost": { "total": 28000, "currency": "BRL", "breakdown": { "voos": 11000, "hospedagem": 9000, "passeios": 4000, "comida": 4000 } }
+    },
+    {
+      "id": "amsterda-belgica-2023",
+      "name": "Amsterdã + Bélgica",
+      "sub": "Amsterdã · Bruxelas · Boom",
+      "emoji": "🇳🇱",
+      "year": 2023, "month": 8, "label": "~Ago 2023",
+      "lat": 52.37, "lon": 4.9,
+      "color": "#f59e0b", "color2": "#d97706",
+      "continent": "Europe",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + KLM",
+      "nts": 9, "km": 9500,
+      "status": "done", "verified": false,
+      "type": "festival",
+      "highlights": ["Canais de Amsterdã de bicicleta", "Museu Van Gogh", "Atomium de Bruxelas", "Festival Tomorrowland em Boom"],
+      "memory": "Amsterdã de bicicleta pelas ruas históricas, os canais refletindo as casas estreitas... E a cereja do bolo: Tomorrowland em Boom — a maior festa do mundo.",
+      "photo": null,
+      "route": [
+        { "name": "Amsterdã", "lat": 52.3676, "lon": 4.9041 },
+        { "name": "Bruxelas", "lat": 50.8503, "lon": 4.3517 },
+        { "name": "Boom", "lat": 51.0900, "lon": 4.3700 }
+      ],
+      "logistics": {
+        "hotels": ["Conservatorium Hotel Amsterdam", "Steigenberger Wiltcher's Brussels"],
+        "restaurants": ["De Kas (Amsterdam)", "Comme Chez Soi (Brussels)"],
+        "tips": "Tomorrowland tem 2 fins de semana — escolha o W1 (clima melhor)."
+      },
+      "cost": { "total": 33000, "currency": "BRL", "breakdown": { "voos": 10000, "hospedagem": 10000, "passeios": 9000, "comida": 4000 } }
+    },
+    {
+      "id": "roma-vaticano-2023",
+      "name": "Roma + Vaticano",
+      "sub": "Roma · Vaticano · Coliseu",
+      "emoji": "🇮🇹",
+      "year": 2023, "month": 5, "label": "~Mai 2023",
+      "lat": 41.9, "lon": 12.5,
+      "color": "#dc2626", "color2": "#991b1b",
+      "continent": "Europe",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + TAP + ITA",
+      "nts": 7, "km": 9800,
+      "status": "done", "verified": false,
+      "type": "leisure",
+      "highlights": ["Coliseu Romano", "Museu e Capela Sistina", "Fontana di Trevi", "Foro Romano"],
+      "memory": "Roma te engole — cada pedra tem 2.000 anos de história. Jogar a moeda na Fontana di Trevi com a certeza de que voltaremos foi um dos momentos mais simbólicos.",
+      "photo": null,
+      "route": [
+        { "name": "Roma", "lat": 41.9028, "lon": 12.4964 },
+        { "name": "Vaticano", "lat": 41.9029, "lon": 12.4534 }
+      ],
+      "logistics": {
+        "hotels": ["Hotel Hassler Roma"],
+        "restaurants": ["La Pergola", "Roscioli"],
+        "tips": "Capela Sistina abre cedo — chegue antes de 9h ou pague skip-the-line."
+      },
+      "cost": { "total": 26000, "currency": "BRL", "breakdown": { "voos": 11000, "hospedagem": 8000, "passeios": 3000, "comida": 4000 } }
+    },
+    {
+      "id": "praga-budapeste-2023",
+      "name": "Praga + Budapeste",
+      "sub": "Praga · Budapeste",
+      "emoji": "🇨🇿",
+      "year": 2023, "month": 3, "label": "~Mar 2023",
+      "lat": 48.5, "lon": 17.0,
+      "color": "#8b5cf6", "color2": "#6d28d9",
+      "continent": "Europe",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + TAP + Wizzair",
+      "nts": 9, "km": 9600,
+      "status": "done", "verified": false,
+      "type": "leisure",
+      "highlights": ["Castelo de Praga", "Ponte Carlos", "Parlamento de Budapeste à noite", "Banhos termais Széchenyi"],
+      "memory": "Europa Central em toda sua glória. Praga com arquitetura gótica intocada e Budapeste dividida pelo Danúbio — duas cidades diferentes, igualmente encantadoras.",
+      "photo": null,
+      "route": [
+        { "name": "Praga", "lat": 50.0755, "lon": 14.4378 },
+        { "name": "Budapeste", "lat": 47.4979, "lon": 19.0402 }
+      ],
+      "logistics": {
+        "hotels": ["Four Seasons Prague", "Four Seasons Gresham Palace Budapest"],
+        "restaurants": ["La Degustation (Praga)", "Onyx (Budapeste)"],
+        "tips": "Banhos Széchenyi à noite (party nights) são surreais."
+      },
+      "cost": { "total": 24000, "currency": "BRL", "breakdown": { "voos": 10000, "hospedagem": 8000, "passeios": 3000, "comida": 3000 } }
+    },
+    {
+      "id": "houston-2023",
+      "name": "Houston",
+      "sub": "Houston · NASA Space Center",
+      "emoji": "🇺🇸",
+      "year": 2023, "month": 2, "label": "~Fev 2023",
+      "lat": 29.76, "lon": -95.37,
+      "color": "#64748b", "color2": "#475569",
+      "continent": "Americas",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + United",
+      "nts": 5, "km": 8800,
+      "status": "done", "verified": false,
+      "type": "leisure",
+      "highlights": ["NASA Johnson Space Center", "Houston Galleria", "Hermann Park", "Rodeo de Houston"],
+      "memory": "Houston é a cidade da NASA — caminhar pelo centro espacial e ver os foguetes de perto mistura ciência e emoção de uma forma que você não espera.",
+      "photo": null,
+      "route": [
+        { "name": "Houston", "lat": 29.7604, "lon": -95.3698 }
+      ],
+      "logistics": {
+        "hotels": ["The Post Oak Hotel"],
+        "restaurants": ["Killen's Steakhouse", "Pappas Bros Steakhouse"],
+        "tips": "Rodeo de Houston é em fev/mar — alguns dos maiores shows do mundo."
+      },
+      "cost": { "total": 18000, "currency": "BRL", "breakdown": { "voos": 8000, "hospedagem": 6000, "passeios": 2000, "comida": 2000 } }
+    },
+    {
+      "id": "lisboa-2022",
+      "name": "Lisboa",
+      "sub": "Lisboa · Sintra",
+      "emoji": "🇵🇹",
+      "year": 2022, "month": 10, "label": "Out 2022",
+      "lat": 38.72, "lon": -9.14,
+      "color": "#14b8a6", "color2": "#0f766e",
+      "continent": "Europe",
+      "pax": "Jodson Oliveira",
+      "air": "TAP",
+      "nts": 7, "km": 8400,
+      "status": "done", "verified": true,
+      "type": "leisure",
+      "highlights": ["Alfama e Castelo São Jorge", "Pastéis de Belém", "Tram 28 pela cidade", "Fado ao vivo nas ruas"],
+      "memory": "Lisboa é uma cidade que não para de surpreender. Os bondes amarelos subindo as ladeiras, o fado nas ruas de Alfama e a doçura dos pastéis de Belém — Portugal sempre chama de volta.",
+      "photo": null,
+      "route": [
+        { "name": "Lisboa", "lat": 38.7223, "lon": -9.1393 },
+        { "name": "Sintra", "lat": 38.8029, "lon": -9.3817 }
+      ],
+      "logistics": {
+        "hotels": ["Tivoli Avenida Liberdade"],
+        "restaurants": ["Belcanto", "Cervejaria Ramiro"],
+        "tips": "Sintra é bate-volta — Pena Palace cedo da manhã evita fila."
+      },
+      "cost": { "total": 22000, "currency": "BRL", "breakdown": { "voos": 9000, "hospedagem": 7000, "passeios": 3000, "comida": 3000 } }
+    },
+    {
+      "id": "nova-iorque-2022",
+      "name": "Nova Iorque",
+      "sub": "Manhattan · Brooklyn · Times Square",
+      "emoji": "🇺🇸",
+      "year": 2022, "month": 6, "label": "~Jun 2022",
+      "lat": 40.71, "lon": -74.0,
+      "color": "#6366f1", "color2": "#4f46e5",
+      "continent": "Americas",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + American",
+      "nts": 8, "km": 9400,
+      "status": "done", "verified": false,
+      "type": "leisure",
+      "highlights": ["Central Park de manhã cedo", "Times Square à noite", "Brooklyn Bridge a pé", "Metropolitan Museum of Art"],
+      "memory": "Nova Iorque é uma energia diferente. A cidade que nunca dorme — a cada esquina uma história, um musical da Broadway, um sabor do mundo inteiro.",
+      "photo": null,
+      "route": [
+        { "name": "Manhattan", "lat": 40.7831, "lon": -73.9712 },
+        { "name": "Brooklyn", "lat": 40.6782, "lon": -73.9442 }
+      ],
+      "logistics": {
+        "hotels": ["The Plaza", "1 Hotel Brooklyn Bridge"],
+        "restaurants": ["Le Bernardin", "Joe's Pizza"],
+        "tips": "Compre Broadway na TKTS Times Square (40% off)."
+      },
+      "cost": { "total": 36000, "currency": "BRL", "breakdown": { "voos": 12000, "hospedagem": 16000, "passeios": 4000, "comida": 4000 } }
+    },
+    {
+      "id": "ilhas-abc-2022",
+      "name": "Ilhas ABC + Puerto Rico",
+      "sub": "Aruba · Bonaire · Curaçao · Rincón (PR)",
+      "emoji": "🏖️",
+      "year": 2022, "month": 8, "label": "~Ago 2022",
+      "lat": 12.2, "lon": -68.9,
+      "color": "#06b6d4", "color2": "#0891b2",
+      "continent": "Americas",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + Insel Air",
+      "nts": 12, "km": 7200,
+      "status": "done", "verified": false,
+      "type": "leisure",
+      "highlights": ["Eagle Beach em Aruba", "Mergulho em Bonaire", "Centro histórico de Curaçao", "Surf em Rincón Puerto Rico"],
+      "memory": "As ilhas ABC são o Caribe em sua versão mais autêntica. Bonaire especialmente — visibilidade incrível, vida marinha exuberante. Puerto Rico de bônus com o Velho San Juan.",
+      "photo": null,
+      "route": [
+        { "name": "Aruba", "lat": 12.5211, "lon": -69.9683 },
+        { "name": "Bonaire", "lat": 12.1784, "lon": -68.2385 },
+        { "name": "Curaçao", "lat": 12.1696, "lon": -68.9900 },
+        { "name": "Rincón", "lat": 18.3403, "lon": -67.2462 }
+      ],
+      "logistics": {
+        "hotels": ["Bucuti & Tara Aruba", "Avila Beach Hotel Curaçao"],
+        "restaurants": ["Flying Fishbone (Aruba)", "Mosa (Curaçao)"],
+        "tips": "Bonaire é o paraíso do mergulho. Pegue PADI antes de ir."
+      },
+      "cost": { "total": 30000, "currency": "BRL", "breakdown": { "voos": 11000, "hospedagem": 13000, "passeios": 3000, "comida": 3000 } }
+    },
+    {
+      "id": "cartagena-2022",
+      "name": "Cartagena",
+      "sub": "Cartagena das Índias · Ilhas do Rosário",
+      "emoji": "🇨🇴",
+      "year": 2022, "month": 3, "label": "~Mar 2022",
+      "lat": 10.39, "lon": -75.52,
+      "color": "#f59e0b", "color2": "#d97706",
+      "continent": "Americas",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM",
+      "nts": 6, "km": 5800,
+      "status": "done", "verified": false,
+      "type": "leisure",
+      "highlights": ["Cidade Murada colonial", "Castillo de San Felipe", "Islas del Rosario", "Noite na cidade histórica"],
+      "memory": "Cartagena parece cenário de filme. As ruas de paralelepípedo, flores nas sacadas coloniais e o calor caribenho convidando para uma cerveja gelada ao entardecer.",
+      "photo": null,
+      "route": [
+        { "name": "Cartagena", "lat": 10.3910, "lon": -75.4794 },
+        { "name": "Islas del Rosario", "lat": 10.1830, "lon": -75.7800 }
+      ],
+      "logistics": {
+        "hotels": ["Sofitel Legend Santa Clara"],
+        "restaurants": ["La Cevichería", "Carmen"],
+        "tips": "Cidade Murada à noite é mágica — caminhe com calma."
+      },
+      "cost": { "total": 15000, "currency": "BRL", "breakdown": { "voos": 6000, "hospedagem": 5000, "passeios": 2000, "comida": 2000 } }
+    },
+    {
+      "id": "florida-2022",
+      "name": "Florida",
+      "sub": "Orlando · Tampa · Lake Buena Vista",
+      "emoji": "🇺🇸",
+      "year": 2022, "month": 1, "label": "~Jan 2022",
+      "lat": 28.54, "lon": -81.38,
+      "color": "#f97316", "color2": "#ea580c",
+      "continent": "Americas",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + American",
+      "nts": 10, "km": 9200,
+      "status": "done", "verified": false,
+      "type": "leisure",
+      "highlights": ["Walt Disney World", "Universal Studios", "Kennedy Space Center", "Praias de Clearwater"],
+      "memory": "A Disney é para todos — crianças e adultos se perdem igualmente naquele mundo construído com obsessão pelos detalhes. Uma aula magistral de experiência do cliente.",
+      "photo": null,
+      "route": [
+        { "name": "Orlando", "lat": 28.5383, "lon": -81.3792 },
+        { "name": "Tampa", "lat": 27.9506, "lon": -82.4572 },
+        { "name": "Lake Buena Vista", "lat": 28.3700, "lon": -81.5158 }
+      ],
+      "logistics": {
+        "hotels": ["Disney's Grand Floridian"],
+        "restaurants": ["Victoria & Albert's", "Bern's Steak House (Tampa)"],
+        "tips": "Genie+ na Disney compensa em alta temporada."
+      },
+      "cost": { "total": 28000, "currency": "BRL", "breakdown": { "voos": 9000, "hospedagem": 12000, "passeios": 4000, "comida": 3000 } }
+    },
+    {
+      "id": "argentina-2021",
+      "name": "Argentina",
+      "sub": "Buenos Aires · El Calafate · Puerto Iguazú",
+      "emoji": "🇦🇷",
+      "year": 2021, "month": 12, "label": "~Dez 2021",
+      "lat": -38.0, "lon": -63.0,
+      "color": "#60a5fa", "color2": "#2563eb",
+      "continent": "Americas",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + Aerolíneas",
+      "nts": 12, "km": 3800,
+      "status": "done", "verified": false,
+      "type": "leisure",
+      "highlights": ["Glaciar Perito Moreno em El Calafate", "Cataratas del Iguazú", "La Boca em Buenos Aires", "Tango no San Telmo"],
+      "memory": "Argentina é uma montanha-russa emocional — da grandiosidade do Perito Moreno às lágrimas das Cataratas, da nostalgia tangueira de Buenos Aires ao asado perfeito.",
+      "photo": null,
+      "route": [
+        { "name": "Buenos Aires", "lat": -34.6037, "lon": -58.3816 },
+        { "name": "El Calafate", "lat": -50.3370, "lon": -72.2648 },
+        { "name": "Puerto Iguazú", "lat": -25.5947, "lon": -54.5735 }
+      ],
+      "logistics": {
+        "hotels": ["Alvear Palace Hotel", "Eolo Lodge Patagonia"],
+        "restaurants": ["Don Julio", "La Cabrera"],
+        "tips": "Dezembro é verão na Patagônia — janela única para Perito Moreno."
+      },
+      "cost": { "total": 20000, "currency": "BRL", "breakdown": { "voos": 6000, "hospedagem": 8000, "passeios": 3000, "comida": 3000 } }
+    },
+    {
+      "id": "atacama-2021",
+      "name": "Atacama",
+      "sub": "San Pedro de Atacama · Deserto do Atacama",
+      "emoji": "🇨🇱",
+      "year": 2021, "month": 11, "label": "Nov 2021",
+      "lat": -22.9, "lon": -68.2,
+      "color": "#a78bfa", "color2": "#7c3aed",
+      "continent": "Americas",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM",
+      "nts": 7, "km": 3600,
+      "status": "done", "verified": true,
+      "type": "leisure",
+      "highlights": ["Gêiseres del Tatio ao amanhecer", "Laguna Cejar (flutuação)", "Valle de la Luna", "Céu estrelado mais límpido do mundo"],
+      "memory": "O Atacama é Marte na Terra. A paisagem lunar, o silêncio ensurdecedor e um céu com mais estrelas do que jamais imaginei existir. O lugar mais fora do comum que já visitei.",
+      "photo": null,
+      "route": [
+        { "name": "San Pedro de Atacama", "lat": -22.9098, "lon": -68.2003 }
+      ],
+      "logistics": {
+        "hotels": ["Tierra Atacama", "Explora Atacama"],
+        "restaurants": ["Baltinache", "Ckunna"],
+        "tips": "All-inclusive (Tierra/Explora) faz toda diferença — eles guiam todos os passeios."
+      },
+      "cost": { "total": 18000, "currency": "BRL", "breakdown": { "voos": 5000, "hospedagem": 9000, "passeios": 3000, "comida": 1000 } }
+    },
+    {
+      "id": "foz-iguacu-2021",
+      "name": "Foz do Iguaçu",
+      "sub": "Cataratas do Iguaçu · Parque das Aves · Itaipu",
+      "emoji": "🇧🇷",
+      "year": 2021, "month": 6, "label": "Jun 2021",
+      "lat": -25.69, "lon": -54.44,
+      "color": "#4ade80", "color2": "#16a34a",
+      "continent": "Americas",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + GOL",
+      "nts": 4, "km": 3500,
+      "status": "done", "verified": true,
+      "type": "leisure",
+      "highlights": ["Cataratas do lado brasileiro", "Garganta do Diabo", "Parque das Aves", "Usina de Itaipu"],
+      "memory": "As Cataratas do Iguaçu te deixam literalmente sem fôlego — a potência da natureza crua. O Hotel das Cataratas com janelas voltadas para as quedas foi irreal.",
+      "photo": null,
+      "route": [
+        { "name": "Foz do Iguaçu", "lat": -25.5478, "lon": -54.5882 }
+      ],
+      "logistics": {
+        "hotels": ["Belmond Hotel das Cataratas"],
+        "restaurants": ["Restaurante Itaipu Binacional"],
+        "tips": "Dormir dentro do parque (Belmond) dá acesso às cataratas após fechamento."
+      },
+      "cost": { "total": 8000, "currency": "BRL", "breakdown": { "voos": 2000, "hospedagem": 4000, "passeios": 1500, "comida": 500 } }
+    },
+    {
+      "id": "nova-zelandia-planejada",
+      "name": "Nova Zelândia",
+      "sub": "Auckland · Queenstown · Milford Sound",
+      "emoji": "🇳🇿",
+      "year": 2026, "month": 11, "label": "Nov 2026",
+      "lat": -41.0, "lon": 174.0,
+      "color": "#10b981", "color2": "#047857",
+      "continent": "Oceania",
+      "pax": "A definir",
+      "air": "LATAM + Air New Zealand",
+      "nts": 14, "km": 24000,
+      "status": "planned", "verified": false,
+      "type": "leisure",
+      "highlights": ["Bungee em Queenstown", "Fjords de Milford Sound", "Cenários do Senhor dos Anéis", "Estrelas em Lake Tekapo"],
+      "memory": "Sonho antigo — a Terra-Média de verdade. Combinar aventura (bungee, helitrekking) com paisagens cinematográficas.",
+      "photo": null,
+      "route": [
+        { "name": "Auckland", "lat": -36.8485, "lon": 174.7633 },
+        { "name": "Queenstown", "lat": -45.0312, "lon": 168.6626 },
+        { "name": "Milford Sound", "lat": -44.6710, "lon": 167.9252 },
+        { "name": "Lake Tekapo", "lat": -44.0042, "lon": 170.4767 }
+      ],
+      "logistics": {
+        "hotels": ["Eichardt's Private Hotel Queenstown"],
+        "restaurants": ["Amisfield (Queenstown)"],
+        "tips": "Novembro = primavera no hemisfério sul, sem neve nas trilhas."
+      },
+      "cost": { "total": 55000, "currency": "BRL", "breakdown": { "voos": 22000, "hospedagem": 18000, "passeios": 10000, "comida": 5000 } }
+    },
+    {
+      "id": "marrocos-planejada",
+      "name": "Marrocos",
+      "sub": "Marraquexe · Fez · Sahara · Chefchaouen",
+      "emoji": "🇲🇦",
+      "year": 2027, "month": 4, "label": "Abr 2027",
+      "lat": 31.7917, "lon": -7.0926,
+      "color": "#f97316", "color2": "#c2410c",
+      "continent": "Africa",
+      "pax": "A definir",
+      "air": "TAP + Royal Air Maroc",
+      "nts": 12, "km": 9000,
+      "status": "planned", "verified": false,
+      "type": "leisure",
+      "highlights": ["Souks de Marraquexe", "Dunas de Merzouga (Sahara)", "Cidade azul Chefchaouen", "Medina de Fez"],
+      "memory": "Próxima fronteira no norte da África. Tem que combinar caos dos souks com o silêncio do deserto.",
+      "photo": null,
+      "route": [
+        { "name": "Marraquexe", "lat": 31.6295, "lon": -7.9811 },
+        { "name": "Fez", "lat": 34.0181, "lon": -5.0078 },
+        { "name": "Merzouga", "lat": 31.0998, "lon": -4.0128 },
+        { "name": "Chefchaouen", "lat": 35.1714, "lon": -5.2697 }
+      ],
+      "logistics": {
+        "hotels": ["La Mamounia Marrakech", "Riad Fes"],
+        "restaurants": ["Nomad (Marrakech)"],
+        "tips": "Abril é janela perfeita — antes do calor do Sahara."
+      },
+      "cost": { "total": 28000, "currency": "BRL", "breakdown": { "voos": 10000, "hospedagem": 10000, "passeios": 5000, "comida": 3000 } }
+    },
+    {
+      "id": "patagonia-chilena-wishlist",
+      "name": "Patagônia Chilena",
+      "sub": "Torres del Paine · Puerto Natales",
+      "emoji": "🏔️",
+      "year": 2027, "month": 2, "label": "Fev 2027",
+      "lat": -50.9423, "lon": -73.4068,
+      "color": "#0ea5e9", "color2": "#0369a1",
+      "continent": "Americas",
+      "pax": "A definir",
+      "air": "LATAM",
+      "nts": 8, "km": 4200,
+      "status": "wishlist", "verified": false,
+      "type": "adventure",
+      "highlights": ["Trekking W em Torres del Paine", "Glaciar Grey", "Mirante das Torres ao amanhecer", "Fauna patagônica"],
+      "memory": "Voltar à Patagônia, agora pelo lado chileno e a pé. Fazer o W de 5 dias em fevereiro (verão austral).",
+      "photo": null,
+      "route": [
+        { "name": "Puerto Natales", "lat": -51.7236, "lon": -72.4882 },
+        { "name": "Torres del Paine", "lat": -50.9423, "lon": -73.4068 }
+      ],
+      "logistics": {
+        "hotels": ["Explora Patagonia", "Tierra Patagonia"],
+        "restaurants": [],
+        "tips": "Reservar refúgios W com 6+ meses de antecedência."
+      },
+      "cost": { "total": 25000, "currency": "BRL", "breakdown": { "voos": 7000, "hospedagem": 14000, "passeios": 3000, "comida": 1000 } }
+    },
+    {
+      "id": "vietna-camboja-wishlist",
+      "name": "Vietnã + Camboja",
+      "sub": "Hanói · Ha Long Bay · Hoi An · Angkor Wat",
+      "emoji": "🇻🇳",
+      "year": 2028, "month": 3, "label": "2028",
+      "lat": 14.0583, "lon": 108.2772,
+      "color": "#ef4444", "color2": "#991b1b",
+      "continent": "Asia",
+      "pax": "A definir",
+      "air": "LATAM + Singapore + Vietnam Airlines",
+      "nts": 16, "km": 20000,
+      "status": "wishlist", "verified": false,
+      "type": "leisure",
+      "highlights": ["Cruzeiro em Ha Long Bay", "Lanternas de Hoi An à noite", "Templos de Angkor Wat ao amanhecer", "Street food em Hanói"],
+      "memory": "Indochina completa — combinar Vietnã (norte→sul) com o sítio arqueológico de Angkor. Roteiro de 16 dias.",
+      "photo": null,
+      "route": [
+        { "name": "Hanói", "lat": 21.0285, "lon": 105.8542 },
+        { "name": "Ha Long Bay", "lat": 20.9101, "lon": 107.1839 },
+        { "name": "Hoi An", "lat": 15.8801, "lon": 108.3380 },
+        { "name": "Siem Reap", "lat": 13.3633, "lon": 103.8564 }
+      ],
+      "logistics": {
+        "hotels": ["Sofitel Legend Metropole Hanoi", "Anantara Hoi An", "Amansara (Siem Reap)"],
+        "restaurants": [],
+        "tips": "Angkor Wat ao amanhecer é obrigatório. Mar/Abr é seca."
+      },
+      "cost": { "total": 40000, "currency": "BRL", "breakdown": { "voos": 18000, "hospedagem": 14000, "passeios": 5000, "comida": 3000 } }
+    }
+  ]
+}

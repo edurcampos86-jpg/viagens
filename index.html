@@ -1,1044 +1,315 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-dark="false">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🌍 Minhas Viagens — Eduardo</title>
-<style>
-/* ── DESIGN TOKENS ─────────────────────────────────────── */
-:root {
-  color-scheme: light;
-  --bg: #f0f9ff;
-  --surface: #ffffff;
-  --surface2: #f8fafc;
-  --border: #e2e8f0;
-  --text: #0f172a;
-  --text2: #64748b;
-  --text3: #94a3b8;
-  --accent: #0ea5e9;
-  --accent2: #0369a1;
-  --header: linear-gradient(135deg,#0369a1 0%,#0284c7 60%,#0ea5e9 100%);
-  --stats: #0369a1;
-  --tag-bg: #eff6ff;
-  --tag-c: #1d4ed8;
-  --ocean1: #071626;
-  --ocean2: #091e33;
-  --land: #132d1e;
-  --landstroke: #1d4730;
-  --grid: rgba(255,255,255,0.03);
-  --equator: rgba(125,211,252,0.06);
-  --card-shadow: 0 1px 3px rgba(0,0,0,0.07);
-  --card-shadow-hover: 0 6px 20px rgba(0,0,0,0.12);
-}
-[data-dark="true"] {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface2: #0f172a;
-  --border: #334155;
-  --text: #f1f5f9;
-  --text2: #94a3b8;
-  --text3: #64748b;
-  --accent: #38bdf8;
-  --accent2: #0ea5e9;
-  --tag-bg: #1e3a5f;
-  --tag-c: #7dd3fc;
-  --ocean1: #020a14;
-  --ocean2: #030c1c;
-  --land: #0c1f13;
-  --landstroke: #122918;
-  --grid: rgba(255,255,255,0.02);
-  --equator: rgba(56,189,248,0.05);
-  --card-shadow: 0 1px 4px rgba(0,0,0,0.3);
-  --card-shadow-hover: 0 6px 24px rgba(0,0,0,0.5);
-}
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0369a1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Portfólio de viagens, memórias e planejamento de Eduardo Campos — 2021 até hoje, com mapas, rotas, custos e logística por destino.">
 
-/* ── RESET & BASE ──────────────────────────────────────── */
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);transition:background .25s,color .25s;}
+<meta property="og:type" content="website">
+<meta property="og:title" content="Minhas Viagens — Eduardo Campos">
+<meta property="og:description" content="Memórias e planejamento de viagens pelo mundo, com mapa interativo, rotas e custos.">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
 
-/* ── HEADER ────────────────────────────────────────────── */
-.hdr{
-  background:var(--header);color:white;
-  padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
-}
-.hdr-left h1{font-size:1.2rem;font-weight:800;letter-spacing:-.01em;}
-.hdr-left p{font-size:.75rem;opacity:.75;margin-top:2px;}
-.hdr-right{display:flex;align-items:center;gap:10px;}
-.dark-btn{
-  background:rgba(255,255,255,.15);border:none;color:white;
-  border-radius:99px;padding:5px 12px;cursor:pointer;font-size:.75rem;
-  font-weight:600;display:flex;align-items:center;gap:5px;transition:background .2s;
-}
-.dark-btn:hover{background:rgba(255,255,255,.25);}
-.dark-icon{font-size:.9rem;}
+<title>🌍 Minhas Viagens — Eduardo Campos</title>
 
-/* ── STATS BAR ─────────────────────────────────────────── */
-.stats{display:flex;background:var(--stats);}
-.stat{flex:1;padding:11px 6px;text-align:center;border-right:1px solid rgba(255,255,255,.1);}
-.stat:last-child{border-right:none;}
-.stat-v{font-size:1.5rem;font-weight:800;color:#7dd3fc;line-height:1;}
-.stat-l{font-size:.6rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icons/icon-192.svg">
+<link rel="apple-touch-icon" href="icons/icon-192.svg">
 
-/* ── YEAR TIMELINE ─────────────────────────────────────── */
-.ytl{
-  display:flex;align-items:center;padding:12px 16px;gap:0;
-  background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;
-  scrollbar-width:none;
-}
-.ytl::-webkit-scrollbar{display:none;}
-.yl-item{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;cursor:pointer;min-width:60px;}
-.yl-item:not(:last-child)::after{
-  content:'';position:absolute;right:0;top:10px;
-  width:50%;height:2px;background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 40%,transparent));
-}
-.yl-item:not(:first-child)::before{
-  content:'';position:absolute;left:0;top:10px;
-  width:50%;height:2px;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 40%,transparent),var(--accent));
-}
-.yl-dot{
-  width:22px;height:22px;border-radius:50%;background:var(--surface);
-  border:2.5px solid var(--accent);display:flex;align-items:center;
-  justify-content:center;font-size:.65rem;z-index:1;position:relative;
-  transition:all .2s;
-}
-.yl-item.active .yl-dot,.yl-item:hover .yl-dot{background:var(--accent);transform:scale(1.15);}
-.yl-yr{font-size:.6rem;color:var(--text2);margin-top:4px;font-weight:600;transition:color .2s;}
-.yl-item.active .yl-yr{color:var(--accent);font-weight:800;}
-.yl-count{font-size:.5rem;color:var(--text3);margin-top:1px;}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&display=swap" rel="stylesheet">
 
-/* ── SEARCH + FILTER ───────────────────────────────────── */
-.controls{
-  display:flex;gap:8px;padding:10px 12px;
-  background:var(--surface);border-bottom:1px solid var(--border);
-  align-items:center;flex-wrap:wrap;
-}
-.search-wrap{
-  display:flex;align-items:center;gap:6px;flex:1;min-width:160px;
-  background:var(--surface2);border:1.5px solid var(--border);
-  border-radius:8px;padding:6px 10px;transition:border-color .2s;
-}
-.search-wrap:focus-within{border-color:var(--accent);}
-.search-wrap input{
-  border:none;outline:none;font-size:.75rem;flex:1;
-  background:transparent;color:var(--text);
-}
-.search-wrap input::placeholder{color:var(--text3);}
-.filter-row{display:flex;gap:5px;flex-shrink:0;}
-.fbtn{
-  padding:5px 11px;border-radius:99px;border:1.5px solid var(--border);
-  background:var(--surface);cursor:pointer;font-size:.72rem;white-space:nowrap;
-  font-weight:500;color:var(--text2);transition:all .15s;
-}
-.fbtn.active{background:var(--accent);color:white;border-color:var(--accent);}
-.fbtn:hover:not(.active){border-color:var(--accent);color:var(--accent);}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="">
 
-/* ── YEAR SLIDER ───────────────────────────────────────── */
-.slider-bar{
-  padding:8px 16px;background:var(--surface);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:10px;
-}
-.sl-lbl{font-size:.65rem;font-weight:700;color:var(--text2);white-space:nowrap;}
-.sl-track{flex:1;position:relative;}
-.sl-track input[type=range]{
-  width:100%;height:4px;-webkit-appearance:none;appearance:none;
-  background:linear-gradient(90deg,var(--accent) var(--pct,60%),var(--border) var(--pct,60%));
-  border-radius:99px;outline:none;cursor:pointer;
-}
-.sl-track input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
-  background:white;border:2.5px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.2);
-  cursor:pointer;
-}
-.sl-val{font-size:.72rem;font-weight:700;color:var(--accent);min-width:32px;text-align:center;}
-
-/* ── MAP CONTAINER ─────────────────────────────────────── */
-.map-wrap{position:relative;background:var(--ocean1);overflow:hidden;line-height:0;}
-#map{display:block;width:100%;}
-#map-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
-#map-svg .pin-group{pointer-events:all;cursor:pointer;}
-.map-tip{
-  position:absolute;background:rgba(7,22,38,.96);color:white;
-  padding:8px 12px;border-radius:9px;font-size:.75rem;
-  pointer-events:none;display:none;z-index:30;
-  border:1px solid rgba(125,211,252,.25);
-  box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:200px;
-}
-.map-tip .tn{font-weight:700;font-size:.85rem;}
-.map-tip .ts{color:#7dd3fc;margin-top:2px;font-size:.72rem;}
-.map-tip .tni{color:#94a3b8;margin-top:1px;font-size:.68rem;}
-
-/* ── CLUSTER POPUP ─────────────────────────────────────── */
-.cluster-popup{
-  position:absolute;background:var(--surface);border:1px solid var(--border);
-  border-radius:12px;padding:10px;z-index:40;min-width:160px;
-  box-shadow:0 8px 32px rgba(0,0,0,.2);display:none;
-}
-.cluster-popup h4{font-size:.7rem;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
-.cluster-popup .cl-item{
-  display:flex;align-items:center;gap:6px;padding:4px 0;cursor:pointer;
-  border-bottom:1px solid var(--border);
-}
-.cluster-popup .cl-item:last-child{border-bottom:none;}
-.cluster-popup .cl-item span{font-size:.75rem;font-weight:600;color:var(--text);}
-.cluster-popup .cl-item small{font-size:.65rem;color:var(--text2);}
-.cl-close{position:absolute;top:6px;right:8px;background:none;border:none;cursor:pointer;color:var(--text2);font-size:.9rem;}
-
-/* ── MAP LEGEND ────────────────────────────────────────── */
-.map-legend{
-  display:flex;gap:10px;flex-wrap:wrap;padding:8px 14px;
-  background:var(--surface);border-bottom:1px solid var(--border);align-items:center;
-}
-.leg{display:flex;align-items:center;gap:4px;font-size:.67rem;color:var(--text2);}
-.leg-d{width:9px;height:9px;border-radius:50%;}
-.leg-note{font-size:.63rem;color:var(--text3);margin-left:auto;}
-
-/* ── SECTIONS ──────────────────────────────────────────── */
-.section{padding:14px 12px 20px;}
-.sec-title{font-size:.78rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
-
-/* ── TRIP CARDS ────────────────────────────────────────── */
-.grid{display:flex;flex-direction:column;gap:10px;}
-.card{
-  background:var(--surface);border-radius:12px;overflow:hidden;
-  box-shadow:var(--card-shadow);border:1px solid var(--border);
-  display:flex;cursor:pointer;transition:box-shadow .2s,transform .15s;
-}
-.card:hover{box-shadow:var(--card-shadow-hover);transform:translateY(-1px);}
-.card.hidden{display:none;}
-.card-stripe{width:5px;flex-shrink:0;transition:opacity .2s;}
-.card-body{flex:1;}
-
-/* Hero image area */
-.card-hero{
-  position:relative;overflow:hidden;height:0;
-  transition:height .35s cubic-bezier(.4,0,.2,1);
-}
-.card-hero.open{height:90px;}
-.card-hero-bg{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-}
-.card-hero-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.75) 0%,rgba(0,0,0,.1) 60%);}
-.card-hero-emoji{font-size:3rem;z-index:1;position:relative;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4));}
-.card-hero-info{
-  position:absolute;bottom:0;left:0;right:0;padding:8px 12px;z-index:2;
-}
-.card-hero-name{font-size:.82rem;font-weight:800;color:white;}
-.card-hero-sub{font-size:.65rem;color:rgba(255,255,255,.75);}
-.card-hero-badge{
-  position:absolute;top:6px;right:8px;background:rgba(255,255,255,.2);
-  backdrop-filter:blur(6px);border-radius:99px;
-  padding:2px 8px;font-size:.6rem;color:white;font-weight:600;z-index:2;
-}
-
-/* Card info */
-.card-info{padding:11px 14px;}
-.card-row1{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
-.card-name{font-size:.9rem;font-weight:700;display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
-.badge-ok{font-size:.58rem;background:#dcfce7;color:#15803d;padding:2px 6px;border-radius:99px;font-weight:600;}
-.card-date{font-size:.68rem;color:var(--text2);background:var(--surface2);padding:3px 8px;border-radius:99px;white-space:nowrap;flex-shrink:0;border:1px solid var(--border);}
-.card-place{font-size:.72rem;color:var(--text2);margin:4px 0 7px;}
-.card-tags{display:flex;gap:4px;flex-wrap:wrap;}
-.ct{font-size:.65rem;padding:2px 7px;border-radius:99px;}
-.ct-air{background:var(--tag-bg);color:var(--tag-c);}
-.ct-pax{background:#f0fdf4;color:#15803d;}
-.ct-nts{background:#faf5ff;color:#7c3aed;}
-[data-dark="true"] .ct-pax{background:#0f2d1a;color:#4ade80;}
-[data-dark="true"] .ct-nts{background:#1e0a3c;color:#c084fc;}
-
-/* Expanded content */
-.card-exp{display:none;padding:0 14px 12px;}
-.card-exp.open{display:block;}
-.hlights{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
-.hl{font-size:.68rem;background:var(--surface2);color:var(--accent2);padding:3px 8px;border-radius:6px;border:1px solid var(--border);}
-.memory{font-size:.76rem;color:var(--text2);line-height:1.55;border-left:3px solid var(--accent);padding-left:10px;font-style:italic;margin-bottom:10px;}
-.share-btn{
-  display:inline-flex;align-items:center;gap:5px;padding:6px 12px;
-  border-radius:8px;background:var(--surface2);border:1px solid var(--border);
-  cursor:pointer;font-size:.7rem;font-weight:600;color:var(--text2);
-  transition:all .15s;margin-top:2px;
-}
-.share-btn:hover{background:var(--accent);color:white;border-color:var(--accent);}
-
-/* ── SHARE SHEET ───────────────────────────────────────── */
-.share-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;
-  display:none;align-items:flex-end;justify-content:center;
-  backdrop-filter:blur(4px);
-}
-.share-overlay.show{display:flex;}
-.share-sheet{
-  background:var(--surface);border-radius:16px 16px 0 0;
-  padding:16px;width:100%;max-width:480px;
-  box-shadow:0 -4px 32px rgba(0,0,0,.2);
-}
-.share-sheet h3{font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:12px;}
-.share-options{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
-.sh-opt{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px;border-radius:8px;transition:background .15s;}
-.sh-opt:hover{background:var(--surface2);}
-.sh-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
-.sh-lbl{font-size:.62rem;color:var(--text2);font-weight:500;}
-.share-close{
-  width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);
-  background:var(--surface2);cursor:pointer;font-size:.8rem;font-weight:600;
-  color:var(--text2);transition:all .15s;
-}
-.share-close:hover{background:var(--border);}
-.share-toast{
-  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
-  background:#0f172a;color:white;padding:8px 16px;border-radius:99px;
-  font-size:.75rem;font-weight:600;z-index:200;opacity:0;
-  transition:opacity .25s;pointer-events:none;
-}
-.share-toast.show{opacity:1;}
-
-/* ── ANIMATIONS ────────────────────────────────────────── */
-@keyframes pulse{
-  0%,100%{opacity:0;transform:scale(1);}
-  50%{opacity:.5;transform:scale(2);}
-}
-.pin-pulse{animation:pulse 2s ease-in-out infinite;}
-
-/* ── NO RESULTS ────────────────────────────────────────── */
-.no-results{
-  text-align:center;padding:32px 16px;color:var(--text3);
-  font-size:.8rem;display:none;
-}
-</style>
+<link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="hdr">
-  <div class="hdr-left">
-    <h1>🌍 Minhas Viagens</h1>
-    <p>Eduardo Campos · 2021–2026</p>
+<a class="skip-link" href="#main">Pular para o conteúdo</a>
+
+<header class="hdr" role="banner">
+  <div class="hdr-inner">
+    <div class="hdr-left">
+      <h1><span aria-hidden="true">🌍</span> <span class="hdr-title">Minhas Viagens</span></h1>
+      <p id="hdr-sub">Carregando…</p>
+    </div>
+    <div class="hdr-right">
+      <button class="icon-btn" id="installBtn" hidden aria-label="Instalar como aplicativo">
+        <span aria-hidden="true">⬇</span> <span class="btn-label">Instalar</span>
+      </button>
+      <button class="icon-btn" id="darkBtn" aria-pressed="false" aria-label="Alternar tema">
+        <span class="dark-icon" aria-hidden="true">🌙</span>
+        <span class="btn-label" id="darkLbl">Escuro</span>
+      </button>
+    </div>
   </div>
-  <div class="hdr-right">
-    <button class="dark-btn" id="darkBtn" onclick="toggleDark()">
-      <span class="dark-icon" id="darkIcon">🌙</span>
-      <span id="darkLbl">Modo escuro</span>
-    </button>
-  </div>
-</div>
+</header>
 
-<!-- STATS -->
-<div class="stats">
-  <div class="stat"><div class="stat-v" id="sv1">0</div><div class="stat-l">Viagens</div></div>
-  <div class="stat"><div class="stat-v" id="sv2">0</div><div class="stat-l">Países</div></div>
-  <div class="stat"><div class="stat-v" id="sv3">0</div><div class="stat-l">Continentes</div></div>
-  <div class="stat"><div class="stat-v" id="sv4">0</div><div class="stat-l">Noites</div></div>
-  <div class="stat"><div class="stat-v" id="sv5">0</div><div class="stat-l">km voados est.</div></div>
-</div>
+<main id="main" tabindex="-1">
 
-<!-- YEAR TIMELINE -->
-<div class="ytl" id="ytl"></div>
+  <!-- STATS -->
+  <section class="stats-section" aria-labelledby="stats-title">
+    <h2 id="stats-title" class="sr-only">Estatísticas</h2>
+    <div class="stats" id="stats" role="list"></div>
+    <div class="insights" id="insights" role="list" aria-label="Insights de viagem"></div>
+  </section>
 
-<!-- CONTROLS -->
-<div class="controls">
-  <div class="search-wrap">
-    <span>🔍</span>
-    <input type="text" id="search" placeholder="Buscar destino, país, cidade..." autocomplete="off"/>
-  </div>
-  <div class="filter-row">
-    <button class="fbtn active" data-f="all">🌍 Todas</button>
-    <button class="fbtn" data-f="Asia">🏯 Ásia</button>
-    <button class="fbtn" data-f="Europe">🏰 Europa</button>
-    <button class="fbtn" data-f="Americas">🌎 Américas</button>
-    <button class="fbtn" data-f="Africa">🦁 África</button>
-  </div>
-</div>
+  <!-- LAYOUT 2-COL DESKTOP -->
+  <div class="layout">
 
-<!-- YEAR SLIDER -->
-<div class="slider-bar">
-  <span class="sl-lbl">📅 Até o ano:</span>
-  <div class="sl-track">
-    <input type="range" id="yearSlider" min="2021" max="2026" value="2026" step="1"/>
-  </div>
-  <span class="sl-val" id="sliderVal">2026</span>
-</div>
+    <!-- LEFT/STICKY: filters + map -->
+    <aside class="col-left" aria-label="Filtros e mapa">
 
-<!-- MAP -->
-<div class="map-wrap" id="mapWrap">
-  <canvas id="map"></canvas>
-  <svg id="map-svg" viewBox="0 0 900 440" preserveAspectRatio="xMidYMid meet"></svg>
-  <div class="map-tip" id="mapTip">
-    <div class="tn" id="tipN"></div>
-    <div class="ts" id="tipS"></div>
-    <div class="tni" id="tipNi"></div>
-  </div>
-  <div class="cluster-popup" id="clusterPopup">
-    <button class="cl-close" onclick="closeCluster()">✕</button>
-    <h4 id="clTitle">Destinos</h4>
-    <div id="clList"></div>
-  </div>
-</div>
-
-<!-- MAP LEGEND -->
-<div class="map-legend">
-  <span class="leg"><span class="leg-d" style="background:#06b6d4"></span>Ásia</span>
-  <span class="leg"><span class="leg-d" style="background:#3b82f6"></span>Europa</span>
-  <span class="leg"><span class="leg-d" style="background:#22c55e"></span>Américas</span>
-  <span class="leg"><span class="leg-d" style="background:#f97316"></span>África</span>
-  <span class="leg-note">🖱 Clique no pin para abrir · Selecione um ano para ver as rotas</span>
-</div>
-
-<!-- TRIP CARDS -->
-<div class="section">
-  <div class="sec-title" id="secTitle">📅 Linha do Tempo das Viagens</div>
-  <div class="grid" id="grid"></div>
-  <div class="no-results" id="noResults">😕 Nenhuma viagem encontrada. Tente outro termo!</div>
-</div>
-
-<!-- SHARE OVERLAY -->
-<div class="share-overlay" id="shareOverlay" onclick="closeShare(event)">
-  <div class="share-sheet">
-    <h3 id="shareTitle">Compartilhar viagem</h3>
-    <div class="share-options">
-      <div class="sh-opt" onclick="shareAction('copy')">
-        <div class="sh-icon" style="background:#f1f5f9">📋</div>
-        <span class="sh-lbl">Copiar texto</span>
+      <!-- STATUS TOGGLE -->
+      <div class="status-bar" role="tablist" aria-label="Status das viagens">
+        <button class="status-btn active" role="tab" aria-selected="true" data-status="all">Todas</button>
+        <button class="status-btn" role="tab" aria-selected="false" data-status="done">✓ Realizadas</button>
+        <button class="status-btn" role="tab" aria-selected="false" data-status="planned">📅 Planejadas</button>
+        <button class="status-btn" role="tab" aria-selected="false" data-status="wishlist">⭐ Wishlist</button>
       </div>
-      <div class="sh-opt" onclick="shareAction('whatsapp')">
-        <div class="sh-icon" style="background:#dcfce7">💬</div>
-        <span class="sh-lbl">WhatsApp</span>
+
+      <!-- YEAR TIMELINE -->
+      <div class="ytl" id="ytl" role="tablist" aria-label="Filtro por ano"></div>
+
+      <!-- SEARCH + FILTER -->
+      <div class="controls">
+        <div class="search-wrap">
+          <span aria-hidden="true">🔍</span>
+          <input type="search" id="search" placeholder="Buscar destino, país, cidade…" aria-label="Buscar viagem" autocomplete="off"/>
+        </div>
+        <button class="advanced-toggle" id="advToggle" aria-expanded="false" aria-controls="advPanel">
+          <span aria-hidden="true">⚙</span> Filtros
+          <span class="adv-count" id="advCount" hidden>0</span>
+        </button>
       </div>
-      <div class="sh-opt" onclick="shareAction('instagram')">
-        <div class="sh-icon" style="background:#fce7f3">📸</div>
-        <span class="sh-lbl">Instagram</span>
+
+      <!-- CONTINENT PILLS -->
+      <div class="filter-row" role="tablist" aria-label="Filtro por continente">
+        <button class="fbtn active" role="tab" aria-selected="true" data-cont="all">🌍 Todos</button>
+        <button class="fbtn" role="tab" aria-selected="false" data-cont="Asia">🏯 Ásia</button>
+        <button class="fbtn" role="tab" aria-selected="false" data-cont="Europe">🏰 Europa</button>
+        <button class="fbtn" role="tab" aria-selected="false" data-cont="Americas">🌎 Américas</button>
+        <button class="fbtn" role="tab" aria-selected="false" data-cont="Africa">🦁 África</button>
+        <button class="fbtn" role="tab" aria-selected="false" data-cont="Oceania">🏝 Oceania</button>
       </div>
-      <div class="sh-opt" onclick="shareAction('native')">
-        <div class="sh-icon" style="background:#eff6ff">🔗</div>
-        <span class="sh-lbl">Compartilhar</span>
+
+      <!-- ADVANCED FILTERS -->
+      <div class="adv-panel" id="advPanel" hidden>
+        <div class="adv-group">
+          <label class="adv-lbl" for="filterMonth">Mês</label>
+          <select id="filterMonth" class="adv-select">
+            <option value="all">Qualquer</option>
+            <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
+            <option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option>
+            <option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option>
+            <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+          </select>
+        </div>
+        <div class="adv-group">
+          <label class="adv-lbl" for="filterDuration">Duração</label>
+          <select id="filterDuration" class="adv-select">
+            <option value="all">Qualquer</option>
+            <option value="short">≤ 5 noites</option>
+            <option value="medium">6 a 10 noites</option>
+            <option value="long">11+ noites</option>
+          </select>
+        </div>
+        <div class="adv-group">
+          <label class="adv-lbl" for="filterType">Tipo</label>
+          <select id="filterType" class="adv-select">
+            <option value="all">Qualquer</option>
+            <option value="leisure">Lazer</option>
+            <option value="business">Trabalho/Evento</option>
+            <option value="festival">Festival</option>
+            <option value="adventure">Aventura</option>
+          </select>
+        </div>
+        <div class="adv-group">
+          <label class="adv-lbl" for="filterPax">Companhia</label>
+          <select id="filterPax" class="adv-select">
+            <option value="all">Qualquer</option>
+          </select>
+        </div>
+        <button class="adv-clear" id="advClear">Limpar filtros</button>
+      </div>
+
+      <!-- ACTIVE CHIPS -->
+      <div class="active-chips" id="activeChips" aria-live="polite"></div>
+
+      <!-- YEAR SLIDER -->
+      <div class="slider-bar">
+        <label class="sl-lbl" for="yearSlider">📅 Até o ano</label>
+        <div class="sl-track">
+          <input type="range" id="yearSlider" min="2021" max="2028" value="2028" step="1" aria-label="Filtrar viagens até o ano"/>
+        </div>
+        <output class="sl-val" id="sliderVal" for="yearSlider">2028</output>
+      </div>
+
+      <!-- MAP -->
+      <div class="map-wrap" role="region" aria-label="Mapa interativo das viagens">
+        <div id="map" tabindex="0"></div>
+      </div>
+
+      <!-- MAP LEGEND -->
+      <div class="map-legend" aria-label="Legenda do mapa">
+        <span class="leg"><span class="leg-d" style="background:#06b6d4"></span>Ásia</span>
+        <span class="leg"><span class="leg-d" style="background:#3b82f6"></span>Europa</span>
+        <span class="leg"><span class="leg-d" style="background:#22c55e"></span>Américas</span>
+        <span class="leg"><span class="leg-d" style="background:#f97316"></span>África</span>
+        <span class="leg"><span class="leg-d" style="background:#10b981"></span>Oceania</span>
+        <span class="leg-note">Clique no pin para abrir · Pin tracejado = planejado/wishlist</span>
+      </div>
+    </aside>
+
+    <!-- RIGHT/SCROLLABLE: trip list -->
+    <section class="col-right" aria-labelledby="trip-list-title">
+      <h2 id="trip-list-title" class="sec-title">
+        <span id="secTitleText">📅 Linha do Tempo das Viagens</span>
+        <span class="sec-count" id="secCount" aria-live="polite"></span>
+      </h2>
+      <div class="grid" id="grid"></div>
+      <div class="no-results" id="noResults" role="status">
+        <p>😕 Nenhuma viagem encontrada com esses filtros.</p>
+        <button class="link-btn" id="clearAll">Limpar todos os filtros</button>
+      </div>
+    </section>
+
+  </div>
+
+</main>
+
+<!-- TRIP TEMPLATE (used by JS to clone) -->
+<template id="tpl-trip-card">
+  <article class="card" role="article">
+    <div class="card-stripe"></div>
+    <div class="card-body">
+      <div class="card-hero" data-hero>
+        <div class="card-hero-bg" data-hero-bg></div>
+        <div class="card-hero-ov"></div>
+        <span class="card-hero-emoji" data-hero-emoji aria-hidden="true"></span>
+        <span class="card-hero-flag" data-hero-flag aria-hidden="true"></span>
+        <span class="card-hero-badge" data-hero-badge hidden></span>
+        <div class="card-hero-info">
+          <div class="card-hero-name" data-hero-name></div>
+          <div class="card-hero-sub" data-hero-sub></div>
+        </div>
+      </div>
+      <button class="card-toggle" data-toggle aria-expanded="false">
+        <div class="card-info">
+          <div class="card-row1">
+            <div class="card-name">
+              <span data-name></span>
+              <span class="badge-ok" data-badge-ok hidden>✓ Confirmada</span>
+              <span class="badge-planned" data-badge-planned hidden>📅 Planejada</span>
+              <span class="badge-wish" data-badge-wish hidden>⭐ Wishlist</span>
+            </div>
+            <span class="card-date" data-date></span>
+          </div>
+          <div class="card-place" data-place></div>
+          <div class="card-tags">
+            <span class="ct ct-air" data-tag-air></span>
+            <span class="ct ct-pax" data-tag-pax></span>
+            <span class="ct ct-nts" data-tag-nts></span>
+          </div>
+        </div>
+        <span class="card-chevron" aria-hidden="true">›</span>
+      </button>
+      <div class="card-exp" data-exp hidden>
+        <div class="tabs" role="tablist" aria-label="Detalhes da viagem">
+          <button class="tab active" role="tab" aria-selected="true" data-tab="diary">📖 Diário</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="route">🗺 Roteiro</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="logistics">✈ Logística</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="cost">💰 Custos</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="gallery">📸 Galeria</button>
+        </div>
+        <div class="tab-panels">
+          <div class="tab-panel active" role="tabpanel" data-panel="diary">
+            <div class="hlights" data-highlights></div>
+            <blockquote class="memory" data-memory></blockquote>
+          </div>
+          <div class="tab-panel" role="tabpanel" data-panel="route" hidden>
+            <div class="mini-map" data-minimap></div>
+            <ol class="route-list" data-route-list></ol>
+          </div>
+          <div class="tab-panel" role="tabpanel" data-panel="logistics" hidden>
+            <div class="log-section">
+              <h4>Hotéis</h4>
+              <ul class="log-list" data-log-hotels></ul>
+            </div>
+            <div class="log-section">
+              <h4>Restaurantes</h4>
+              <ul class="log-list" data-log-restaurants></ul>
+            </div>
+            <div class="log-section">
+              <h4>Dicas</h4>
+              <p class="log-tips" data-log-tips></p>
+            </div>
+          </div>
+          <div class="tab-panel" role="tabpanel" data-panel="cost" hidden>
+            <div class="cost-total" data-cost-total></div>
+            <div class="cost-bars" data-cost-bars></div>
+            <p class="cost-note">Estimativa em <span data-cost-curr></span> · ~<span data-cost-day></span>/dia</p>
+          </div>
+          <div class="tab-panel" role="tabpanel" data-panel="gallery" hidden>
+            <div class="gallery" data-gallery></div>
+            <p class="gallery-empty" data-gallery-empty hidden>Sem fotos ainda — adicione URLs em <code>data/trips.json</code> (campo <code>gallery</code>).</p>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="share-btn" data-share>
+            <span aria-hidden="true">📤</span> Compartilhar
+          </button>
+          <button class="link-btn" data-permalink>🔗 Copiar link</button>
+        </div>
       </div>
     </div>
-    <button class="share-close" onclick="closeShare()">Cancelar</button>
+  </article>
+</template>
+
+<!-- SHARE DIALOG -->
+<dialog id="shareDialog" class="share-dialog" aria-labelledby="shareTitle">
+  <form method="dialog" class="share-sheet">
+    <h3 id="shareTitle">Compartilhar viagem</h3>
+    <div class="share-options">
+      <button type="button" class="sh-opt" data-share-action="copy">
+        <span class="sh-icon" style="background:#f1f5f9" aria-hidden="true">📋</span>
+        <span class="sh-lbl">Copiar texto</span>
+      </button>
+      <button type="button" class="sh-opt" data-share-action="whatsapp">
+        <span class="sh-icon" style="background:#dcfce7" aria-hidden="true">💬</span>
+        <span class="sh-lbl">WhatsApp</span>
+      </button>
+      <button type="button" class="sh-opt" data-share-action="x">
+        <span class="sh-icon" style="background:#e0f2fe" aria-hidden="true">𝕏</span>
+        <span class="sh-lbl">X / Twitter</span>
+      </button>
+      <button type="button" class="sh-opt" data-share-action="native">
+        <span class="sh-icon" style="background:#eff6ff" aria-hidden="true">🔗</span>
+        <span class="sh-lbl">Sistema</span>
+      </button>
+    </div>
+    <button type="submit" class="share-close">Cancelar</button>
+  </form>
+</dialog>
+
+<div class="share-toast" id="shareToast" role="status" aria-live="polite"></div>
+
+<noscript>
+  <div style="padding:24px;text-align:center;background:#fef3c7;color:#92400e;">
+    ⚠ Este site funciona melhor com JavaScript habilitado. As viagens estão armazenadas em
+    <a href="data/trips.json"><code>data/trips.json</code></a>.
   </div>
-</div>
-<div class="share-toast" id="shareToast">✅ Copiado!</div>
+</noscript>
 
-<script>
-// ═══════════════════════════════════════════════════════
-// DADOS
-// ═══════════════════════════════════════════════════════
-const TRIPS = [
-  { id:1,  emoji:'🇹🇭', name:'Tailândia',           sub:'Bangkok · Phuket · Krabi · Pattaya',           y:2026,m:1,  label:'Jan 2026',   lat:13.0,  lon:101.0,  col:'#06b6d4', col2:'#0891b2', cont:'Asia',    pax:'Jodson Oliveira',      air:'LATAM + AirAsia',            nts:14, km:18000, ok:true,
-    hl:['Praias de Phuket','Templos de Bangkok','Ilhas de Krabi','Pattaya Beach Road'],
-    mem:'Uma aventura incrível pelo sudeste asiático — dos templos dourados de Bangkok ao azul-turquesa das ilhas de Krabi. Cultura, gastronomia e beleza natural em 14 dias inesquecíveis.' },
-  { id:2,  emoji:'🇿🇦', name:'África do Sul',        sub:'Johannesburg · Sun City · Pilanesberg · Cape Town', y:2026,m:3, label:'Mar 2026', lat:-29.0, lon:25.0,  col:'#f97316', col2:'#ea580c', cont:'Africa',  pax:'Equipe Onix / Yamaha', air:'Emirates / TAP',             nts:10, km:10000, ok:true,
-    hl:['Safari no Pilanesberg','Sun City Resort','Table Mountain','V&A Waterfront Cape Town'],
-    mem:'Viagem especial Kando Yamaha — fusão de negócios e aventura no continente africano. Da emoção do safari ao topo da Table Mountain, uma experiência transformadora.' },
-  { id:3,  emoji:'🇬🇷', name:'Mykonos',              sub:'Mykonos · Ilhas Gregas',                         y:2025,m:7,  label:'~Jul 2025',  lat:37.45, lon:25.37, col:'#3b82f6', col2:'#1d4ed8', cont:'Europe',  pax:'Jodson Oliveira',      air:'LATAM + Aegean',             nts:7,  km:10500,
-    hl:['Praias paradisíacas','Pôr do sol em Little Venice','Moinhos de vento','Restaurantes de frutos do mar'],
-    mem:'O Mediterrâneo em sua forma mais pura. Casas brancas com janelas azuis, praias de água cristalina e um ritmo de vida que te faz esquecer tudo.' },
-  { id:4,  emoji:'🗾',  name:'Japão',                sub:'Tokyo · Kyoto · Shibuya · Suzuka',               y:2024,m:10, label:'~Out 2024',  lat:35.5,  lon:137.0, col:'#ec4899', col2:'#be185d', cont:'Asia',    pax:'Jodson Oliveira',      air:'LATAM + Japan Airlines',     nts:12, km:22000,
-    hl:['Cruzamento de Shibuya','Geishas em Kyoto','Templo Senso-ji','Circuito de Suzuka'],
-    mem:'O Japão é um choque cultural positivo. A perfeição no atendimento, a tecnologia futurística e a tradição milenar coexistindo — uma lição de excelência que todo profissional deveria vivenciar.' },
-  { id:5,  emoji:'🇺🇸', name:'Havaí',                sub:'Honolulu · Waimanalo · Pupukea',                 y:2024,m:7,  label:'~Jul 2024',  lat:21.3,  lon:-157.8,col:'#22c55e', col2:'#15803d', cont:'Americas',pax:'Jodson Oliveira',      air:'LATAM + American Airlines',  nts:10, km:14000,
-    hl:['Praia de Waikiki','Pipeline em Pupukea','Diamond Head','Luau tradicional'],
-    mem:'O Havaí é diferente de qualquer lugar nos EUA — uma energia única, natureza exuberante e a cultura polinésia que te transporta para outro mundo completamente.' },
-  { id:6,  emoji:'🇪🇸', name:'Espanha + Ibiza',      sub:'Barcelona · Ibiza · Madrid · Segóvia · Toledo',  y:2024,m:5,  label:'~Mai 2024',  lat:40.4,  lon:-3.7,  col:'#ef4444', col2:'#b91c1c', cont:'Europe',  pax:'Jodson Oliveira',      air:'LATAM + TAP + Vueling',      nts:12, km:9500,
-    hl:['Sagrada Família de Gaudí','Festas em Ibiza','Museu do Prado','Alcázar de Segóvia'],
-    mem:'España em pleno verão — da arte modernista de Gaudí à loucura das festas em Ibiza. Madrid de bônus com a grandiosidade do Prado e história medieval de Toledo.' },
-  { id:7,  emoji:'🇩🇪', name:'Alemanha',             sub:'Berlim · Frankfurt · Potsdam',                   y:2023,m:10, label:'~Out 2023',  lat:52.5,  lon:13.4,  col:'#6b7280', col2:'#475569', cont:'Europe',  pax:'Jodson Oliveira',      air:'LATAM + TAP + Lufthansa',    nts:9,  km:9800,
-    hl:['Portão de Brandemburgo','Muro de Berlim','Palácio de Sanssouci','Römerberg em Frankfurt'],
-    mem:'A Alemanha surpreende com sua história exposta sem vergonha. Berlim respira arte, memória e uma cena cultural vibrante — nada é escondido, tudo é ensinado.' },
-  { id:8,  emoji:'🇳🇱', name:'Amsterdã + Bélgica',   sub:'Amsterdã · Bruxelas · Boom',                     y:2023,m:8,  label:'~Ago 2023',  lat:52.37, lon:4.9,   col:'#f59e0b', col2:'#d97706', cont:'Europe',  pax:'Jodson Oliveira',      air:'LATAM + KLM',                nts:9,  km:9500,
-    hl:['Canais de Amsterdã de bicicleta','Museu Van Gogh','Atomium de Bruxelas','Festival Tomorrowland em Boom'],
-    mem:'Amsterdã de bicicleta pelas ruas históricas, os canais refletindo as casas estreitas... E a cereja do bolo: Tomorrowland em Boom — a maior festa do mundo.' },
-  { id:9,  emoji:'🇮🇹', name:'Roma + Vaticano',      sub:'Roma · Vaticano · Coliseu',                      y:2023,m:5,  label:'~Mai 2023',  lat:41.9,  lon:12.5,  col:'#dc2626', col2:'#991b1b', cont:'Europe',  pax:'Jodson Oliveira',      air:'LATAM + TAP + ITA',          nts:7,  km:9800,
-    hl:['Coliseu Romano','Museu e Capela Sistina','Fontana di Trevi','Foro Romano'],
-    mem:'Roma te engole — cada pedra tem 2.000 anos de história. Jogar a moeda na Fontana di Trevi com a certeza de que voltaremos foi um dos momentos mais simbólicos.' },
-  { id:10, emoji:'🇨🇿', name:'Praga + Budapeste',    sub:'Praga · Budapeste',                              y:2023,m:3,  label:'~Mar 2023',  lat:48.5,  lon:17.0,  col:'#8b5cf6', col2:'#6d28d9', cont:'Europe',  pax:'Jodson Oliveira',      air:'LATAM + TAP + Wizzair',      nts:9,  km:9600,
-    hl:['Castelo de Praga','Ponte Carlos','Parlamento de Budapeste à noite','Banhos termais Széchenyi'],
-    mem:'Europa Central em toda sua glória. Praga com arquitetura gótica intocada e Budapeste dividida pelo Danúbio — duas cidades diferentes, igualmente encantadoras.' },
-  { id:11, emoji:'🇺🇸', name:'Houston',              sub:'Houston · NASA Space Center',                    y:2023,m:2,  label:'~Fev 2023',  lat:29.76, lon:-95.37,col:'#64748b', col2:'#475569', cont:'Americas',pax:'Jodson Oliveira',      air:'LATAM + United',             nts:5,  km:8800,
-    hl:['NASA Johnson Space Center','Houston Galleria','Hermann Park','Rodeo de Houston'],
-    mem:'Houston é a cidade da NASA — caminhar pelo centro espacial e ver os foguetes de perto mistura ciência e emoção de uma forma que você não espera.' },
-  { id:12, emoji:'🇵🇹', name:'Lisboa',               sub:'Lisboa · Sintra',                                y:2022,m:10, label:'Out 2022',   lat:38.72, lon:-9.14, col:'#14b8a6', col2:'#0f766e', cont:'Europe',  pax:'Jodson Oliveira',      air:'TAP', nts:7, km:8400, ok:true,
-    hl:['Alfama e Castelo São Jorge','Pastéis de Belém','Tram 28 pela cidade','Fado ao vivo nas ruas'],
-    mem:'Lisboa é uma cidade que não para de surpreender. Os bondes amarelos subindo as ladeiras, o fado nas ruas de Alfama e a doçura dos pastéis de Belém — Portugal sempre chama de volta.' },
-  { id:13, emoji:'🇺🇸', name:'Nova Iorque',          sub:'Manhattan · Brooklyn · Times Square',            y:2022,m:6,  label:'~Jun 2022',  lat:40.71, lon:-74.0, col:'#6366f1', col2:'#4f46e5', cont:'Americas',pax:'Jodson Oliveira',      air:'LATAM + American',           nts:8,  km:9400,
-    hl:['Central Park de manhã cedo','Times Square à noite','Brooklyn Bridge a pé','Metropolitan Museum of Art'],
-    mem:'Nova Iorque é uma energia diferente. A cidade que nunca dorme — a cada esquina uma história, um musical da Broadway, um sabor do mundo inteiro.' },
-  { id:14, emoji:'🏖️', name:'Ilhas ABC + Puerto Rico',sub:'Aruba · Bonaire · Curaçao · Rincón (PR)',       y:2022,m:8,  label:'~Ago 2022',  lat:12.2,  lon:-68.9, col:'#06b6d4', col2:'#0891b2', cont:'Americas',pax:'Jodson Oliveira',      air:'LATAM + Insel Air',          nts:12, km:7200,
-    hl:['Eagle Beach em Aruba','Mergulho em Bonaire','Centro histórico de Curaçao','Surf em Rincón Puerto Rico'],
-    mem:'As ilhas ABC são o Caribe em sua versão mais autêntica. Bonaire especialmente — visibilidade incrível, vida marinha exuberante. Puerto Rico de bônus com o Velho San Juan.' },
-  { id:15, emoji:'🇨🇴', name:'Cartagena',            sub:'Cartagena das Índias · Ilhas do Rosário',        y:2022,m:3,  label:'~Mar 2022',  lat:10.39, lon:-75.52,col:'#f59e0b', col2:'#d97706', cont:'Americas',pax:'Jodson Oliveira',      air:'LATAM',                      nts:6,  km:5800,
-    hl:['Cidade Murada colonial','Castillo de San Felipe','Islas del Rosario','Noite na cidade histórica'],
-    mem:'Cartagena parece cenário de filme. As ruas de paralelepípedo, flores nas sacadas coloniais e o calor caribenho convidando para uma cerveja gelada ao entardecer.' },
-  { id:16, emoji:'🇺🇸', name:'Florida',              sub:'Orlando · Tampa · Lake Buena Vista',             y:2022,m:1,  label:'~Jan 2022',  lat:28.54, lon:-81.38,col:'#f97316', col2:'#ea580c', cont:'Americas',pax:'Jodson Oliveira',      air:'LATAM + American',           nts:10, km:9200,
-    hl:['Walt Disney World','Universal Studios','Kennedy Space Center','Praias de Clearwater'],
-    mem:'A Disney é para todos — crianças e adultos se perdem igualmente naquele mundo construído com obsessão pelos detalhes. Uma aula magistral de experiência do cliente.' },
-  { id:17, emoji:'🇦🇷', name:'Argentina',            sub:'Buenos Aires · El Calafate · Puerto Iguazú',     y:2021,m:12, label:'~Dez 2021',  lat:-38.0, lon:-63.0, col:'#60a5fa', col2:'#2563eb', cont:'Americas',pax:'Jodson Oliveira',      air:'LATAM + Aerolíneas',         nts:12, km:3800,
-    hl:['Glaciar Perito Moreno em El Calafate','Cataratas del Iguazú','La Boca em Buenos Aires','Tango no San Telmo'],
-    mem:'Argentina é uma montanha-russa emocional — da grandiosidade do Perito Moreno às lágrimas das Cataratas, da nostalgia tangueira de Buenos Aires ao asado perfeito.' },
-  { id:18, emoji:'🇨🇱', name:'Atacama',              sub:'San Pedro de Atacama · Deserto do Atacama',      y:2021,m:11, label:'Nov 2021',   lat:-22.9, lon:-68.2, col:'#a78bfa', col2:'#7c3aed', cont:'Americas',pax:'Jodson Oliveira',      air:'LATAM',                      nts:7, km:3600, ok:true,
-    hl:['Gêiseres del Tatio ao amanhecer','Laguna Cejar (flutuação)','Valle de la Luna','Céu estrelado mais límpido do mundo'],
-    mem:'O Atacama é Marte na Terra. A paisagem lunar, o silêncio ensurdecedor e um céu com mais estrelas do que jamais imaginei existir. O lugar mais fora do comum que já visitei.' },
-  { id:19, emoji:'🇧🇷', name:'Foz do Iguaçu',       sub:'Cataratas do Iguaçu · Parque das Aves · Itaipu', y:2021,m:6,  label:'Jun 2021',   lat:-25.69,lon:-54.44,col:'#4ade80', col2:'#16a34a', cont:'Americas',pax:'Jodson Oliveira',      air:'LATAM + GOL',                nts:4, km:3500, ok:true,
-    hl:['Cataratas do lado brasileiro','Garganta do Diabo','Parque das Aves','Usina de Itaipu'],
-    mem:'As Cataratas do Iguaçu te deixam literalmente sem fôlego — a potência da natureza crua. O Hotel das Cataratas com janelas voltadas para as quedas foi irreal.' },
-];
-
-// ═══════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════
-let isDark = false;
-let activeYear = 'all';
-let activeCont = 'all';
-let searchTerm = '';
-let maxYear = 2026;
-let shareTrip = null;
-
-// ═══════════════════════════════════════════════════════
-// DARK MODE
-// ═══════════════════════════════════════════════════════
-function toggleDark() {
-  isDark = !isDark;
-  document.documentElement.setAttribute('data-dark', isDark);
-  document.getElementById('darkIcon').textContent = isDark ? '☀️' : '🌙';
-  document.getElementById('darkLbl').textContent = isDark ? 'Modo claro' : 'Modo escuro';
-  drawMap();
-}
-
-// ═══════════════════════════════════════════════════════
-// CANVAS WORLD MAP
-// ═══════════════════════════════════════════════════════
-const cvs = document.getElementById('map');
-const ctx = cvs.getContext('2d');
-const W = 900, H = 440;
-cvs.width = W; cvs.height = H;
-cvs.style.width = '100%';
-
-function ll(lat, lon) {
-  return [(lon + 180) * W / 360, (90 - lat) * H / 180];
-}
-
-const POLYS = [
-  // North America
-  [[71,-140],[82,-82],[82,-60],[68,-56],[60,-64],[47,-53],[43,-66],[36,-76],[24,-80],[20,-87],[16,-90],[10,-84],[9,-79],[8,-77],[10,-75],[22,-106],[23,-110],[31,-117],[38,-122],[48,-124],[60,-138],[60,-143],[70,-140]],
-  // Greenland
-  [[60,-44],[72,-22],[82,-30],[82,-50],[76,-68],[65,-54],[60,-44]],
-  // South America
-  [[12,-72],[11,-62],[8,-59],[5,-52],[0,-50],[-5,-35],[-10,-37],[-15,-39],[-23,-43],[-30,-50],[-34,-54],[-40,-62],[-52,-68],[-55,-70],[-52,-73],[-42,-73],[-18,-70],[-8,-78],[-5,-81],[0,-80],[12,-72]],
-  // Europe + Scandinavia
-  [[36,-9],[36,0],[44,8],[44,12],[38,15],[37,26],[41,28],[43,42],[48,38],[55,22],[58,22],[65,14],[58,5],[56,-3],[55,-2],[51,-4],[47,-2],[43,-9],[36,-9]],
-  [[57,8],[65,14],[70,28],[72,25],[71,24],[65,14],[63,20],[71,25],[65,14],[58,5],[57,8]],
-  [[50,-5],[58,-5],[58,-3],[55,0],[51,1],[51,-1],[50,-5]],
-  [[63,-24],[66,-14],[66,-13],[64,-13],[63,-19],[63,-24]],
-  // Africa
-  [[37,10],[35,33],[22,37],[12,43],[11,42],[0,42],[-4,40],[-10,38],[-25,34],[-35,18],[-34,26],[-22,35],[-10,40],[0,42],[-5,36],[5,1],[5,-9],[10,-15],[15,-17],[22,-17],[30,0],[32,10],[37,10]],
-  [[[-13,44],[-13,49],[-16,50],[-25,47],[-25,44],[-13,44]]],
-  // Asia main
-  [[41,28],[43,42],[40,52],[35,50],[20,57],[22,60],[25,57],[14,50],[12,44],[15,42],[12,44],[0,42],[0,40],[-5,40],[0,103],[1,104],[-8,115],[-8,105],[5,100],[20,92],[22,90],[20,88],[13,80],[8,77],[22,68],[23,57],[30,48],[30,38],[41,28]],
-  // Far East
-  [[40,130],[35,135],[31,130],[33,120],[25,120],[22,114],[22,108],[10,104],[1,104],[5,100],[20,92],[26,90],[24,88],[22,88],[28,84],[32,78],[35,72],[40,60],[43,51],[52,60],[55,82],[55,73],[60,60],[65,55],[72,52],[72,60],[72,68],[73,80],[73,100],[68,110],[65,120],[64,130],[60,142],[52,142],[47,142],[40,132],[35,135],[40,130]],
-  [[31,130],[34,131],[36,136],[37,138],[36,140],[33,130],[31,130]],
-  [[34,126],[37,126],[38,129],[35,129],[34,126]],
-  // Australia
-  [[-18,122],[-13,130],[-12,136],[-14,136],[-16,136],[-14,141],[-10,142],[-15,145],[-22,150],[-28,153],[-34,151],[-38,146],[-38,140],[-35,137],[-32,134],[-32,128],[-25,114],[-22,114],[-18,122]],
-  [[-34,172],[-41,173],[-46,168],[-41,171],[-34,172]],
-  // Smaller islands
-  [[10,80],[6,80],[9,81],[10,80]],
-  [[5,96],[0,104],[-6,106],[-8,115],[-8,105],[0,104],[5,96]],
-  [[23,-82],[22,-83],[20,-74],[23,-82]],
-  [[20,-74],[18,-72],[18,-74],[20,-74]],
-];
-
-function drawMap() {
-  const dark = isDark;
-  const o1 = dark ? '#020a14' : '#071626';
-  const o2 = dark ? '#030c1c' : '#091e33';
-  const lf = dark ? '#0c1f13' : '#132d1e';
-  const ls = dark ? '#122918' : '#1d4730';
-  const gr = dark ? 'rgba(255,255,255,.015)' : 'rgba(255,255,255,.03)';
-
-  const og = ctx.createLinearGradient(0,0,0,H);
-  og.addColorStop(0, o1); og.addColorStop(1, o2);
-  ctx.fillStyle = og; ctx.fillRect(0,0,W,H);
-
-  ctx.strokeStyle = gr; ctx.lineWidth = .5;
-  for (let lon=-180;lon<=180;lon+=30){
-    ctx.beginPath(); const [x]=ll(0,lon);
-    ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
-  }
-  for (let lat=-90;lat<=90;lat+=30){
-    ctx.beginPath(); const [,y]=ll(lat,0);
-    ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
-  }
-  ctx.strokeStyle = dark ? 'rgba(56,189,248,.04)' : 'rgba(125,211,252,.06)';
-  ctx.lineWidth=1; ctx.beginPath();
-  const [,ey]=ll(0,0); ctx.moveTo(0,ey); ctx.lineTo(W,ey); ctx.stroke();
-
-  POLYS.forEach(p => {
-    if (!p || !p.length) return;
-    const pts = Array.isArray(p[0]) && Array.isArray(p[0][0]) ? p[0] : p;
-    if (!pts.length) return;
-    ctx.beginPath();
-    let [x,y]=ll(pts[0][0],pts[0][1]); ctx.moveTo(x,y);
-    for(let i=1;i<pts.length;i++){[x,y]=ll(pts[i][0],pts[i][1]); ctx.lineTo(x,y);}
-    ctx.closePath();
-    ctx.fillStyle=lf; ctx.fill();
-    ctx.strokeStyle=ls; ctx.lineWidth=.7; ctx.stroke();
-  });
-}
-
-// ═══════════════════════════════════════════════════════
-// SVG OVERLAY — PINS, CLUSTERS, ARCS
-// ═══════════════════════════════════════════════════════
-const svg = document.getElementById('map-svg');
-
-function computeClusters(trips, threshold=28) {
-  const pts = trips.map(t => ({
-    ...t, cx:(t.lon+180)*W/360, cy:(90-t.lat)*H/180, used:false
-  }));
-  const clusters = [];
-  pts.forEach(p => {
-    if (p.used) return;
-    const near = pts.filter(o => !o.used && Math.hypot(o.cx-p.cx,o.cy-p.cy)<threshold);
-    near.forEach(o=>o.used=true);
-    if (near.length===1) {
-      clusters.push({type:'single', trip:near[0], cx:near[0].cx, cy:near[0].cy});
-    } else {
-      const cx = near.reduce((s,t)=>s+t.cx,0)/near.length;
-      const cy = near.reduce((s,t)=>s+t.cy,0)/near.length;
-      clusters.push({type:'cluster', trips:near, cx, cy, col:near[0].col});
-    }
-  });
-  return clusters;
-}
-
-function arcPath(x1,y1,x2,y2) {
-  const mx=(x1+x2)/2;
-  const dist=Math.hypot(x2-x1,y2-y1);
-  const my=Math.min(y1,y2)-dist*0.35;
-  return `M${x1},${y1} Q${mx},${my} ${x2},${y2}`;
-}
-
-function renderSVG(visibleTrips) {
-  svg.innerHTML='';
-  const clusters = computeClusters(visibleTrips);
-
-  // Draw arcs for selected year
-  if (activeYear !== 'all') {
-    const yTrips = visibleTrips
-      .filter(t=>t.y===+activeYear)
-      .sort((a,b)=>a.m-b.m);
-    if (yTrips.length>1) {
-      const arcG = document.createElementNS('http://www.w3.org/2000/svg','g');
-      for(let i=0;i<yTrips.length-1;i++){
-        const t1=yTrips[i], t2=yTrips[i+1];
-        const [x1,y1]=ll(t1.lat,t1.lon);
-        const [x2,y2]=ll(t2.lat,t2.lon);
-        const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-        path.setAttribute('d',arcPath(x1,y1,x2,y2));
-        path.setAttribute('fill','none');
-        path.setAttribute('stroke',t1.col);
-        path.setAttribute('stroke-width','1.5');
-        path.setAttribute('stroke-dasharray','5 3');
-        path.setAttribute('opacity','0.7');
-        // Animate the dash
-        const anim = document.createElementNS('http://www.w3.org/2000/svg','animate');
-        anim.setAttribute('attributeName','stroke-dashoffset');
-        anim.setAttribute('from','16'); anim.setAttribute('to','0');
-        anim.setAttribute('dur','1s'); anim.setAttribute('repeatCount','indefinite');
-        path.appendChild(anim);
-        arcG.appendChild(path);
-
-        // Arrow at midpoint
-        const mx=(x1+x2)/2, dist=Math.hypot(x2-x1,y2-y1);
-        const my=Math.min(y1,y2)-dist*0.35;
-        const tx=x2-x1, ty=y2-y1;
-        const angle=Math.atan2(ty,tx)*180/Math.PI;
-        const arrow=document.createElementNS('http://www.w3.org/2000/svg','text');
-        arrow.setAttribute('x',(x1+mx)/2+''); arrow.setAttribute('y',(y1+my)/2+'');
-        arrow.setAttribute('fill',t1.col); arrow.setAttribute('font-size','8');
-        arrow.setAttribute('text-anchor','middle'); arrow.setAttribute('dominant-baseline','middle');
-        arrow.setAttribute('transform',`rotate(${angle},(${(x1+mx)/2}),(${(y1+my)/2}))`);
-        arrow.textContent='✈';
-        arcG.appendChild(arrow);
-      }
-      svg.appendChild(arcG);
-    }
-  }
-
-  // Draw clusters & pins
-  clusters.forEach(cl => {
-    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.setAttribute('class','pin-group');
-
-    if (cl.type==='single') {
-      const t=cl.trip;
-      // Pulse ring
-      const pulse = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      pulse.setAttribute('cx',cl.cx); pulse.setAttribute('cy',cl.cy);
-      pulse.setAttribute('r','14'); pulse.setAttribute('fill',t.col);
-      pulse.setAttribute('fill-opacity','0'); pulse.setAttribute('stroke',t.col);
-      pulse.setAttribute('stroke-width','2'); pulse.setAttribute('class','pin-pulse');
-      pulse.style.animationDelay = (t.id*0.25)%2 + 's';
-      g.appendChild(pulse);
-
-      // Outer glow
-      const glow = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      glow.setAttribute('cx',cl.cx); glow.setAttribute('cy',cl.cy);
-      glow.setAttribute('r','10'); glow.setAttribute('fill',t.col);
-      glow.setAttribute('fill-opacity','0.2');
-      g.appendChild(glow);
-
-      // Main dot
-      const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      dot.setAttribute('cx',cl.cx); dot.setAttribute('cy',cl.cy);
-      dot.setAttribute('r','7'); dot.setAttribute('fill',t.col);
-      dot.setAttribute('stroke','white'); dot.setAttribute('stroke-width','2');
-      g.appendChild(dot);
-
-      // White center for verified
-      if (t.ok) {
-        const vc = document.createElementNS('http://www.w3.org/2000/svg','circle');
-        vc.setAttribute('cx',cl.cx); vc.setAttribute('cy',cl.cy);
-        vc.setAttribute('r','3'); vc.setAttribute('fill','white');
-        g.appendChild(vc);
-      }
-
-      g.addEventListener('mouseenter', e => showTip(e, t.emoji+' '+t.name, t.label+' · '+t.sub.split('·')[0].trim(), t.nts+' noites'));
-      g.addEventListener('mouseleave', hideTip);
-      g.addEventListener('click', () => scrollToCard(t.id));
-
-    } else {
-      // Cluster
-      const col = cl.col || '#0ea5e9';
-      const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      ring.setAttribute('cx',cl.cx); ring.setAttribute('cy',cl.cy);
-      ring.setAttribute('r','18'); ring.setAttribute('fill',col);
-      ring.setAttribute('fill-opacity','0.15'); ring.setAttribute('stroke',col);
-      ring.setAttribute('stroke-width','1.5');
-      g.appendChild(ring);
-
-      const bg = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      bg.setAttribute('cx',cl.cx); bg.setAttribute('cy',cl.cy);
-      bg.setAttribute('r','13'); bg.setAttribute('fill',col);
-      g.appendChild(bg);
-
-      const lbl = document.createElementNS('http://www.w3.org/2000/svg','text');
-      lbl.setAttribute('x',cl.cx); lbl.setAttribute('y',cl.cy);
-      lbl.setAttribute('fill','white'); lbl.setAttribute('font-size','9');
-      lbl.setAttribute('font-weight','800'); lbl.setAttribute('text-anchor','middle');
-      lbl.setAttribute('dominant-baseline','middle');
-      lbl.textContent = cl.trips.length;
-      g.appendChild(lbl);
-
-      g.addEventListener('mouseenter', e => showTip(e, cl.trips.length+' destinos próximos', cl.trips.map(t=>t.emoji+' '+t.name).join(' · '), 'Clique para ver detalhes'));
-      g.addEventListener('mouseleave', hideTip);
-      g.addEventListener('click', e => showCluster(e, cl));
-    }
-    svg.appendChild(g);
-  });
-}
-
-// ═══════════════════════════════════════════════════════
-// TOOLTIP
-// ═══════════════════════════════════════════════════════
-const tip = document.getElementById('mapTip');
-function showTip(e, name, sub, ni) {
-  const r = document.getElementById('mapWrap').getBoundingClientRect();
-  const lx = e.clientX-r.left, ly = e.clientY-r.top;
-  tip.style.left = (lx < r.width/2 ? lx+14 : lx-210)+'px';
-  tip.style.top = Math.max(4,ly-60)+'px';
-  document.getElementById('tipN').textContent=name;
-  document.getElementById('tipS').textContent=sub;
-  document.getElementById('tipNi').textContent=ni;
-  tip.style.display='block';
-}
-function hideTip(){tip.style.display='none';}
-document.getElementById('map-svg').addEventListener('mouseleave',hideTip);
-
-// ═══════════════════════════════════════════════════════
-// CLUSTER POPUP
-// ═══════════════════════════════════════════════════════
-function showCluster(e, cl) {
-  hideTip();
-  const r = document.getElementById('mapWrap').getBoundingClientRect();
-  const popup = document.getElementById('clusterPopup');
-  const pct = cl.cx/W;
-  const leftPx = pct*r.width;
-  popup.style.left = (leftPx<r.width/2 ? leftPx+14 : leftPx-180)+'px';
-  popup.style.top = (cl.cy/H*r.height-10)+'px';
-  document.getElementById('clTitle').textContent = cl.trips.length+' destinos';
-  const list=document.getElementById('clList');
-  list.innerHTML='';
-  cl.trips.forEach(t=>{
-    const d=document.createElement('div');
-    d.className='cl-item';
-    d.innerHTML=`<span style="font-size:1rem">${t.emoji}</span><div><span>${t.name}</span><br><small>${t.label}</small></div>`;
-    d.onclick=()=>{closeCluster();scrollToCard(t.id);};
-    list.appendChild(d);
-  });
-  popup.style.display='block';
-}
-function closeCluster(){document.getElementById('clusterPopup').style.display='none';}
-
-// ═══════════════════════════════════════════════════════
-// SCROLL TO CARD
-// ═══════════════════════════════════════════════════════
-function scrollToCard(id) {
-  const card=document.getElementById('c'+id);
-  if(!card) return;
-  card.scrollIntoView({behavior:'smooth',block:'center'});
-  // Open expanded
-  const exp=document.getElementById('e'+id);
-  if(exp && !exp.classList.contains('open')) {
-    const hero=document.getElementById('h'+id);
-    exp.classList.add('open');
-    if(hero) hero.classList.add('open');
-  }
-  card.style.outline='2.5px solid '+(TRIPS.find(t=>t.id===id)||{}).col;
-  setTimeout(()=>card.style.outline='',2500);
-}
-
-// ═══════════════════════════════════════════════════════
-// YEAR TIMELINE NAV
-// ═══════════════════════════════════════════════════════
-function buildYearTimeline() {
-  const ytl=document.getElementById('ytl');
-  const years=['all',2021,2022,2023,2024,2025,2026];
-  const yearLabels={all:'Todas'};
-  const yearFlags={2021:'🌎',2022:'🌎',2023:'🏰',2024:'🗾',2025:'🌊',2026:'🏔️'};
-  const yearCounts={};
-  TRIPS.forEach(t=>{yearCounts[t.y]=(yearCounts[t.y]||0)+1;});
-
-  const allBtn=document.createElement('div');
-  allBtn.className='yl-item active'; allBtn.dataset.year='all';
-  allBtn.innerHTML=`<div class="yl-dot">🌍</div><div class="yl-yr">Todas</div><div class="yl-count">${TRIPS.length} viagens</div>`;
-  allBtn.onclick=()=>setYear('all');
-  ytl.appendChild(allBtn);
-
-  [2021,2022,2023,2024,2025,2026].forEach(yr=>{
-    const div=document.createElement('div');
-    div.className='yl-item'; div.dataset.year=yr;
-    div.innerHTML=`<div class="yl-dot">${yearFlags[yr]||'✈️'}</div><div class="yl-yr">${yr}</div><div class="yl-count">${yearCounts[yr]||0} viag.</div>`;
-    div.onclick=()=>setYear(yr);
-    ytl.appendChild(div);
-  });
-}
-
-function setYear(yr) {
-  activeYear=yr;
-  document.querySelectorAll('.yl-item').forEach(el=>el.classList.toggle('active',String(el.dataset.year)===String(yr)));
-  const slider=document.getElementById('yearSlider');
-  if(yr!=='all'){slider.value=yr; updateSliderUI(yr);}
-  render();
-}
-
-// ═══════════════════════════════════════════════════════
-// YEAR SLIDER
-// ═══════════════════════════════════════════════════════
-function updateSliderUI(val) {
-  const slider=document.getElementById('yearSlider');
-  const pct=((val-2021)/(2026-2021))*100;
-  slider.style.setProperty('--pct',pct+'%');
-  document.getElementById('sliderVal').textContent=val;
-  maxYear=+val;
-}
-
-document.getElementById('yearSlider').addEventListener('input', function() {
-  maxYear=+this.value;
-  updateSliderUI(this.value);
-  if(activeYear!=='all' && +activeYear>maxYear){setYear('all');}
-  else{render();}
-});
-
-// ═══════════════════════════════════════════════════════
-// SEARCH
-// ═══════════════════════════════════════════════════════
-document.getElementById('search').addEventListener('input', function() {
-  searchTerm=this.value.toLowerCase().trim();
-  render();
-});
-
-// ═══════════════════════════════════════════════════════
-// FILTER BUTTONS
-// ═══════════════════════════════════════════════════════
-document.querySelectorAll('.fbtn').forEach(btn=>{
-  btn.onclick=()=>{
-    document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    activeCont=btn.dataset.f;
-    render();
-  };
-});
-
-// ═══════════════════════════════════════════════════════
-// MAIN RENDER
-// ═══════════════════════════════════════════════════════
-function getVisible() {
-  return TRIPS.filter(t => {
-    if(t.y>maxYear) return false;
-    if(activeYear!=='all' && t.y!==+activeYear) return false;
-    if(activeCont!=='all' && t.cont!==activeCont) return false;
-    if(searchTerm) {
-      const hay=(t.name+t.sub+t.label+t.pax+t.air+t.hl.join('')+t.mem).toLowerCase();
-      if(!hay.includes(searchTerm)) return false;
-    }
-    return true;
-  });
-}
-
-function render() {
-  const vis=getVisible();
-  renderSVG(vis);
-  renderCards(vis);
-  updateSectionTitle(vis);
-}
-
-function updateSectionTitle(vis) {
-  const t = activeYear==='all'
-    ? `📅 Linha do Tempo (${vis.length} viagens)`
-    : `📅 Viagens de ${activeYear} (${vis.length} destinos)`;
-  document.getElementById('secTitle').textContent=t;
-}
-
-// ═══════════════════════════════════════════════════════
-// CARD RENDERING
-// ═══════════════════════════════════════════════════════
-function buildCard(t) {
-  // Create hero gradient pattern
-  const bgStyle = `background:linear-gradient(135deg,${t.col} 0%,${t.col2} 100%)`;
-
-  const div=document.createElement('div');
-  div.className='card'; div.id='c'+t.id; div.dataset.cont=t.cont;
-
-  div.innerHTML=`
-    <div class="card-stripe" style="background:${t.col}"></div>
-    <div class="card-body">
-      <!-- Hero area (slides open on expand) -->
-      <div class="card-hero" id="h${t.id}">
-        <div class="card-hero-bg" style="${bgStyle}">
-          <div class="card-hero-emoji">${t.emoji}</div>
-        </div>
-        <div class="card-hero-ov"></div>
-        <div class="card-hero-badge">${t.label} · ${t.nts} noites</div>
-        <div class="card-hero-info">
-          <div class="card-hero-name">${t.emoji} ${t.name}</div>
-          <div class="card-hero-sub">📍 ${t.sub}</div>
-        </div>
-      </div>
-      <!-- Info row -->
-      <div class="card-info">
-        <div class="card-row1">
-          <div class="card-name">
-            ${t.emoji} ${t.name}
-            ${t.ok?'<span class="badge-ok">✓ confirmado</span>':''}
-          </div>
-          <span class="card-date">${t.label}</span>
-        </div>
-        <div class="card-place">📍 ${t.sub}</div>
-        <div class="card-tags">
-          <span class="ct ct-air">✈️ ${t.air}</span>
-          <span class="ct ct-pax">👥 ${t.pax}</span>
-          <span class="ct ct-nts">🌙 ${t.nts} noites</span>
-        </div>
-      </div>
-      <!-- Expanded content -->
-      <div class="card-exp" id="e${t.id}">
-        <div class="hlights">${t.hl.map(h=>`<span class="hl">📌 ${h}</span>`).join('')}</div>
-        <div class="memory">${t.mem}</div>
-        <button class="share-btn" data-id="${t.id}">🔗 Compartilhar esta viagem</button>
-      </div>
-    </div>`;
-
-  // Click anywhere on card = toggle expand
-  div.addEventListener('click', e=>{
-    if(e.target.classList.contains('share-btn')){
-      e.stopPropagation();
-      openShare(t.id);
-      return;
-    }
-    const exp=document.getElementById('e'+t.id);
-    const hero=document.getElementById('h'+t.id);
-    const wasOpen=exp.classList.contains('open');
-    exp.classList.toggle('open');
-    hero.classList.toggle('open');
-    if(!wasOpen) {
-      // Map zoom: highlight this pin
-      renderSVG(getVisible());
-    }
-  });
-
-  return div;
-}
-
-function renderCards(vis) {
-  const grid=document.getElementById('grid');
-  grid.innerHTML='';
-  const sorted=[...vis].sort((a,b)=>(b.y*12+b.m)-(a.y*12+a.m));
-  sorted.forEach(t=>grid.appendChild(buildCard(t)));
-  document.getElementById('noResults').style.display=vis.length?'none':'block';
-}
-
-// ═══════════════════════════════════════════════════════
-// SHARE
-// ═══════════════════════════════════════════════════════
-function openShare(id) {
-  shareTrip=TRIPS.find(t=>t.id===id);
-  if(!shareTrip) return;
-  document.getElementById('shareTitle').textContent='Compartilhar: '+shareTrip.emoji+' '+shareTrip.name;
-  document.getElementById('shareOverlay').classList.add('show');
-}
-function closeShare(e) {
-  if(!e||e.target.id==='shareOverlay'||e.target.classList.contains('share-close')){
-    document.getElementById('shareOverlay').classList.remove('show');
-  }
-}
-function shareAction(type) {
-  if(!shareTrip) return;
-  const text=`✈️ ${shareTrip.emoji} ${shareTrip.name} — ${shareTrip.label}\n📍 ${shareTrip.sub}\n👥 ${shareTrip.pax}\n🌙 ${shareTrip.nts} noites\n\n"${shareTrip.mem}"`;
-  if(type==='copy'||type==='instagram'){
-    navigator.clipboard.writeText(text).catch(()=>{});
-    showToast('✅ Texto copiado!');
-    closeShare();
-  } else if(type==='whatsapp'){
-    window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
-    closeShare();
-  } else if(type==='native'){
-    if(navigator.share){navigator.share({title:shareTrip.name,text});}
-    else{navigator.clipboard.writeText(text).catch(()=>{});showToast('✅ Link copiado!');}
-    closeShare();
-  }
-}
-function showToast(msg){
-  const t=document.getElementById('shareToast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
-}
-
-// ═══════════════════════════════════════════════════════
-// ANIMATED COUNTERS
-// ═══════════════════════════════════════════════════════
-function countUp(el, end, dur=1600, suffix='') {
-  let s=0, step=end/60, frame=dur/60;
-  const t=setInterval(()=>{
-    s+=step; el.textContent=Math.min(Math.round(s),end)+(suffix?'k':'');
-    if(s>=end)clearInterval(t);
-  },frame);
-}
-
-// ═══════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════
-drawMap();
-buildYearTimeline();
-updateSliderUI(2026);
-render();
-
-// Animate counters on load
-setTimeout(()=>{
-  countUp(document.getElementById('sv1'),19);
-  countUp(document.getElementById('sv2'),18);
-  countUp(document.getElementById('sv3'),5);
-  countUp(document.getElementById('sv4'),155);
-  countUp(document.getElementById('sv5'),185);
-},200);
-</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
+<script src="assets/app.js" type="module"></script>
 </body>
 </html>
