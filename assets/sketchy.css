@@ -105,12 +105,12 @@ html[data-theme="sketchy"] .hdr-left h1 {
   font-weight: 700;
   letter-spacing: 0.3px;
 }
-html[data-theme="sketchy"] .stat-val,
+html[data-theme="sketchy"] .stat-v,
 html[data-theme="sketchy"] .insight-v {
   font-family: 'Caveat', cursive;
   font-weight: 700;
 }
-html[data-theme="sketchy"] .stat-lbl,
+html[data-theme="sketchy"] .stat-l,
 html[data-theme="sketchy"] .insight-lbl,
 html[data-theme="sketchy"] .adv-lbl,
 html[data-theme="sketchy"] .sl-lbl,
@@ -182,12 +182,12 @@ html[data-theme="sketchy"] .stats-section::after {
 html[data-theme="sketchy"] .stat {
   border-right: 1px dashed rgba(245,239,222,0.18);
 }
-html[data-theme="sketchy"] .stat-val {
+html[data-theme="sketchy"] .stat-v {
   font-size: clamp(2.2rem, 4vw, 3rem);
   color: #e07a63;
   text-shadow: 1px 2px 0 rgba(0,0,0,0.25);
 }
-html[data-theme="sketchy"] .stat-lbl {
+html[data-theme="sketchy"] .stat-l {
   font-size: 0.62rem;
   color: rgba(245,239,222,0.65);
 }
@@ -234,24 +234,24 @@ html[data-theme="sketchy"] .status-btn.active {
 }
 
 /* year timeline */
-html[data-theme="sketchy"] .ytl-dot:not(:last-child)::after,
-html[data-theme="sketchy"] .ytl-dot:not(:first-child)::before {
+html[data-theme="sketchy"] .yl-item:not(:last-child)::after,
+html[data-theme="sketchy"] .yl-item:not(:first-child)::before {
   background: var(--text);
   height: 1.5px;
   filter: url(#sk-rough);
 }
-html[data-theme="sketchy"] .ytl-circle {
+html[data-theme="sketchy"] .yl-dot {
   background: var(--surface);
   border: 2px solid var(--text);
   font-family: 'IBM Plex Mono', monospace;
   filter: url(#sk-rough);
 }
-html[data-theme="sketchy"] .ytl-dot.active .ytl-circle {
+html[data-theme="sketchy"] .yl-item.active .yl-dot {
   background: var(--accent);
   color: #f5efde;
   border-color: var(--accent2);
 }
-html[data-theme="sketchy"] .ytl-year {
+html[data-theme="sketchy"] .yl-yr {
   font-family: 'Caveat', cursive;
   font-size: 1.1rem;
   font-weight: 700;
@@ -684,187 +684,3 @@ html[data-theme="sketchy"] .leaflet-control-attribution {
   font-family: 'IBM Plex Mono', monospace !important;
   font-size: 9px !important;
 }
-
-/* ════════════════════════════════════════════════════════════════
-   FIXES — neutralize vibrant-revamp leaks + structural patches
-   ════════════════════════════════════════════════════════════════ */
-
-/* Stats: kill rainbow gradient values from styles.css */
-html[data-theme="sketchy"] .stat .stat-val,
-html[data-theme="sketchy"] .stat:nth-child(1) .stat-val,
-html[data-theme="sketchy"] .stat:nth-child(2) .stat-val,
-html[data-theme="sketchy"] .stat:nth-child(3) .stat-val,
-html[data-theme="sketchy"] .stat:nth-child(4) .stat-val,
-html[data-theme="sketchy"] .stat:nth-child(5) .stat-val,
-html[data-theme="sketchy"] .stat:nth-child(6) .stat-val {
-  background: none !important;
-  -webkit-background-clip: border-box !important;
-          background-clip: border-box !important;
-  color: var(--accent3) !important;
-  -webkit-text-fill-color: var(--accent3) !important;
-  font-family: 'Caveat', 'Kalam', cursive !important;
-  font-weight: 700 !important;
-  font-size: clamp(2.4rem, 4.5vw, 3.4rem) !important;
-  font-variation-settings: normal !important;
-  letter-spacing: 0 !important;
-  text-shadow: 1px 2px 0 rgba(0,0,0,0.28);
-  line-height: 1;
-}
-
-/* Stats: kill colored top bars (sunset/tropical/jungle/twilight) */
-html[data-theme="sketchy"] .stat::before,
-html[data-theme="sketchy"] .stat:nth-child(1)::before,
-html[data-theme="sketchy"] .stat:nth-child(2)::before,
-html[data-theme="sketchy"] .stat:nth-child(3)::before,
-html[data-theme="sketchy"] .stat:nth-child(4)::before,
-html[data-theme="sketchy"] .stat:nth-child(5)::before,
-html[data-theme="sketchy"] .stat:nth-child(6)::before {
-  background: none !important;
-  height: 0 !important;
-}
-
-/* Stats: card surface to parchment (light) or deep ink (dark stats banner) */
-html[data-theme="sketchy"] .stat {
-  background: rgba(245,239,222,0.04);
-  border: 1.5px dashed rgba(245,239,222,0.20);
-  border-radius: 4px;
-  padding: 12px 10px;
-  box-shadow: none;
-}
-html[data-theme="sketchy"] .stat:hover {
-  background: rgba(245,239,222,0.08);
-  transform: none;
-}
-
-/* Stats labels */
-html[data-theme="sketchy"] .stat-lbl {
-  font-size: 0.62rem !important;
-  color: rgba(245,239,222,0.65) !important;
-  letter-spacing: 1.6px !important;
-  text-transform: uppercase !important;
-}
-
-/* Year timeline: app.js renders .ytl-dot directly inside .ytl (no .ytl-track wrapper).
-   Force .ytl itself to be a horizontal flex container. */
-html[data-theme="sketchy"] .ytl {
-  display: flex !important;
-  align-items: center;
-  gap: 0;
-  position: relative;
-  padding: 14px 16px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-html[data-theme="sketchy"] .ytl::-webkit-scrollbar { display: none; }
-html[data-theme="sketchy"] .ytl::before {
-  content: '';
-  position: absolute; top: 50%; left: 16px; right: 16px;
-  height: 1.5px;
-  background: var(--text);
-  filter: url(#sk-rough);
-  transform: translateY(-50%);
-  z-index: 0;
-}
-html[data-theme="sketchy"] .ytl-dot {
-  flex: 1;
-  min-width: 60px;
-  display: flex !important;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  position: relative;
-  z-index: 1;
-  cursor: pointer;
-  background: transparent !important;
-  border: none !important;
-  filter: none !important;
-  box-shadow: none !important;
-  padding: 0;
-}
-html[data-theme="sketchy"] .ytl-circle {
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  background: var(--surface) !important;
-  border: 2px solid var(--text);
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--text);
-  filter: url(#sk-rough);
-  transition: transform .2s;
-}
-html[data-theme="sketchy"] .ytl-dot.active .ytl-circle,
-html[data-theme="sketchy"] .ytl-dot:hover .ytl-circle {
-  background: var(--accent) !important;
-  border-color: var(--accent2);
-  color: #f5efde;
-  transform: scale(1.12);
-}
-html[data-theme="sketchy"] .ytl-year {
-  font-family: 'Caveat', cursive;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--text2);
-}
-html[data-theme="sketchy"] .ytl-dot.active .ytl-year {
-  color: var(--accent);
-}
-
-/* Card-stripe: bring back a tall colored banner (60-80px) with title on it */
-html[data-theme="sketchy"] .card-stripe {
-  height: auto !important;
-  min-height: 84px;
-  padding: 14px 18px 12px;
-  background: var(--stripe-col, var(--accent)) !important;
-  background-image:
-    repeating-linear-gradient(45deg, rgba(0,0,0,0.04) 0 8px, transparent 8px 16px),
-    linear-gradient(135deg, var(--stripe-col, var(--accent)) 0%, color-mix(in srgb, var(--stripe-col, var(--accent)) 55%, #000) 100%) !important;
-  border-bottom: 1.5px solid var(--text);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  position: relative;
-  overflow: hidden;
-}
-html[data-theme="sketchy"] .card-stripe::after {
-  /* kill continent SVG decoration from vibrant revamp */
-  display: none !important;
-}
-html[data-theme="sketchy"] .card-stripe .card-hero-name {
-  display: block;
-  font-family: 'Caveat', cursive;
-  font-weight: 700;
-  font-size: clamp(1.8rem, 2.6vw, 2.4rem);
-  color: #f5efde;
-  text-shadow: 1px 2px 0 rgba(0,0,0,0.35);
-  line-height: 1.05;
-  letter-spacing: 0;
-  margin: 0;
-}
-html[data-theme="sketchy"] .card-stripe .card-hero-sub {
-  display: block;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.66rem;
-  text-transform: uppercase;
-  letter-spacing: 1.8px;
-  color: rgba(245,239,222,0.82);
-  margin-top: 4px;
-}
-
-/* Card-body: pull title cursive up a bit, reduce font size since we have it on the banner now */
-html[data-theme="sketchy"] .card-name {
-  font-size: 1.25rem;
-}
-
-/* Header subtitle: monospace caps for the journal feel */
-html[data-theme="sketchy"] .hdr-sub,
-html[data-theme="sketchy"] #hdr-sub {
-  font-family: 'IBM Plex Mono', monospace !important;
-  font-size: 0.72rem !important;
-  text-transform: uppercase;
-  letter-spacing: 1.6px !important;
-  opacity: 0.78;
-}
-
-/* Stat::before for non-sketchy stays — but kill ::before completely on sketchy already done above */
