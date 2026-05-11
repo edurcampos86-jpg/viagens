@@ -332,7 +332,10 @@ function buildCardElement(trip) {
   const div = document.createElement('div');
   div.innerHTML = `
     <article class="card" data-trip-id="${trip.id}" data-status="${trip.status}" data-continent="${trip.continent || ''}" style="--stripe-col:${trip.col || '#22c55e'}">
-      <div class="card-stripe"></div>
+      <div class="card-stripe">
+        <div class="card-hero-name">${trip.flag || ''} ${trip.name}</div>
+        <div class="card-hero-sub">${trip.sub || ''}</div>
+      </div>
       <div class="card-body">
         <div class="card-hero">
           <div class="card-emoji">${trip.emoji || '🌍'}</div>
