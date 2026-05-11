@@ -331,8 +331,8 @@ function activeFiltersActive() {
 function buildCardElement(trip) {
   const div = document.createElement('div');
   div.innerHTML = `
-    <article class="card" data-trip-id="${trip.id}" data-status="${trip.status}">
-      <div class="card-stripe" style="--stripe-col:${trip.col || '#22c55e'}"></div>
+    <article class="card" data-trip-id="${trip.id}" data-status="${trip.status}" data-continent="${trip.continent || ''}" style="--stripe-col:${trip.col || '#22c55e'}">
+      <div class="card-stripe"></div>
       <div class="card-body">
         <div class="card-hero">
           <div class="card-emoji">${trip.emoji || '🌍'}</div>
