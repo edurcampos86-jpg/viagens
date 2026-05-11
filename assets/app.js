@@ -472,10 +472,12 @@ function hydrateCard(node, trip) {
   node.style.setProperty('--stripe', trip.color);
 
   const hero = node.querySelector('[data-hero]');
+  hero.dataset.cont = trip.continent || '';
+  hero.style.setProperty('--col', trip.color);
+  hero.style.setProperty('--col2', trip.color2 || trip.color);
   if (trip.photo) {
-    hero.style.backgroundImage = `url(${trip.photo})`;
-  } else {
-    hero.style.background = `linear-gradient(135deg, ${trip.color}, ${trip.color2})`;
+    node.classList.add('has-photo');
+    hero.style.setProperty('--photo-url', `url(${trip.photo})`);
   }
   node.querySelector('[data-hero-emoji]').textContent = isFlagEmoji(trip.emoji) ? '' : trip.emoji;
   node.querySelector('[data-hero-flag]').textContent = trip.emoji;
