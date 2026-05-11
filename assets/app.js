@@ -84,8 +84,8 @@ async function init() {
 function restoreDarkMode() {
   const dark = localStorage.getItem('darkMode') === 'true';
   document.documentElement.setAttribute('data-dark', dark ? 'true' : 'false');
-  const btn = $('dark-toggle');
-  if (btn) btn.textContent = dark ? '☀️ Claro' : '🌙 Escuro';
+  const btn = $('darkBtn');
+  const lbl = $('darkLbl'); if (lbl) lbl.textContent = dark ? 'Claro' : 'Escuro';
 }
 
 function toggleDark() {
@@ -93,8 +93,8 @@ function toggleDark() {
   const isDark = html.getAttribute('data-dark') === 'true';
   html.setAttribute('data-dark', isDark ? 'false' : 'true');
   localStorage.setItem('darkMode', !isDark);
-  const btn = $('dark-toggle');
-  if (btn) btn.textContent = !isDark ? '☀️ Claro' : '🌙 Escuro';
+  const btn = $('darkBtn');
+  const lbl2 = $('darkLbl'); if (lbl2) lbl2.textContent = !isDark ? 'Claro' : 'Escuro';
 }
 
 // ── Theme (sketchy) ───────────────────────────────────────────────
@@ -127,12 +127,21 @@ function renderStats() {
   const km = done.reduce((s, t) => s + (t.km || 0), 0);
   const planned = allTrips.filter(t => t.status === 'planned' || t.status === 'wishlist').length;
 
-  setStatEl('stat-trips',      done.length);
-  setStatEl('stat-countries',  countries);
-  setStatEl('stat-continents', continents);
-  setStatEl('stat-nights',     nights);
-  setStatEl('stat-km',         fmt(km));
-  setStatEl('stat-planned',    planned);
+  const stats = [
+    { val: done.length, lbl: 'Viagens' },
+    { val: countries,   lbl: 'Países' },
+    { val: continents,  lbl: 'Continentes' },
+    { val: nights,      lbl: 'Noites' },
+    { val: fmt(km),     lbl: 'km percorridos' },
+    { val: planned,     lbl: 'Planos futuros' },
+  ];
+
+  const container = $('stats');
+  if (container) {
+    container.innerHTML = stats.map(s =>
+      `<div class="stat" role="listitem"><span class="stat-val">${s.val}</span><span class="stat-lbl">${s.lbl}</span></div>`
+    ).join('');
+  }
 }
 
 function setStatEl(id, val) {
@@ -232,7 +241,7 @@ function initMiniMap(containerId, trip) {
 
 // ── Year Timeline ─────────────────────────────────────────────────
 function renderYearTimeline() {
-  const container = $('ytl-track');
+  const container = $('ytl');
   if (!container) return;
 
   const years = [...new Set(
@@ -268,9 +277,9 @@ function renderYearTimeline() {
 // ── Render Cards ──────────────────────────────────────────────────
 function renderCards() {
   const tpl = $('tpl-trip-card');
-  const grid = $('trip-grid');
-  const noRes = $('no-results');
-  const secCount = $('sec-count');
+  const grid = $('grid');
+  const noRes = $('noResults');
+  const secCount = $('secCount');
 
   if (!grid) return;
 
@@ -592,7 +601,7 @@ function applyFilters() {
 }
 
 function renderActiveChips() {
-  const container = $('active-chips');
+  const container = $('activeChips');
   if (!container) return;
   const chips = [];
 
@@ -635,11 +644,11 @@ function removeFilter(key) {
     $$('.ytl-dot').forEach(d => d.classList.remove('active'));
   }
   if (key === 'continent') { activeFilters.continent = 'all'; syncContinentSelect(); }
-  if (key === 'search')    { activeFilters.search = ''; const el = $('search-input'); if (el) el.value = ''; }
+  if (key === 'search')    { activeFilters.search = ''; const el = $('search'); if (el) el.value = ''; }
   if (key === 'month')     { activeFilters.month = ''; syncAdvSelect('month-select', ''); }
-  if (key === 'duration')  { activeFilters.duration = ''; syncAdvSelect('duration-select', ''); }
-  if (key === 'type')      { activeFilters.type = ''; syncAdvSelect('type-select', ''); }
-  if (key === 'pax')       { activeFilters.pax = ''; syncAdvSelect('pax-select', ''); }
+  if (key === 'duration')  { activeFilters.duration = ''; syncAdvSelect('filterDuration', ''); }
+  if (key === 'type')      { activeFilters.type = ''; syncAdvSelect('filterType', ''); }
+  if (key === 'pax')       { activeFilters.pax = ''; syncAdvSelect('filterPax', ''); }
   applyFilters();
 }
 
@@ -650,8 +659,11 @@ function syncStatusBtns() {
 }
 
 function syncContinentSelect() {
-  const sel = $('continent-select');
-  if (sel) sel.value = activeFilters.continent;
+  $$('.fbtn[data-cont]').forEach(btn => {
+    const active = btn.dataset.cont === activeFilters.continent;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', active);
+  });
 }
 
 function syncAdvSelect(id, val) {
@@ -660,14 +672,22 @@ function syncAdvSelect(id, val) {
 }
 
 function updateFilterCount() {
-  const el = $('adv-count');
-  if (el) el.textContent = `${filteredTrips.length} / ${allTrips.length} viagens`;
+  // Update trip count in section header
+  const secEl = $('secCount');
+  if (secEl) secEl.textContent = `${filteredTrips.length} / ${allTrips.length}`;
+  // Update advanced filter badge (how many advanced filters active)
+  const badgeEl = $('advCount');
+  const advActive = ['month','duration','type','pax'].filter(k => activeFilters[k] && activeFilters[k] !== '').length;
+  if (badgeEl) {
+    badgeEl.textContent = advActive;
+    badgeEl.hidden = advActive === 0;
+  }
 }
 
 // ── Controls Setup ────────────────────────────────────────────────
 function setupControls() {
   // Dark mode
-  const darkBtn = $('dark-toggle');
+  const darkBtn = $('darkBtn');
   if (darkBtn) darkBtn.addEventListener('click', toggleDark);
 
   // Theme toggle
@@ -684,7 +704,7 @@ function setupControls() {
   });
 
   // Search input
-  const searchInput = $('search-input');
+  const searchInput = $('search');
   if (searchInput) {
     let debounce;
     searchInput.addEventListener('input', () => {
@@ -697,12 +717,12 @@ function setupControls() {
   }
 
   // Advanced toggle
-  const advToggle = $('advanced-toggle');
+  const advToggle = $('advToggle');
   const advPanel = $('adv-panel');
   if (advToggle && advPanel) {
     advToggle.addEventListener('click', () => {
-      advPanel.classList.toggle('open');
-      advToggle.setAttribute('aria-expanded', advPanel.classList.contains('open'));
+      advPanel.hidden = !advPanel.hidden;
+      advToggle.setAttribute('aria-expanded', !advPanel.hidden);
     });
   }
 
@@ -715,14 +735,14 @@ function setupControls() {
       applyFilters();
     });
   };
-  setupSelect('month-select',    'month');
-  setupSelect('duration-select', 'duration');
-  setupSelect('type-select',     'type');
-  setupSelect('pax-select',      'pax');
-  setupSelect('continent-select','continent');
+  setupSelect('filterMonth', 'month');
+  setupSelect('filterDuration', 'duration');
+  setupSelect('filterType', 'type');
+  setupSelect('filterPax', 'pax');
+  // continent handled by .fbtn buttons below;
 
   // Clear advanced
-  const clearBtn = $('adv-clear');
+  const clearBtn = $('advClear');
   if (clearBtn) {
     clearBtn.addEventListener('click', () => {
       activeFilters.month = activeFilters.duration = activeFilters.type = activeFilters.pax = '';
@@ -734,8 +754,8 @@ function setupControls() {
   }
 
   // Year slider
-  const slider = $('year-slider');
-  const slVal  = $('sl-val');
+  const slider = $('yearSlider');
+  const slVal  = $('sliderVal');
   if (slider) {
     slider.addEventListener('input', () => {
       activeFilters.maxYear = parseInt(slider.value);
@@ -744,14 +764,30 @@ function setupControls() {
     });
   }
 
-  // Continent select (also in the filter row)
-  const contSelect = $('continent-select');
-  if (contSelect) {
-    contSelect.addEventListener('change', () => {
-      activeFilters.continent = contSelect.value;
+  // Continent filter pills
+  $$('.fbtn[data-cont]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeFilters.continent = btn.dataset.cont || 'all';
+      syncContinentSelect();
       applyFilters();
     });
-  }
+  });
+
+  // Clear-all button in no-results
+  const clearAllBtn = $('clearAll');
+  if (clearAllBtn) clearAllBtn.addEventListener('click', () => {
+    activeFilters.status = 'all'; activeFilters.year = null;
+    activeFilters.continent = 'all'; activeFilters.search = '';
+    activeFilters.month = ''; activeFilters.duration = '';
+    activeFilters.type = ''; activeFilters.pax = '';
+    activeFilters.maxYear = 2027;
+    const searchEl = $('search'); if (searchEl) searchEl.value = '';
+    syncStatusBtns(); syncContinentSelect();
+    ['filterMonth','filterDuration','filterType','filterPax'].forEach(id => {
+      const el = $(id); if (el) el.value = 'all';
+    });
+    applyFilters();
+  });
 
   // Initial filter apply
   filteredTrips = allTrips.slice();
@@ -762,52 +798,44 @@ function setupControls() {
 let _shareTrip = null;
 
 function setupShareDialog() {
-  const dialog = $('share-dialog');
+  const dialog = $('shareDialog');
   if (!dialog) return;
 
-  $('share-close')?.addEventListener('click', () => {
-    dialog.classList.remove('open');
-  });
+  dialog.querySelector('.share-close')?.addEventListener('click', () => dialog.close ? dialog.close() : dialog.removeAttribute('open'));
   dialog.addEventListener('click', e => {
-    if (e.target === dialog) dialog.classList.remove('open');
+    if (e.target === dialog) { dialog.close ? dialog.close() : dialog.removeAttribute('open'); }
   });
 
-  $('share-copy')?.addEventListener('click', () => {
-    const url = shareUrl();
-    copyToClipboard(url);
+  dialog.querySelector('[data-share-action="copy"]')?.addEventListener('click', () => {
+    copyToClipboard(shareUrl());
     showToast('🔗 Link copiado!');
-    dialog.classList.remove('open');
+    dialog.close ? dialog.close() : dialog.removeAttribute('open');
   });
 
-  $('share-wa')?.addEventListener('click', () => {
-    const url = shareUrl();
-    const text = `Olha essa viagem: ${_shareTrip?.name} — ${url}`;
+  dialog.querySelector('[data-share-action="whatsapp"]')?.addEventListener('click', () => {
+    const text = `Olha essa viagem: ${_shareTrip?.name} — ${shareUrl()}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   });
 
-  $('share-x')?.addEventListener('click', () => {
+  dialog.querySelector('[data-share-action="x"]')?.addEventListener('click', () => {
     const url = shareUrl();
     const text = `${_shareTrip?.emoji || '✈️'} ${_shareTrip?.name} — minha viagem ao/à ${_shareTrip?.country}!`;
     window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
   });
 
-  $('share-native')?.addEventListener('click', async () => {
+  dialog.querySelector('[data-share-action="native"]')?.addEventListener('click', async () => {
     if (!navigator.share) { showToast('Compartilhamento não suportado'); return; }
     try {
-      await navigator.share({
-        title: _shareTrip?.name,
-        text: `${_shareTrip?.emoji || '✈️'} ${_shareTrip?.name} — ${_shareTrip?.sub}`,
-        url: shareUrl(),
-      });
+      await navigator.share({ title: _shareTrip?.name, text: `${_shareTrip?.emoji || '✈️'} ${_shareTrip?.name} — ${_shareTrip?.sub}`, url: shareUrl() });
     } catch {}
   });
 }
 
 function openShareDialog(trip) {
   _shareTrip = trip;
-  const dialog = $('share-dialog');
-  const titleEl = $('share-trip-name');
-  if (dialog) dialog.classList.add('open');
+  const dialog = $('shareDialog');
+  const titleEl = $('shareTitle');
+  if (dialog) { dialog.showModal ? dialog.showModal() : dialog.setAttribute('open', ''); }
   if (titleEl) titleEl.textContent = `${trip.flag || '✈️'} ${trip.name}`;
 }
 
@@ -817,7 +845,7 @@ function shareUrl() {
 
 // ── Toast ─────────────────────────────────────────────────────────
 function showToast(msg) {
-  const toast = $('share-toast');
+  const toast = $('shareToast');
   if (!toast) return;
   toast.textContent = msg;
   toast.classList.add('show');
@@ -841,11 +869,11 @@ function setupPWA() {
   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();
     deferredInstall = e;
-    const btn = $('install-btn');
+    const btn = $('installBtn');
     if (btn) btn.style.display = 'flex';
   });
 
-  const btn = $('install-btn');
+  const btn = $('installBtn');
   if (btn) {
     btn.addEventListener('click', async () => {
       if (!deferredInstall) return;
@@ -897,8 +925,8 @@ document.addEventListener('keydown', e => {
       const t = c.querySelector('.card-toggle');
       if (t) t.setAttribute('aria-expanded', 'false');
     });
-    const dialog = $('share-dialog');
-    if (dialog) dialog.classList.remove('open');
+    const shareDialogEl = $('shareDialog');
+    if (shareDialogEl) { try { shareDialogEl.close(); } catch {} }
     history.replaceState(null, '', location.pathname + location.search);
   }
 });
