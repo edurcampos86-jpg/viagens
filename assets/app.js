@@ -64,6 +64,13 @@ async function init() {
     const data = await res.json();
     allTrips = data.trips || [];
     window.__trips = allTrips;
+    // Update header subtitle
+    const hdrSub = document.getElementById("hdr-sub");
+    if (hdrSub) {
+      const done = allTrips.filter(t => t.status === "done").length;
+      const countries = new Set(allTrips.filter(t => t.status === "done").map(t => t.country)).size;
+      hdrSub.textContent = `${done} viagens · ${countries} países · 4 continentes`;
+    }
   } catch (e) {
     console.error('Failed to load trips.json:', e);
     allTrips = [];
