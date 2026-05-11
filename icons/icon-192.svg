@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <!-- Background circle -->
+  <circle cx="96" cy="96" r="96" fill="#0369a1"/>
+  <!-- Globe outline -->
+  <circle cx="96" cy="96" r="62" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="5"/>
+  <!-- Equator -->
+  <ellipse cx="96" cy="96" rx="62" ry="20" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="3"/>
+  <!-- Prime meridian -->
+  <ellipse cx="96" cy="96" rx="20" ry="62" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="3"/>
+  <!-- Vertical axis -->
+  <line x1="96" y1="34" x2="96" y2="158" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+  <!-- Horizontal axis -->
+  <line x1="34" y1="96" x2="158" y2="96" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+  <!-- Continents suggestion - Americas -->
+  <path d="M68 70 Q62 80 65 95 Q68 110 72 118 Q76 126 74 132"
+        stroke="rgba(255,255,255,0.85)" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Europe/Africa suggestion -->
+  <path d="M98 58 Q104 68 102 80 Q100 92 104 108 Q108 118 106 130"
+        stroke="rgba(255,255,255,0.85)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- Pin marker at center-top-right -->
+  <circle cx="116" cy="72" r="6" fill="#fbbf24" opacity="0.95"/>
+  <circle cx="116" cy="72" r="3" fill="#f59e0b"/>
+  <!-- Small dots for other pins -->
+  <circle cx="80" cy="100" r="4" fill="#22c55e" opacity="0.9"/>
+  <circle cx="106" cy="90" r="3" fill="#3b82f6" opacity="0.9"/>
+  <circle cx="94" cy="118" r="3.5" fill="#f97316" opacity="0.9"/>
+  <!-- Sparkle / star -->
+  <text x="130" y="54" font-size="18" fill="#fbbf24" opacity="0.9" font-family="serif">✦</text>
+</svg>

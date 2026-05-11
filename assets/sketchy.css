@@ -1,0 +1,310 @@
+/* ═══════════════════════════════════════════════════════════════
+   SKETCHY THEME — Hand-drawn travel journal style
+   Activated by: [data-theme="sketchy"] on <html>
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Sketchy font imports ─────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Patrick+Hand&display=swap');
+
+/* ── Sketchy Variables ────────────────────────────────────────── */
+[data-theme="sketchy"] {
+  --bg:        #fdf8f0;
+  --surface:   #fffdf7;
+  --surface2:  #fef9f0;
+  --border:    #c8a87a;
+  --text:      #2d1e0f;
+  --text2:     #5c3d1e;
+  --text3:     #9b7a55;
+  --accent:    #b5470e;
+  --accent2:   #d4541a;
+  --header-bg: #6b3a2a;
+  --shadow:    2px 3px 0 rgba(0,0,0,.12);
+  --shadow-md: 4px 5px 0 rgba(0,0,0,.15);
+  --shadow-lg: 6px 7px 0 rgba(0,0,0,.18);
+  --radius:    2px;
+  --radius-sm: 1px;
+}
+
+[data-theme="sketchy"][data-dark="true"] {
+  --bg:        #1a1208;
+  --surface:   #231810;
+  --surface2:  #2a1e12;
+  --border:    #5c3d1e;
+  --text:      #f5e6cc;
+  --text2:     #c4a882;
+  --text3:     #7a5c3a;
+  --accent:    #e86f3a;
+  --accent2:   #f08050;
+  --header-bg: #2d180d;
+}
+
+/* ── Global font overrides ────────────────────────────────────── */
+[data-theme="sketchy"] body {
+  font-family: 'Patrick Hand', cursive;
+  background-image:
+    linear-gradient(rgba(200,168,122,.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,168,122,.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+[data-theme="sketchy"] h1,
+[data-theme="sketchy"] h2,
+[data-theme="sketchy"] h3,
+[data-theme="sketchy"] .hdr-title,
+[data-theme="sketchy"] .card-name,
+[data-theme="sketchy"] .sec-title {
+  font-family: 'Caveat', cursive;
+  letter-spacing: .02em;
+}
+
+/* ── Sketchy Card borders ─────────────────────────────────────── */
+[data-theme="sketchy"] .card {
+  border: 2.5px solid var(--border);
+  border-radius: 3px;
+  box-shadow: 3px 4px 0 rgba(0,0,0,.15);
+  position: relative;
+}
+
+[data-theme="sketchy"] .card::before {
+  content: '';
+  position: absolute; inset: -1px;
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  opacity: .4;
+  transform: rotate(.4deg);
+  pointer-events: none;
+}
+
+[data-theme="sketchy"] .card:hover {
+  transform: rotate(-.3deg) translateY(-2px);
+  box-shadow: 5px 6px 0 rgba(0,0,0,.2);
+}
+
+/* ── Sketchy Header ───────────────────────────────────────────── */
+[data-theme="sketchy"] .hdr {
+  background: var(--header-bg);
+  border-bottom: 3px solid #9b5a3a;
+  box-shadow: 0 3px 0 rgba(0,0,0,.2);
+}
+
+[data-theme="sketchy"] .hdr-title {
+  font-size: 1.3rem;
+}
+
+/* ── Sketchy Buttons ──────────────────────────────────────────── */
+[data-theme="sketchy"] .status-btn,
+[data-theme="sketchy"] .icon-btn,
+[data-theme="sketchy"] .advanced-toggle,
+[data-theme="sketchy"] .tab {
+  font-family: 'Patrick Hand', cursive;
+  border-radius: 2px;
+}
+
+[data-theme="sketchy"] .status-btn.active {
+  transform: rotate(-.5deg);
+}
+
+/* ── Sketchy Tabs ─────────────────────────────────────────────── */
+[data-theme="sketchy"] .tabs {
+  border-bottom: 2px solid var(--border);
+}
+
+/* ── Sketchy Highlights ───────────────────────────────────────── */
+[data-theme="sketchy"] .hlights li {
+  font-family: 'Patrick Hand', cursive;
+  border-left: 3px solid var(--accent);
+  border-radius: 0;
+  position: relative;
+}
+
+[data-theme="sketchy"] .hlights li::before {
+  content: '✦ ';
+  color: var(--accent);
+}
+
+/* ── Sketchy Memory ───────────────────────────────────────────── */
+[data-theme="sketchy"] .memory {
+  font-family: 'Caveat', cursive;
+  font-size: .95rem;
+  border-radius: 0;
+  border-left: 3px solid var(--accent);
+  line-height: 1.8;
+}
+
+/* ── Sketchy Map wrap ─────────────────────────────────────────── */
+[data-theme="sketchy"] .map-wrap {
+  border-top: 2px solid var(--border);
+}
+
+[data-theme="sketchy"] #map {
+  filter: sepia(25%) saturate(90%);
+}
+
+/* ── Milestone Strip ──────────────────────────────────────────── */
+.sk-milestones {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding: .75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  scrollbar-width: thin;
+}
+
+.sk-milestone {
+  flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center;
+  gap: .3rem; padding: .5rem .75rem;
+  background: var(--surface2); border: 2px solid var(--border);
+  border-radius: 3px;
+  font-family: 'Patrick Hand', cursive;
+  position: relative;
+  box-shadow: 2px 2px 0 rgba(0,0,0,.1);
+}
+
+.sk-milestone.reached {
+  border-color: var(--accent);
+  background: rgba(181,71,14,.08);
+}
+
+.sk-milestone .star {
+  font-size: 1.2rem; line-height: 1;
+}
+
+.sk-milestone .ms-label {
+  font-size: .7rem; color: var(--text2); text-align: center;
+}
+
+.sk-milestone .ms-val {
+  font-family: 'Caveat', cursive;
+  font-size: 1.1rem; font-weight: 700;
+  color: var(--accent); line-height: 1;
+}
+
+/* ── Sketchy Checklist ────────────────────────────────────────── */
+.sk-checklist {
+  padding: .75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.sk-checklist h5 {
+  font-family: 'Caveat', cursive;
+  font-size: 1rem; color: var(--text); margin-bottom: .5rem;
+}
+
+.sk-progress {
+  height: 8px; background: var(--border); border-radius: 0;
+  overflow: hidden; margin-bottom: .4rem;
+  border: 1px solid rgba(0,0,0,.1);
+}
+
+.sk-progress-fill {
+  height: 100%; background: var(--accent);
+  transition: width .5s ease;
+}
+
+.sk-countdown {
+  font-family: 'Caveat', cursive;
+  font-size: .85rem; color: var(--text2);
+  display: flex; justify-content: space-between;
+}
+
+/* ── Future Trip Cards ────────────────────────────────────────── */
+[data-theme="sketchy"] .card.future {
+  border-style: dashed;
+  opacity: .85;
+}
+
+.sk-future-soft {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--surface2),
+    var(--surface2) 4px,
+    var(--surface) 4px,
+    var(--surface) 12px
+  );
+}
+
+[data-theme="sketchy"] .badge-planned {
+  font-family: 'Caveat', cursive;
+  font-size: .8rem;
+  background: rgba(181,71,14,.1);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+[data-theme="sketchy"] .badge-wish {
+  font-family: 'Caveat', cursive;
+  font-size: .8rem;
+}
+
+/* ── Theme Toggle ─────────────────────────────────────────────── */
+.theme-toggle {
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.3);
+  color: #fff; border-radius: 6px;
+  padding: .4rem .65rem;
+  cursor: pointer; font-size: .8rem;
+  font-family: 'Patrick Hand', cursive;
+  transition: background .2s;
+  white-space: nowrap;
+}
+
+[data-theme="sketchy"] .theme-toggle {
+  font-family: 'Caveat', cursive;
+  font-size: .9rem;
+}
+
+.theme-toggle:hover { background: rgba(255,255,255,.25); }
+
+/* ── Sketchy Input ────────────────────────────────────────────── */
+[data-theme="sketchy"] input,
+[data-theme="sketchy"] select {
+  font-family: 'Patrick Hand', cursive;
+  border-radius: 2px;
+  border: 2px solid var(--border);
+}
+
+/* ── Sketchy Stats ────────────────────────────────────────────── */
+[data-theme="sketchy"] .stat-item {
+  border-radius: 2px;
+  border: 2px solid var(--border);
+  box-shadow: 2px 2px 0 rgba(0,0,0,.08);
+}
+
+[data-theme="sketchy"] .stat-val {
+  font-family: 'Caveat', cursive;
+  font-size: 1.5rem;
+}
+
+/* ── Sketchy Year Timeline ────────────────────────────────────── */
+[data-theme="sketchy"] .ytl-circle {
+  border-radius: 3px;
+  transform: rotate(5deg);
+  font-family: 'Caveat', cursive;
+  font-size: .72rem;
+}
+
+[data-theme="sketchy"] .ytl-dot.active .ytl-circle {
+  transform: rotate(-3deg);
+}
+
+/* ── Sticky note style for memory ────────────────────────────── */
+[data-theme="sketchy"] .memory {
+  background: #fffde6;
+  border: none;
+  box-shadow: 2px 3px 0 rgba(0,0,0,.12);
+  transform: rotate(-.3deg);
+  padding: .85rem 1rem;
+}
+
+[data-dark="true"][data-theme="sketchy"] .memory {
+  background: #2a2208;
+}
+
+/* ── Pencil underline effect on card names ────────────────────── */
+[data-theme="sketchy"] .card-name {
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: rgba(181,71,14,.4);
+  text-underline-offset: 3px;
+}

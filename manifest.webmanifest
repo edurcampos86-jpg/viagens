@@ -1,0 +1,36 @@
+{
+  "name": "Minhas Viagens — Eduardo Campos",
+  "short_name": "Viagens",
+  "description": "Portfólio de viagens e planejamento — Eduardo Campos, Assessor de Investimentos",
+  "start_url": "/viagens/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0369a1",
+  "theme_color": "#0369a1",
+  "lang": "pt-BR",
+  "categories": ["travel", "lifestyle"],
+  "icons": [
+    {
+      "src": "icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Viagens Feitas",
+      "short_name": "Feitas",
+      "description": "Ver viagens realizadas",
+      "url": "/viagens/?status=done",
+      "icons": [{"src": "icons/icon-192.svg", "sizes": "192x192"}]
+    },
+    {
+      "name": "Planejadas",
+      "short_name": "Planejadas",
+      "description": "Ver viagens planejadas",
+      "url": "/viagens/?status=planned",
+      "icons": [{"src": "icons/icon-192.svg", "sizes": "192x192"}]
+    }
+  ]
+}
