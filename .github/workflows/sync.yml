@@ -1,0 +1,71 @@
+name: sync-trips
+
+on:
+  schedule:
+    # Every 6 hours at minute 7 (offset to avoid the busy top-of-hour quotas)
+    - cron: "7 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      lookback_days:
+        description: "Override INITIAL_LOOKBACK_DAYS for this run"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-trips
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Install deps
+        run: pip install -r scripts/requirements.txt
+
+      - name: Run sync
+        env:
+          GOOGLE_CLIENT_ID:     ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          INITIAL_LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days }}
+        run: python scripts/sync.py
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet -- data/trips.json data/sync-state.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create Pull Request with new trips
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/auto-sync
+          delete-branch: true
+          title: "chore(sync): auto-import from Gmail + Google Photos"
+          commit-message: "chore(sync): auto-import from Gmail + Google Photos"
+          body-path: data/sync-report.md
+          labels: auto-sync
+          add-paths: |
+            data/trips.json
+            data/sync-state.json
+            data/sync-report.md
