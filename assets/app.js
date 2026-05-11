@@ -377,22 +377,107 @@ function buildCardElement(trip) {
 }
 
 function fillCard(card, trip) {
-  // If card came from template, fill data attributes
   card.dataset.tripId = trip.id;
   card.dataset.status = trip.status;
 
-  const set = (sel, val, attr = 'textContent') => {
-    const el = card.querySelector(sel);
-    if (!el) return;
-    if (attr === 'textContent') el.textContent = val;
-    else if (attr === 'innerHTML') el.innerHTML = val;
-    else el.setAttribute(attr, val);
-  };
+  const q  = sel => card.querySelector(sel);
+  const tx = (sel, val) => { const el = q(sel); if (el) el.textContent = val || ''; };
+  const ht = (sel, val) => { const el = q(sel); if (el) el.innerHTML = val || ''; };
+  const sh = (sel, show) => { const el = q(sel); if (el) el.hidden = !show; };
 
-  // Try to fill template slots, or build from scratch if card is bare
-  if (!card.querySelector('.card-name')) {
-    // Card was built fresh by buildCardElement — already filled
+  // Stripe colour
+  const stripe = q('.card-stripe');
+  if (stripe) stripe.style.setProperty('--stripe-col', trip.col || '#22c55e');
+
+  // Hero
+  tx('[data-hero-emoji]', trip.emoji || '🌍');
+  tx('[data-hero-flag]',  trip.flag  || '');
+  tx('[data-hero-name]',  trip.name  || '');
+  tx('[data-hero-sub]',   trip.sub   || '');
+
+  // Card header (toggle button)
+  tx('[data-name]',  trip.name  || '');
+  tx('[data-date]',  (trip.label || '') + (trip.country ? ' · ' + (trip.flag || '') + ' ' + trip.country : ''));
+  tx('[data-place]', trip.sub   || '');
+
+  // Status badges (only one visible)
+  sh('[data-badge-ok]',      trip.status === 'done');
+  sh('[data-badge-planned]', trip.status === 'planned');
+  sh('[data-badge-wish]',    trip.status === 'wishlist');
+
+  // Tags
+  const tagAir = q('[data-tag-air]');
+  const tagPax = q('[data-tag-pax]');
+  const tagNts = q('[data-tag-nts]');
+  if (tagAir) { tagAir.textContent = trip.air || ''; tagAir.hidden = !trip.air; }
+  if (tagPax) { tagPax.textContent = trip.pax || ''; tagPax.hidden = !trip.pax; }
+  if (tagNts) { tagNts.textContent = trip.nts ? trip.nts + 'n' : ''; tagNts.hidden = !trip.nts; }
+
+  // ── Expanded content ───────────────────────────────────────
+  // Diary: highlights + memory
+  const hlEl = q('[data-highlights]');
+  if (hlEl) {
+    const hl = (trip.highlights || []);
+    hlEl.innerHTML = hl.length ? hl.map(h => `<li>${h}</li>`).join('') : '<li>—</li>';
   }
+  const memEl = q('[data-memory]');
+  if (memEl) {
+    memEl.textContent = trip.memory || '';
+    memEl.hidden = !trip.memory;
+  }
+
+  // Route: mini-map + list
+  const mmEl = q('[data-minimap]');
+  if (mmEl && trip.lat) {
+    const mapId = `mini-map-${trip.id}`;
+    mmEl.id = mapId;
+  }
+  const routeEl = q('[data-route-list]');
+  if (routeEl) {
+    const items = [];
+    if (trip.air) items.push(`<li>✈️ <strong>Voo:</strong> ${trip.air}</li>`);
+    if (trip.km)  items.push(`<li>📏 <strong>Distância:</strong> ~${fmt(trip.km)} km</li>`);
+    if (trip.nts) items.push(`<li>🌙 <strong>Noites:</strong> ${trip.nts}</li>`);
+    if (trip.pax) items.push(`<li>👥 <strong>Com quem:</strong> ${trip.pax}</li>`);
+    routeEl.innerHTML = items.join('') || '<li>—</li>';
+  }
+
+  // Logistics
+  const log = trip.logistics || {};
+  const hotelsEl = q('[data-log-hotels]');
+  if (hotelsEl) hotelsEl.innerHTML = (log.hotels || []).map(h => `<li>🏨 ${h}</li>`).join('') || '<li>—</li>';
+  const restsEl = q('[data-log-restaurants]');
+  if (restsEl) restsEl.innerHTML = (log.restaurants || []).map(r => `<li>🍽️ ${r}</li>`).join('') || '<li>—</li>';
+  tx('[data-log-tips]', log.tips || '—');
+
+  // Cost (if present)
+  const cost = trip.cost || {};
+  tx('[data-cost-total]', cost.total ? `Total estimado: ${cost.total}` : '—');
+  tx('[data-cost-curr]',  cost.currency || 'BRL');
+  tx('[data-cost-day]',   cost.perDay   || '—');
+  const barsEl = q('[data-cost-bars]');
+  if (barsEl && cost.breakdown) {
+    barsEl.innerHTML = Object.entries(cost.breakdown).map(([k, v]) =>
+      `<div class="cost-bar"><span>${k}</span><span>${v}</span></div>`
+    ).join('');
+  }
+
+  // Gallery
+  const galleryEl = q('[data-gallery]');
+  const galleryEmpty = q('[data-gallery-empty]');
+  const photos = trip.gallery || [];
+  if (galleryEl) {
+    if (photos.length) {
+      galleryEl.innerHTML = photos.map(p =>
+        typeof p === 'string'
+          ? `<div class="gallery-item"><img src="${p}" alt="" loading="lazy"/></div>`
+          : `<div class="gallery-item">${p.emoji || '📷'}</div>`
+      ).join('');
+    } else {
+      galleryEl.innerHTML = '';
+    }
+  }
+  if (galleryEmpty) galleryEmpty.hidden = photos.length > 0;
 
   setupCardListeners(card, trip);
 }
