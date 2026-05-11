@@ -5,8 +5,8 @@
   "start_url": "/viagens/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0369a1",
-  "theme_color": "#0369a1",
+  "background_color": "#ece4d2",
+  "theme_color": "#1d1a16",
   "lang": "pt-BR",
   "categories": ["travel", "lifestyle"],
   "icons": [
