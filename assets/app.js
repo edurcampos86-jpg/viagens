@@ -106,7 +106,7 @@ function toggleDark() {
 
 // ── Theme (sketchy) ───────────────────────────────────────────────
 function restoreTheme() {
-  const theme = localStorage.getItem('theme') || 'default';
+  const theme = localStorage.getItem('theme') || 'sketchy';
   document.documentElement.setAttribute('data-theme', theme);
   const btn = $('theme-toggle');
   if (btn) btn.textContent = theme === 'sketchy' ? '🗺️ Normal' : '✏️ Diário';
