@@ -64,127 +64,140 @@
     <div class="insights" id="insights" role="list" aria-label="Insights de viagem"></div>
   </section>
 
-  <!-- LAYOUT 2-COL DESKTOP -->
-  <div class="layout">
-
-    <!-- LEFT/STICKY: filters + map -->
-    <aside class="col-left" aria-label="Filtros e mapa">
-
-      <!-- STATUS TOGGLE -->
-      <div class="status-bar" role="tablist" aria-label="Status das viagens">
-        <button class="status-btn active" role="tab" aria-selected="true" data-status="all">Todas</button>
-        <button class="status-btn" role="tab" aria-selected="false" data-status="done">✓ Realizadas</button>
-        <button class="status-btn" role="tab" aria-selected="false" data-status="planned">📅 Planejadas</button>
-        <button class="status-btn" role="tab" aria-selected="false" data-status="wishlist">⭐ Wishlist</button>
+  <!-- HERO: Timeline + Map (full-width prominence) -->
+  <section class="hero" aria-label="Linha do tempo e mapa">
+    <div class="hero-block hero-timeline" aria-labelledby="ytl-title">
+      <div class="hero-head">
+        <h2 class="hero-title" id="ytl-title">
+          <span class="hero-icon" aria-hidden="true">✦</span>
+          Linha do Tempo das Viagens
+        </h2>
+        <p class="hero-sub">Cada barra é um ano · clique para focar nas viagens daquele ano</p>
       </div>
-
-      <!-- YEAR TIMELINE -->
       <div class="ytl" id="ytl" role="tablist" aria-label="Filtro por ano"></div>
+    </div>
 
-      <!-- SEARCH + FILTER -->
-      <div class="controls">
-        <div class="search-wrap">
-          <span aria-hidden="true">🔍</span>
-          <input type="search" id="search" placeholder="Buscar destino, país, cidade…" aria-label="Buscar viagem" autocomplete="off"/>
-        </div>
-        <button class="advanced-toggle" id="advToggle" aria-expanded="false" aria-controls="advPanel">
-          <span aria-hidden="true">⚙</span> Filtros
-          <span class="adv-count" id="advCount" hidden>0</span>
-        </button>
+    <div class="hero-block hero-map" aria-labelledby="map-title">
+      <div class="hero-head">
+        <h2 class="hero-title" id="map-title">
+          <span class="hero-icon" aria-hidden="true">🗺</span>
+          Mapa das Aventuras
+        </h2>
+        <p class="hero-sub">Pinos com pulso = realizadas · linhas conectam a sua jornada cronológica</p>
       </div>
-
-      <!-- CONTINENT PILLS -->
-      <div class="filter-row" role="tablist" aria-label="Filtro por continente">
-        <button class="fbtn active" role="tab" aria-selected="true" data-cont="all">🌍 Todos</button>
-        <button class="fbtn" role="tab" aria-selected="false" data-cont="Asia">🏯 Ásia</button>
-        <button class="fbtn" role="tab" aria-selected="false" data-cont="Europe">🏰 Europa</button>
-        <button class="fbtn" role="tab" aria-selected="false" data-cont="Americas">🌎 Américas</button>
-        <button class="fbtn" role="tab" aria-selected="false" data-cont="Africa">🦁 África</button>
-        <button class="fbtn" role="tab" aria-selected="false" data-cont="Oceania">🏝 Oceania</button>
-      </div>
-
-      <!-- ADVANCED FILTERS -->
-      <div class="adv-panel" id="advPanel" hidden>
-        <div class="adv-group">
-          <label class="adv-lbl" for="filterMonth">Mês</label>
-          <select id="filterMonth" class="adv-select">
-            <option value="all">Qualquer</option>
-            <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
-            <option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option>
-            <option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option>
-            <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
-          </select>
-        </div>
-        <div class="adv-group">
-          <label class="adv-lbl" for="filterDuration">Duração</label>
-          <select id="filterDuration" class="adv-select">
-            <option value="all">Qualquer</option>
-            <option value="short">≤ 5 noites</option>
-            <option value="medium">6 a 10 noites</option>
-            <option value="long">11+ noites</option>
-          </select>
-        </div>
-        <div class="adv-group">
-          <label class="adv-lbl" for="filterType">Tipo</label>
-          <select id="filterType" class="adv-select">
-            <option value="all">Qualquer</option>
-            <option value="leisure">Lazer</option>
-            <option value="business">Trabalho/Evento</option>
-            <option value="festival">Festival</option>
-            <option value="adventure">Aventura</option>
-          </select>
-        </div>
-        <div class="adv-group">
-          <label class="adv-lbl" for="filterPax">Companhia</label>
-          <select id="filterPax" class="adv-select">
-            <option value="all">Qualquer</option>
-          </select>
-        </div>
-        <button class="adv-clear" id="advClear">Limpar filtros</button>
-      </div>
-
-      <!-- ACTIVE CHIPS -->
-      <div class="active-chips" id="activeChips" aria-live="polite"></div>
-
-      <!-- YEAR SLIDER -->
-      <div class="slider-bar">
-        <label class="sl-lbl" for="yearSlider">📅 Até o ano</label>
-        <div class="sl-track">
-          <input type="range" id="yearSlider" min="2021" max="2028" value="2028" step="1" aria-label="Filtrar viagens até o ano"/>
-        </div>
-        <output class="sl-val" id="sliderVal" for="yearSlider">2028</output>
-      </div>
-
-      <!-- MAP -->
       <div class="map-wrap" role="region" aria-label="Mapa interativo das viagens">
         <div id="map" tabindex="0"></div>
+        <div class="map-legend" aria-label="Legenda do mapa">
+          <span class="leg"><span class="leg-d" style="background:#06b6d4"></span>Ásia</span>
+          <span class="leg"><span class="leg-d" style="background:#3b82f6"></span>Europa</span>
+          <span class="leg"><span class="leg-d" style="background:#22c55e"></span>Américas</span>
+          <span class="leg"><span class="leg-d" style="background:#f97316"></span>África</span>
+          <span class="leg"><span class="leg-d" style="background:#a855f7"></span>Oceania</span>
+          <span class="leg-note">Pulso = realizada · pino tracejado = planejada/wishlist</span>
+        </div>
       </div>
+    </div>
+  </section>
 
-      <!-- MAP LEGEND -->
-      <div class="map-legend" aria-label="Legenda do mapa">
-        <span class="leg"><span class="leg-d" style="background:#06b6d4"></span>Ásia</span>
-        <span class="leg"><span class="leg-d" style="background:#3b82f6"></span>Europa</span>
-        <span class="leg"><span class="leg-d" style="background:#22c55e"></span>Américas</span>
-        <span class="leg"><span class="leg-d" style="background:#f97316"></span>África</span>
-        <span class="leg"><span class="leg-d" style="background:#10b981"></span>Oceania</span>
-        <span class="leg-note">Clique no pin para abrir · Pin tracejado = planejado/wishlist</span>
+  <!-- FILTERS BAR -->
+  <section class="filters-bar" aria-label="Filtros das viagens">
+
+    <!-- STATUS TOGGLE -->
+    <div class="status-bar" role="tablist" aria-label="Status das viagens">
+      <button class="status-btn active" role="tab" aria-selected="true" data-status="all">Todas</button>
+      <button class="status-btn" role="tab" aria-selected="false" data-status="done">✓ Realizadas</button>
+      <button class="status-btn" role="tab" aria-selected="false" data-status="planned">📅 Planejadas</button>
+      <button class="status-btn" role="tab" aria-selected="false" data-status="wishlist">⭐ Wishlist</button>
+    </div>
+
+    <!-- SEARCH + FILTER -->
+    <div class="controls">
+      <div class="search-wrap">
+        <span aria-hidden="true">🔍</span>
+        <input type="search" id="search" placeholder="Buscar destino, país, cidade…" aria-label="Buscar viagem" autocomplete="off"/>
       </div>
-    </aside>
+      <button class="advanced-toggle" id="advToggle" aria-expanded="false" aria-controls="advPanel">
+        <span aria-hidden="true">⚙</span> Filtros
+        <span class="adv-count" id="advCount" hidden>0</span>
+      </button>
+    </div>
 
-    <!-- RIGHT/SCROLLABLE: trip list -->
-    <section class="col-right" aria-labelledby="trip-list-title">
-      <h2 id="trip-list-title" class="sec-title">
-        <span id="secTitleText">📅 Linha do Tempo das Viagens</span>
-        <span class="sec-count" id="secCount" aria-live="polite"></span>
-      </h2>
-      <div class="grid" id="grid"></div>
-      <div class="no-results" id="noResults" role="status">
-        <p>😕 Nenhuma viagem encontrada com esses filtros.</p>
-        <button class="link-btn" id="clearAll">Limpar todos os filtros</button>
+    <!-- CONTINENT PILLS -->
+    <div class="filter-row" role="tablist" aria-label="Filtro por continente">
+      <button class="fbtn active" role="tab" aria-selected="true" data-cont="all">🌍 Todos</button>
+      <button class="fbtn" role="tab" aria-selected="false" data-cont="Asia">🏯 Ásia</button>
+      <button class="fbtn" role="tab" aria-selected="false" data-cont="Europe">🏰 Europa</button>
+      <button class="fbtn" role="tab" aria-selected="false" data-cont="Americas">🌎 Américas</button>
+      <button class="fbtn" role="tab" aria-selected="false" data-cont="Africa">🦁 África</button>
+      <button class="fbtn" role="tab" aria-selected="false" data-cont="Oceania">🏝 Oceania</button>
+    </div>
+
+    <!-- ADVANCED FILTERS -->
+    <div class="adv-panel" id="advPanel" hidden>
+      <div class="adv-group">
+        <label class="adv-lbl" for="filterMonth">Mês</label>
+        <select id="filterMonth" class="adv-select">
+          <option value="all">Qualquer</option>
+          <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
+          <option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option>
+          <option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option>
+          <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+        </select>
       </div>
-    </section>
+      <div class="adv-group">
+        <label class="adv-lbl" for="filterDuration">Duração</label>
+        <select id="filterDuration" class="adv-select">
+          <option value="all">Qualquer</option>
+          <option value="short">≤ 5 noites</option>
+          <option value="medium">6 a 10 noites</option>
+          <option value="long">11+ noites</option>
+        </select>
+      </div>
+      <div class="adv-group">
+        <label class="adv-lbl" for="filterType">Tipo</label>
+        <select id="filterType" class="adv-select">
+          <option value="all">Qualquer</option>
+          <option value="leisure">Lazer</option>
+          <option value="business">Trabalho/Evento</option>
+          <option value="festival">Festival</option>
+          <option value="adventure">Aventura</option>
+        </select>
+      </div>
+      <div class="adv-group">
+        <label class="adv-lbl" for="filterPax">Companhia</label>
+        <select id="filterPax" class="adv-select">
+          <option value="all">Qualquer</option>
+        </select>
+      </div>
+      <button class="adv-clear" id="advClear">Limpar filtros</button>
+    </div>
 
-  </div>
+    <!-- ACTIVE CHIPS -->
+    <div class="active-chips" id="activeChips" aria-live="polite"></div>
+
+    <!-- YEAR SLIDER -->
+    <div class="slider-bar">
+      <label class="sl-lbl" for="yearSlider">📅 Até o ano</label>
+      <div class="sl-track">
+        <input type="range" id="yearSlider" min="2021" max="2028" value="2028" step="1" aria-label="Filtrar viagens até o ano"/>
+      </div>
+      <output class="sl-val" id="sliderVal" for="yearSlider">2028</output>
+    </div>
+
+  </section>
+
+  <!-- TRIPS LIST -->
+  <section class="trips-section" aria-labelledby="trip-list-title">
+    <h2 id="trip-list-title" class="sec-title">
+      <span id="secTitleText">📖 Suas viagens</span>
+      <span class="sec-count" id="secCount" aria-live="polite"></span>
+    </h2>
+    <div class="grid" id="grid"></div>
+    <div class="no-results" id="noResults" role="status">
+      <p>😕 Nenhuma viagem encontrada com esses filtros.</p>
+      <button class="link-btn" id="clearAll">Limpar todos os filtros</button>
+    </div>
+  </section>
 
 </main>
 

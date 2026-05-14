@@ -10,6 +10,12 @@ on:
         description: "Override INITIAL_LOOKBACK_DAYS for this run"
         required: false
         default: ""
+      force_photo_refresh:
+        description: "Re-fetch all photo URLs (use when galleries went stale)"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
 
 permissions:
   contents: write
@@ -43,6 +49,7 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           INITIAL_LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days }}
+          FORCE_PHOTO_REFRESH: ${{ github.event.inputs.force_photo_refresh }}
         run: python scripts/sync.py
 
       - name: Check for changes
