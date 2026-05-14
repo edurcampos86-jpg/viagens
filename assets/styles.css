@@ -358,42 +358,85 @@ img { display: block; max-width: 100%; height: auto; }
 }
 
 /* ════════════════════════════════════════════════════════════════
-   LAYOUT 2-COL
+   HERO — full-width Timeline + Map (above the trip list)
    ════════════════════════════════════════════════════════════════ */
-.layout {
-  max-width: 1400px; margin: 0 auto;
-  display: grid;
-  grid-template-columns: 440px 1fr;
-  gap: 0;
-  min-height: calc(100vh - 200px);
+.hero {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.4rem 1.25rem .25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.hero-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  box-shadow: var(--shadow-md);
+  padding: 1.1rem 1.25rem 1.2rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero-block::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 5px;
+  background: var(--sunset);
+  z-index: 1;
+}
+.hero-timeline::before { background: var(--sunset-deep); }
+.hero-map::before { background: var(--tropical); }
+.hero-head {
+  display: flex; flex-direction: column; gap: .15rem;
+  margin-bottom: .9rem;
+}
+.hero-title {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+  font-weight: 900;
+  font-variation-settings: 'opsz' 96;
+  letter-spacing: -.02em;
+  background: var(--sunset-deep);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: flex; align-items: center; gap: .55rem;
+  margin: 0;
+}
+.hero-map .hero-title { background: var(--tropical); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero-icon {
+  -webkit-text-fill-color: initial;
+  background: none !important;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.15));
+}
+.hero-sub {
+  font-size: .78rem;
+  color: var(--text3);
+  margin: 0;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   FILTERS BAR — sits between hero and trip list
+   ════════════════════════════════════════════════════════════════ */
+.filters-bar {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem .25rem;
+  display: flex; flex-direction: column; gap: .65rem;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   TRIPS LIST SECTION — full-width below filters
+   ════════════════════════════════════════════════════════════════ */
+.trips-section {
+  max-width: 1400px;
+  margin: 0 auto;
   padding: 1.2rem 1.25rem 2rem;
 }
-.col-left {
-  position: sticky; top: 120px;
-  height: calc(100vh - 140px);
-  overflow-y: auto;
-  background: transparent;
-  display: flex; flex-direction: column; gap: .65rem;
-  padding-right: .9rem;
-  scrollbar-width: thin;
-}
-.col-left::-webkit-scrollbar { width: 5px; }
-.col-left::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
-.col-right {
-  padding-left: 1.2rem;
-  border-left: 1px dashed var(--border);
-  min-width: 0;
-}
-
-@media (max-width: 1000px) {
-  .layout { grid-template-columns: 1fr; padding: 1rem; }
-  .col-left {
-    position: static; height: auto; max-height: none;
-    padding-right: 0; border-right: none;
-    margin-bottom: 1.2rem;
-  }
-  .col-right { padding-left: 0; border-left: none; }
+@media (max-width: 720px) {
+  .hero { padding: 1rem .9rem .25rem; gap: .85rem; }
+  .hero-block { padding: .95rem 1rem 1rem; border-radius: 18px; }
+  .filters-bar, .trips-section { padding-left: .9rem; padding-right: .9rem; }
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -433,66 +476,104 @@ img { display: block; max-width: 100%; height: auto; }
 }
 
 /* ════════════════════════════════════════════════════════════════
-   YEAR TIMELINE (uses .ytl-dot / .ytl-circle / .ytl-year)
+   YEAR TIMELINE — bar chart hero (one bar per year, height = trip count)
    ════════════════════════════════════════════════════════════════ */
 .ytl {
-  padding: .75rem 1rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.ytl::-webkit-scrollbar { display: none; }
-.ytl-label, .ytl-title {
-  font-size: .68rem; color: var(--text3);
-  text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
-  margin-bottom: .45rem;
-}
-.ytl-track {
-  display: flex; align-items: center; gap: 0;
   position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: .6rem;
+  min-height: 170px;
+  padding: 0 .25rem .25rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
-.ytl-track::before {
-  content: ''; position: absolute; top: 50%; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--coral-3), color-mix(in srgb, var(--coral) 30%, transparent), var(--coral-3));
-  transform: translateY(-50%);
-  border-radius: 99px;
+.ytl::-webkit-scrollbar { height: 6px; }
+.ytl::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+.ytl::before {
+  content: '';
+  position: absolute; left: 0; right: 0; bottom: 32px; height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    color-mix(in srgb, var(--coral) 25%, transparent) 12%,
+    color-mix(in srgb, var(--coral) 35%, transparent) 50%,
+    color-mix(in srgb, var(--coral) 25%, transparent) 88%,
+    transparent);
+  pointer-events: none;
+  z-index: 0;
 }
 .ytl-dot {
   position: relative; z-index: 1;
-  display: flex; flex-direction: column; align-items: center; gap: .3rem;
-  flex: 1; cursor: pointer; padding: .25rem 0;
-  transition: transform var(--t);
+  flex: 1 1 0;
+  min-width: 56px;
+  display: flex; flex-direction: column; align-items: center; gap: .35rem;
+  cursor: pointer; padding: 0; margin: 0;
   background: none; border: 0;
+  transition: transform var(--t);
 }
 .ytl-dot:hover { transform: translateY(-2px); }
-.ytl-circle {
-  width: 30px; height: 30px; border-radius: 50%;
-  background: var(--surface);
-  border: 2.5px solid var(--coral-3);
-  display: flex; align-items: center; justify-content: center;
-  font-size: .66rem; font-weight: 800;
-  color: var(--text2);
-  transition: all var(--t);
+.ytl-bar {
+  width: 100%;
+  max-width: 56px;
+  height: var(--bar-h, 40px);
+  border-radius: 12px 12px 6px 6px;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--coral) 80%, transparent),
+    color-mix(in srgb, var(--coral-2, var(--coral)) 95%, transparent));
+  box-shadow: 0 6px 14px -4px rgba(255,107,53,.35);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding-top: .35rem;
+  font-family: 'Fraunces', serif;
+  font-weight: 900; font-size: .82rem; color: #fff;
+  transition: filter var(--t), transform var(--t), box-shadow var(--t);
+  position: relative;
 }
-.ytl-dot.active .ytl-circle {
-  background: var(--sunset);
-  border-color: transparent;
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(255,107,53,.45);
-  transform: scale(1.15);
+.ytl-bar::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px;
+  background: rgba(255,255,255,.45);
+  border-radius: 12px 12px 0 0;
 }
-.ytl-dot:hover .ytl-circle { border-color: var(--coral-2); }
+.ytl-dot:hover .ytl-bar {
+  filter: brightness(1.08);
+  box-shadow: 0 10px 22px -6px rgba(255,107,53,.55);
+}
+.ytl-dot.active .ytl-bar {
+  background: var(--sunset-deep);
+  box-shadow: 0 10px 26px -4px rgba(255,107,53,.65);
+  transform: translateY(-3px);
+}
 .ytl-year {
   font-family: 'Fraunces', serif;
-  font-size: .76rem;
+  font-size: .85rem;
   color: var(--text2);
-  font-weight: 700;
+  font-weight: 800;
+  height: 26px;
+  display: flex; align-items: center;
 }
 .ytl-dot.active .ytl-year { color: var(--coral-2); font-weight: 900; }
+.ytl-tip {
+  position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--text);
+  color: var(--surface);
+  font-size: .7rem; font-weight: 700;
+  padding: .35rem .55rem; border-radius: 8px;
+  white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--t), transform var(--t);
+  box-shadow: var(--shadow-md);
+  z-index: 5;
+}
+.ytl-dot:hover .ytl-tip,
+.ytl-dot:focus-visible .ytl-tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+@media (max-width: 720px) {
+  .ytl { min-height: 150px; gap: .35rem; }
+  .ytl-dot { min-width: 44px; }
+  .ytl-bar { max-width: 44px; font-size: .72rem; }
+}
 
 /* ════════════════════════════════════════════════════════════════
    CONTROLS (search + advanced)
@@ -711,28 +792,23 @@ img { display: block; max-width: 100%; height: auto; }
 }
 
 /* ════════════════════════════════════════════════════════════════
-   MAP
+   MAP — taller hero, with pulse on "done" pins and route polyline
    ════════════════════════════════════════════════════════════════ */
 .map-wrap {
   position: relative;
-  background: var(--surface);
+  background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
   box-shadow: var(--shadow-md);
-  flex: 1;
-  min-height: 320px;
-}
-.map-wrap::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 4px;
-  background: var(--sunset);
-  z-index: 1000;
+  height: clamp(380px, 56vh, 560px);
 }
 #map {
   width: 100%; height: 100%;
-  min-height: 320px;
   background: var(--surface2);
+}
+@media (max-width: 720px) {
+  .map-wrap { height: clamp(340px, 60vh, 460px); border-radius: 14px; }
 }
 .map-legend {
   position: absolute; bottom: .75rem; left: .75rem; z-index: 500;
@@ -761,16 +837,29 @@ img { display: block; max-width: 100%; height: auto; }
 
 /* Leaflet marker styling */
 .custom-marker {
+  position: relative;
   display: flex; align-items: center; justify-content: center;
   border-radius: 50%;
-  width: 30px; height: 30px;
+  width: 32px; height: 32px;
   border: 3px solid #fff;
   box-shadow: 0 3px 10px rgba(0,0,0,.4), 0 0 0 1px rgba(0,0,0,.06);
-  font-size: 12px; font-weight: 700; color: #fff;
+  font-size: 13px; font-weight: 700; color: #fff;
   cursor: pointer;
   transition: transform var(--t);
 }
-.custom-marker:hover { transform: scale(1.22); }
+.custom-marker:hover { transform: scale(1.25); z-index: 600; }
+/* Subtle pulsing ring around realized-trip markers */
+.custom-marker.done::before {
+  content: '';
+  position: absolute;
+  top: -3px; left: -3px; right: -3px; bottom: -3px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  color: var(--ring-color, rgba(255,255,255,.9));
+  opacity: .55;
+  animation: marker-pulse 2.6s ease-out infinite;
+  pointer-events: none;
+}
 .custom-marker.planned {
   border-style: dashed; border-width: 3px;
   background: var(--surface) !important;
@@ -779,6 +868,28 @@ img { display: block; max-width: 100%; height: auto; }
   border-style: dotted; border-width: 3px;
   background: var(--surface) !important;
   opacity: .85;
+}
+@keyframes marker-pulse {
+  0%   { transform: scale(1);    opacity: .55; }
+  70%  { transform: scale(1.9);  opacity: 0; }
+  100% { transform: scale(1.9);  opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .custom-marker.done::before { animation: none; opacity: 0; }
+}
+
+/* Route polyline connecting consecutive realized trips */
+.trip-route {
+  stroke-dasharray: 6 8;
+  stroke-linecap: round;
+  animation: route-flow 60s linear infinite;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,.25));
+}
+@keyframes route-flow {
+  to { stroke-dashoffset: -1000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .trip-route { animation: none; }
 }
 .leaflet-popup-content-wrapper {
   background: var(--surface);
@@ -1455,7 +1566,7 @@ img { display: block; max-width: 100%; height: auto; }
 }
 
 @media print {
-  .hdr, .col-left, .card-actions, .share-dialog, .share-toast, .scroll-top { display: none !important; }
+  .hdr, .filters-bar, .card-actions, .share-dialog, .share-toast, .scroll-top { display: none !important; }
   .card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
   .card-exp { display: block !important; }
 }
@@ -1469,9 +1580,7 @@ img { display: block; max-width: 100%; height: auto; }
   .stats { grid-template-columns: repeat(2, 1fr); gap: .55rem; }
   .stat { padding: .8rem .65rem; }
   .stat-val { font-size: 1.55rem; }
-  .col-left { gap: .55rem; }
-  .map-wrap { min-height: 280px; }
-  #map { min-height: 280px; }
+  .hero { gap: .8rem; }
   .card-emoji { width: 60px; height: 60px; font-size: 2.2rem; }
   .card-info { padding-top: 38px; }
   .card-name { font-size: 1.1rem; }

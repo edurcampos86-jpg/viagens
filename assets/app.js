@@ -10,6 +10,7 @@ let allTrips = [];
 let filteredTrips = [];
 let mainMap = null;
 let markerLayer = null;
+let routeLayer = null;
 let miniMaps = {};
 let deferredInstall = null;
 let activeFilters = {
@@ -175,6 +176,7 @@ function initMap() {
     .addAttribution('© <a href="https://openstreetmap.org">OSM</a>')
     .addTo(mainMap);
 
+  routeLayer = L.layerGroup().addTo(mainMap);
   markerLayer = L.layerGroup().addTo(mainMap);
   renderMapMarkers(allTrips);
 }
@@ -182,20 +184,48 @@ function initMap() {
 function renderMapMarkers(trips) {
   if (!mainMap || !markerLayer) return;
   markerLayer.clearLayers();
+  if (routeLayer) routeLayer.clearLayers();
 
+  // 1) Draw the route polyline first (so it sits behind markers).
+  //    Connects all "done" trips with valid coordinates in chronological order.
+  const journey = trips
+    .filter(t => t.status === 'done' && t.lat && t.lon)
+    .slice()
+    .sort((a, b) => (a.year - b.year) || ((a.month || 0) - (b.month || 0)));
+
+  if (routeLayer && journey.length >= 2) {
+    const coords = journey.map(t => [t.lat, t.lon]);
+    // Outer soft glow line
+    L.polyline(coords, {
+      color: '#FF6B35', weight: 6, opacity: .18,
+      lineCap: 'round', lineJoin: 'round',
+      interactive: false,
+    }).addTo(routeLayer);
+    // Inner animated dashed line
+    L.polyline(coords, {
+      color: '#FF6B35', weight: 2.4, opacity: .85,
+      className: 'trip-route',
+      interactive: false,
+    }).addTo(routeLayer);
+  }
+
+  // 2) Draw markers
   trips.forEach(trip => {
     if (!trip.lat || !trip.lon) return;
     const col = trip.col || CONTINENT_COLORS[trip.continent] || '#888';
-    const isDash = trip.status !== 'done';
+    const status = trip.status || 'done';
+    const isDash = status !== 'done';
+
+    const baseStyle = isDash
+      ? `background:transparent;border:3px dashed ${col};color:${col};--ring-color:${col}`
+      : `background:${col};color:#fff;--ring-color:${col}`;
 
     const icon = L.divIcon({
       className: '',
-      html: `<div class="custom-marker ${isDash ? trip.status : ''}"
-               style="background:${col};${isDash ? `border:3px dashed ${col};background:transparent;color:${col}` : ''}"
-               title="${trip.name}">${trip.flag || trip.emoji || '📍'}</div>`,
-      iconSize: [28, 28],
-      iconAnchor: [14, 14],
-      popupAnchor: [0, -16],
+      html: `<div class="custom-marker ${status}" style="${baseStyle}" title="${trip.name}">${trip.flag || trip.emoji || '📍'}</div>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+      popupAnchor: [0, -18],
     });
 
     const marker = L.marker([trip.lat, trip.lon], { icon });
@@ -247,21 +277,44 @@ function initMiniMap(containerId, trip) {
 }
 
 // ── Year Timeline ─────────────────────────────────────────────────
+// Bar chart: one bar per year, height proportional to # of realized trips.
 function renderYearTimeline() {
   const container = $('ytl');
   if (!container) return;
 
-  const years = [...new Set(
-    allTrips.filter(t => t.status === 'done').map(t => t.year)
-  )].sort();
+  const doneTrips = allTrips.filter(t => t.status === 'done');
+  const years = [...new Set(doneTrips.map(t => t.year))].sort();
+  if (!years.length) { container.innerHTML = ''; return; }
+
+  // Count trips & nights per year for richer hover info
+  const countsByYear = {};
+  const nightsByYear = {};
+  doneTrips.forEach(t => {
+    countsByYear[t.year] = (countsByYear[t.year] || 0) + 1;
+    nightsByYear[t.year] = (nightsByYear[t.year] || 0) + (t.nts || 0);
+  });
+  const maxCount = Math.max(...Object.values(countsByYear), 1);
+
+  // Bar height range (px). The bar chart sits inside a ~170px-tall .ytl,
+  // and the year label below takes ~26px, so we leave the rest for the bar.
+  const MIN_H = 36;
+  const MAX_H = 130;
 
   container.innerHTML = years.map(yr => {
-    const count = allTrips.filter(t => t.year === yr && t.status === 'done').length;
+    const count = countsByYear[yr] || 0;
+    const nights = nightsByYear[yr] || 0;
+    const h = MIN_H + Math.round(((count / maxCount)) * (MAX_H - MIN_H));
+    const isActive = activeFilters.year === yr;
     return `
-      <div class="ytl-dot" data-year="${yr}" title="${count} viagem(ns) em ${yr}">
-        <div class="ytl-circle">${count}</div>
-        <div class="ytl-year">${yr}</div>
-      </div>
+      <button type="button" class="ytl-dot${isActive ? ' active' : ''}"
+              data-year="${yr}"
+              role="tab"
+              aria-selected="${isActive}"
+              aria-label="${count} viagem(ns) em ${yr}, ${nights} noites">
+        <span class="ytl-tip">${count} ${count === 1 ? 'viagem' : 'viagens'} · ${nights}n</span>
+        <span class="ytl-bar" style="--bar-h: ${h}px">${count}</span>
+        <span class="ytl-year">${yr}</span>
+      </button>
     `;
   }).join('');
 
@@ -271,10 +324,15 @@ function renderYearTimeline() {
       if (activeFilters.year === yr) {
         activeFilters.year = null;
         dot.classList.remove('active');
+        dot.setAttribute('aria-selected', 'false');
       } else {
         activeFilters.year = yr;
-        container.querySelectorAll('.ytl-dot').forEach(d => d.classList.remove('active'));
+        container.querySelectorAll('.ytl-dot').forEach(d => {
+          d.classList.remove('active');
+          d.setAttribute('aria-selected', 'false');
+        });
         dot.classList.add('active');
+        dot.setAttribute('aria-selected', 'true');
       }
       applyFilters();
     });

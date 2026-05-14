@@ -493,31 +493,106 @@ def merge_trips(existing: list[dict], new: list[dict]) -> tuple[list[dict], list
 
 # ── photos attach ────────────────────────────────────────────────────
 
+PHOTOS_PER_TRIP = 24
+# Pad the trip date window so photos taken in transit (day before/after)
+# also get associated with the trip.
+PHOTO_WINDOW_PAD_DAYS = 1
+
+
+def _trip_date_window(t: dict) -> Optional[tuple[date, date]]:
+    """Compute (start, end) for a trip from its year/month/nts fields."""
+    try:
+        yr = int(t.get("year"))
+        mo = int(t.get("month") or 1)
+    except (TypeError, ValueError):
+        return None
+    try:
+        start = date(yr, mo, 1)
+    except ValueError:
+        return None
+    nts = int(t.get("nts") or 4)
+    end = start + timedelta(days=max(1, nts) + PHOTO_WINDOW_PAD_DAYS)
+    start = start - timedelta(days=PHOTO_WINDOW_PAD_DAYS)
+    return start, end
+
+
 def attach_photos(creds: Credentials, trips: list[dict], added: list[dict]) -> int:
+    """Attach a fresh photo gallery to newly added trips."""
     count = 0
     for t in added:
+        window = _trip_date_window(t)
+        if not window:
+            continue
+        start, end = window
         try:
-            start = date(t["year"], t["month"], 1)
-            # Approximate end as start + nts
-            end = start + timedelta(days=int(t.get("nts") or 1))
             urls = fetch_photos_for_period(creds, start, end)
             if urls:
-                t.setdefault("gallery", []).extend(urls[:12])
-                count += len(urls[:12])
-                log(f"  photos for {t['name']} {t['year']}-{t['month']:02d}: {len(urls[:12])}")
+                t["gallery"] = urls[:PHOTOS_PER_TRIP]
+                count += len(t["gallery"])
+                log(f"  photos for {t['name']} {t['year']}-{t['month']:02d}: {len(t['gallery'])}")
         except Exception as e:
             log(f"  photos attach failed for {t.get('name')}: {e}")
     return count
 
 
+def refresh_existing_photos(creds: Credentials, trips: list[dict], skip_ids: set[str],
+                            force: bool = False) -> tuple[int, int]:
+    """
+    Re-fetch Google Photos for every "done" trip and update its gallery when
+    the photo count differs (i.e., the user added new photos in Google Photos
+    for that trip's date range).
+
+    By default we keep existing URLs and only write when the count grows, to
+    avoid creating a noisy PR every 6h with refreshed-but-equivalent baseUrls
+    (those expire ~60 min). Pass force=True (via FORCE_PHOTO_REFRESH=1) to
+    overwrite all galleries with fresh URLs — useful when galleries went stale.
+
+    Returns (refreshed_trip_count, total_new_photo_count).
+    """
+    refreshed = 0
+    new_photos_total = 0
+    for t in trips:
+        if t.get("id") in skip_ids:
+            continue
+        if t.get("status") != "done":
+            continue
+        window = _trip_date_window(t)
+        if not window:
+            continue
+        start, end = window
+        try:
+            urls = fetch_photos_for_period(creds, start, end)
+        except Exception as e:
+            log(f"  photo refresh failed for {t.get('name')}: {e}")
+            continue
+        if not urls:
+            continue
+
+        existing = t.get("gallery") or []
+        new_slice = urls[:PHOTOS_PER_TRIP]
+        # Only write when the count grew (new photos added) or force=True.
+        if not force and len(new_slice) <= len(existing):
+            continue
+        t["gallery"] = new_slice
+        delta = max(0, len(new_slice) - len(existing))
+        refreshed += 1
+        new_photos_total += delta
+        log(f"  refreshed photos: {t['name']} {t.get('year')}-{int(t.get('month') or 0):02d} "
+            f"({len(existing)} → {len(new_slice)})")
+    return refreshed, new_photos_total
+
+
 # ── report ──────────────────────────────────────────────────────────
 
-def write_report(added: list[dict], photo_count: int) -> None:
+def write_report(added: list[dict], photo_count: int, refreshed_count: int = 0,
+                 refreshed_photos: int = 0) -> None:
     lines = [
         "# Sync report",
         "",
         f"Run: {datetime.now(timezone.utc).isoformat()}",
         f"Trips added: **{len(added)}**  ·  Photos attached: **{photo_count}**",
+        f"Existing trips with photos refreshed: **{refreshed_count}** "
+        f"(**{refreshed_photos}** photos re-synced)",
         "",
     ]
     if added:
@@ -552,14 +627,23 @@ def main() -> int:
     photo_count = 0
     if added:
         photo_count = attach_photos(creds, combined, added)
-        trips_data["trips"] = combined
-        save_trips(trips_data)
+
+    # Always check for new photos for existing "done" trips so user-added
+    # photos in Google Photos flow into trips that already exist on the site.
+    # Set FORCE_PHOTO_REFRESH=1 to also rewrite expired baseUrls.
+    added_ids = {t.get("id") for t in added}
+    force = os.environ.get("FORCE_PHOTO_REFRESH", "").lower() in ("1", "true", "yes")
+    refreshed_count, refreshed_photos = refresh_existing_photos(creds, combined, added_ids, force=force)
+    log(f"Refreshed photos for {refreshed_count} existing trips ({refreshed_photos} photos).")
+
+    trips_data["trips"] = combined
+    save_trips(trips_data)
 
     save_state(state)
-    write_report(added, photo_count)
+    write_report(added, photo_count, refreshed_count, refreshed_photos)
 
-    if not added:
-        log("No new trips — nothing to commit.")
+    if not added and refreshed_count == 0:
+        log("No new trips and no photo updates — nothing to commit.")
     return 0
 
 
