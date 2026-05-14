@@ -32,6 +32,18 @@
 <link rel="stylesheet" href="assets/sketchy.css">
 <link rel="stylesheet" href="assets/sketchy-extras.css">
 <link rel="stylesheet" href="assets/patches.css">
+
+<script>
+  (function () {
+    try {
+      var stored = localStorage.getItem('darkMode');
+      var dark = stored === null
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches
+        : stored === 'true';
+      document.documentElement.setAttribute('data-dark', dark ? 'true' : 'false');
+    } catch (e) {}
+  })();
+</script>
 </head>
 <body>
 

@@ -88,20 +88,44 @@ async function init() {
 }
 
 // ── Dark Mode ─────────────────────────────────────────────────────
-function restoreDarkMode() {
-  const dark = localStorage.getItem('darkMode') === 'true';
-  document.documentElement.setAttribute('data-dark', dark ? 'true' : 'false');
+function applyDarkUI(isDark) {
   const btn = $('darkBtn');
-  const lbl = $('darkLbl'); if (lbl) lbl.textContent = dark ? 'Claro' : 'Escuro';
+  if (btn) {
+    btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+    btn.setAttribute('aria-label', isDark ? 'Mudar para tema claro' : 'Mudar para tema escuro');
+  }
+  const icon = btn ? btn.querySelector('.dark-icon') : null;
+  if (icon) icon.textContent = isDark ? '☀' : '🌙';
+  const lbl = $('darkLbl');
+  if (lbl) lbl.textContent = isDark ? 'Claro' : 'Escuro';
+}
+
+function restoreDarkMode() {
+  const stored = localStorage.getItem('darkMode');
+  const isDark = stored === null
+    ? window.matchMedia('(prefers-color-scheme: dark)').matches
+    : stored === 'true';
+  document.documentElement.setAttribute('data-dark', isDark ? 'true' : 'false');
+  applyDarkUI(isDark);
+
+  if (stored === null && window.matchMedia) {
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = (e) => {
+      if (localStorage.getItem('darkMode') !== null) return;
+      document.documentElement.setAttribute('data-dark', e.matches ? 'true' : 'false');
+      applyDarkUI(e.matches);
+    };
+    if (mql.addEventListener) mql.addEventListener('change', onChange);
+    else if (mql.addListener) mql.addListener(onChange);
+  }
 }
 
 function toggleDark() {
   const html = document.documentElement;
-  const isDark = html.getAttribute('data-dark') === 'true';
-  html.setAttribute('data-dark', isDark ? 'false' : 'true');
-  localStorage.setItem('darkMode', !isDark);
-  const btn = $('darkBtn');
-  const lbl2 = $('darkLbl'); if (lbl2) lbl2.textContent = !isDark ? 'Claro' : 'Escuro';
+  const next = html.getAttribute('data-dark') !== 'true';
+  html.setAttribute('data-dark', next ? 'true' : 'false');
+  localStorage.setItem('darkMode', String(next));
+  applyDarkUI(next);
 }
 
 // ── Theme (sketchy) ───────────────────────────────────────────────
