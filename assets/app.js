@@ -1,1040 +1,921 @@
-/* ═══════════════════════════════════════════════════════════════
-   VIAGENS APP — Main Module
-   Eduardo Campos · Investment Advisor · Traveler
-   ═══════════════════════════════════════════════════════════════ */
+// =================================================================
+// Minhas Viagens — app.js
+// =================================================================
 
-'use strict';
-
-// ── State ─────────────────────────────────────────────────────────
-let allTrips = [];
-let filteredTrips = [];
-let mainMap = null;
-let markerLayer = null;
-let miniMaps = {};
-let deferredInstall = null;
-let activeFilters = {
-  status:    'all',
-  year:      null,
-  continent: 'all',
-  search:    '',
-  month:     '',
-  duration:  '',
-  type:      '',
-  pax:       '',
-  maxYear:   2027,
+const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const CONTINENT_NAMES = {
+  Asia: 'Ásia', Europe: 'Europa', Americas: 'Américas',
+  Africa: 'África', Oceania: 'Oceania'
+};
+const TYPE_NAMES = {
+  leisure: 'Lazer', business: 'Trabalho/Evento',
+  festival: 'Festival', adventure: 'Aventura'
 };
 
-const CONTINENT_COLORS = {
-  Americas: '#22c55e',
-  Europe:   '#3b82f6',
-  Asia:     '#06b6d4',
-  Africa:   '#f97316',
-  Oceania:  '#a855f7',
+// ── State ────────────────────────────────────────────────────────
+const state = {
+  trips: [],
+  config: {},
+  filters: {
+    status: 'all',
+    continent: 'all',
+    year: 'all',
+    maxYear: null,
+    month: 'all',
+    duration: 'all',
+    type: 'all',
+    pax: 'all',
+    search: ''
+  },
+  expandedTrip: null,
+  isDark: null,
 };
 
-// ── DOM helpers ───────────────────────────────────────────────────
-const $ = id => document.getElementById(id);
-const $$ = sel => document.querySelectorAll(sel);
-const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+// ── DOM cache ────────────────────────────────────────────────────
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const el = {};
 
-function fmt(n) {
-  if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'k';
-  return String(n);
-}
-
-function flagForCountry(country) {
-  const flags = {
-    Brasil: '🇧🇷', Chile: '🇨🇱', Argentina: '🇦🇷', Colombia: '🇨🇴',
-    México: '🇲🇽', Portugal: '🇵🇹', Grécia: '🇬🇷', Uruguay: '🇺🇾',
-    Indonesia: '🇮🇩', Thailand: '🇹🇭', Italy: '🇮🇹', Japan: '🇯🇵',
-    Peru: '🇵🇪', 'Costa Rica': '🇨🇷', 'South Africa': '🇿🇦',
-    Morocco: '🇲🇦', Norway: '🇳🇴',
-  };
-  return flags[country] || '🌍';
-}
-
-// ── Init ──────────────────────────────────────────────────────────
-async function init() {
-  restoreDarkMode();
-  restoreTheme();
-  setupPWA();
+// ── Boot ─────────────────────────────────────────────────────────
+async function boot() {
+  cacheDom();
+  initTheme();
+  bindEvents();
+  registerSW();
+  setupInstallPrompt();
 
   try {
-    const res = await fetch('data/trips.json');
+    const res = await fetch('data/trips.json', { cache: 'no-cache' });
+    if (!res.ok) throw new Error(res.status);
     const data = await res.json();
-    allTrips = data.trips || [];
-    window.__trips = allTrips;
-    // Update header subtitle
-    const hdrSub = document.getElementById("hdr-sub");
-    if (hdrSub) {
-      const done = allTrips.filter(t => t.status === "done").length;
-      const countries = new Set(allTrips.filter(t => t.status === "done").map(t => t.country)).size;
-      hdrSub.textContent = `${done} viagens · ${countries} países · 4 continentes`;
-    }
+    state.trips = data.trips;
+    state.config = data.config || {};
   } catch (e) {
-    console.error('Failed to load trips.json:', e);
-    allTrips = [];
-    window.__trips = [];
-  }
-
-  initMap();
-  renderStats();
-  renderYearTimeline();
-  renderCards();
-  setupControls();
-  setupShareDialog();
-  setupScrollToTop();
-  checkPermalink();
-}
-
-// ── Dark Mode ─────────────────────────────────────────────────────
-function restoreDarkMode() {
-  const dark = localStorage.getItem('darkMode') === 'true';
-  document.documentElement.setAttribute('data-dark', dark ? 'true' : 'false');
-  const btn = $('darkBtn');
-  const lbl = $('darkLbl'); if (lbl) lbl.textContent = dark ? 'Claro' : 'Escuro';
-}
-
-function toggleDark() {
-  const html = document.documentElement;
-  const isDark = html.getAttribute('data-dark') === 'true';
-  html.setAttribute('data-dark', isDark ? 'false' : 'true');
-  localStorage.setItem('darkMode', !isDark);
-  const btn = $('darkBtn');
-  const lbl2 = $('darkLbl'); if (lbl2) lbl2.textContent = !isDark ? 'Claro' : 'Escuro';
-}
-
-// ── Theme (sketchy) ───────────────────────────────────────────────
-function restoreTheme() {
-  const theme = localStorage.getItem('theme') || 'sketchy';
-  document.documentElement.setAttribute('data-theme', theme);
-  const btn = $('theme-toggle');
-  if (btn) btn.textContent = theme === 'sketchy' ? '🗺️ Normal' : '✏️ Diário';
-}
-
-function toggleTheme() {
-  const html = document.documentElement;
-  const current = html.getAttribute('data-theme') || 'default';
-  const next = current === 'sketchy' ? 'default' : 'sketchy';
-  html.setAttribute('data-theme', next);
-  localStorage.setItem('theme', next);
-  const btn = $('theme-toggle');
-  if (btn) btn.textContent = next === 'sketchy' ? '🗺️ Normal' : '✏️ Diário';
-  if (window.sketchy && typeof window.sketchy.onThemeChange === 'function') {
-    window.sketchy.onThemeChange(next);
-  }
-}
-
-// ── Stats ─────────────────────────────────────────────────────────
-function renderStats() {
-  const done = allTrips.filter(t => t.status === 'done');
-  const countries = new Set(done.map(t => t.country)).size;
-  const continents = new Set(done.map(t => t.continent)).size;
-  const nights = done.reduce((s, t) => s + (t.nts || 0), 0);
-  const km = done.reduce((s, t) => s + (t.km || 0), 0);
-  const planned = allTrips.filter(t => t.status === 'planned' || t.status === 'wishlist').length;
-
-  const stats = [
-    { val: done.length, lbl: 'Viagens' },
-    { val: countries,   lbl: 'Países' },
-    { val: continents,  lbl: 'Continentes' },
-    { val: nights,      lbl: 'Noites' },
-    { val: fmt(km),     lbl: 'km percorridos' },
-    { val: planned,     lbl: 'Planos futuros' },
-  ];
-
-  const container = $('stats');
-  if (container) {
-    container.innerHTML = stats.map(s =>
-      `<div class="stat" role="listitem"><span class="stat-val">${s.val}</span><span class="stat-lbl">${s.lbl}</span></div>`
-    ).join('');
-  }
-}
-
-function setStatEl(id, val) {
-  const el = $(id);
-  if (el) el.textContent = val;
-}
-
-// ── Leaflet Main Map ──────────────────────────────────────────────
-function initMap() {
-  if (!window.L) { console.warn('Leaflet not loaded'); return; }
-
-  mainMap = L.map('map', {
-    center: [15, 10], zoom: 2,
-    zoomControl: true, scrollWheelZoom: false,
-    attributionControl: false,
-  });
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '© OpenStreetMap',
-  }).addTo(mainMap);
-
-  L.control.attribution({ position: 'bottomright', prefix: false })
-    .addAttribution('© <a href="https://openstreetmap.org">OSM</a>')
-    .addTo(mainMap);
-
-  markerLayer = L.layerGroup().addTo(mainMap);
-  renderMapMarkers(allTrips);
-}
-
-function renderMapMarkers(trips) {
-  if (!mainMap || !markerLayer) return;
-  markerLayer.clearLayers();
-
-  trips.forEach(trip => {
-    if (!trip.lat || !trip.lon) return;
-    const col = trip.col || CONTINENT_COLORS[trip.continent] || '#888';
-    const isDash = trip.status !== 'done';
-
-    const icon = L.divIcon({
-      className: '',
-      html: `<div class="custom-marker ${isDash ? trip.status : ''}"
-               style="background:${col};${isDash ? `border:3px dashed ${col};background:transparent;color:${col}` : ''}"
-               title="${trip.name}">${trip.flag || trip.emoji || '📍'}</div>`,
-      iconSize: [28, 28],
-      iconAnchor: [14, 14],
-      popupAnchor: [0, -16],
-    });
-
-    const marker = L.marker([trip.lat, trip.lon], { icon });
-
-    marker.bindPopup(`
-      <div style="min-width:140px">
-        <div style="font-weight:700;font-size:.88rem">${trip.flag || ''} ${trip.name}</div>
-        <div style="color:var(--text3);font-size:.72rem">${trip.label}</div>
-        <div style="font-size:.75rem;margin-top:.3rem">${trip.sub}</div>
-        ${trip.nts ? `<div style="font-size:.7rem;margin-top:.25rem">🌙 ${trip.nts} noites</div>` : ''}
-      </div>
-    `, { maxWidth: 220 });
-
-    marker.on('click', () => {
-      const card = document.querySelector(`[data-trip-id="${trip.id}"]`);
-      if (card) {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        if (!card.classList.contains('expanded')) toggleCard(card);
-      }
-    });
-
-    markerLayer.addLayer(marker);
-  });
-}
-
-// ── Mini Maps ─────────────────────────────────────────────────────
-function initMiniMap(containerId, trip) {
-  if (!window.L || miniMaps[containerId]) return;
-
-  const el = $(containerId);
-  if (!el) return;
-
-  const m = L.map(containerId, {
-    center: [trip.lat, trip.lon], zoom: 6,
-    zoomControl: false, attributionControl: false,
-    dragging: false, touchZoom: false, scrollWheelZoom: false,
-  });
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m);
-
-  const col = trip.col || CONTINENT_COLORS[trip.continent] || '#888';
-  L.circleMarker([trip.lat, trip.lon], {
-    radius: 8, fillColor: col, color: '#fff',
-    weight: 2, fillOpacity: 1,
-  }).addTo(m);
-
-  miniMaps[containerId] = m;
-  setTimeout(() => m.invalidateSize(), 100);
-}
-
-// ── Year Timeline ─────────────────────────────────────────────────
-function renderYearTimeline() {
-  const container = $('ytl');
-  if (!container) return;
-
-  const years = [...new Set(
-    allTrips.filter(t => t.status === 'done').map(t => t.year)
-  )].sort();
-
-  container.innerHTML = years.map(yr => {
-    const count = allTrips.filter(t => t.year === yr && t.status === 'done').length;
-    return `
-      <div class="ytl-dot" data-year="${yr}" title="${count} viagem(ns) em ${yr}">
-        <div class="ytl-circle">${count}</div>
-        <div class="ytl-year">${yr}</div>
-      </div>
-    `;
-  }).join('');
-
-  container.querySelectorAll('.ytl-dot').forEach(dot => {
-    dot.addEventListener('click', () => {
-      const yr = parseInt(dot.dataset.year);
-      if (activeFilters.year === yr) {
-        activeFilters.year = null;
-        dot.classList.remove('active');
-      } else {
-        activeFilters.year = yr;
-        container.querySelectorAll('.ytl-dot').forEach(d => d.classList.remove('active'));
-        dot.classList.add('active');
-      }
-      applyFilters();
-    });
-  });
-}
-
-// ── Render Cards ──────────────────────────────────────────────────
-function renderCards() {
-  const tpl = $('tpl-trip-card');
-  const grid = $('grid');
-  const noRes = $('noResults');
-  const secCount = $('secCount');
-
-  if (!grid) return;
-
-  grid.innerHTML = '';
-
-  const trips = filteredTrips.length || activeFiltersActive() ? filteredTrips : allTrips;
-
-  if (secCount) secCount.textContent = trips.length;
-
-  if (!trips.length) {
-    if (noRes) noRes.style.display = 'block';
+    console.error('Failed loading trips.json', e);
+    $('#secTitleText').textContent = '⚠ Erro ao carregar viagens';
     return;
   }
-  if (noRes) noRes.style.display = 'none';
 
-  trips.forEach((trip, idx) => {
-    let card;
-    if (tpl) {
-      card = tpl.content.cloneNode(true).querySelector('.card');
-    } else {
-      card = buildCardElement(trip);
+  el.hdrSub.textContent = `${state.config.owner} · ${state.config.period}`;
+
+  initYearSlider();
+  renderYearTimeline();
+  populatePaxFilter();
+  initMap();
+  render();
+  initRouting();
+}
+
+function cacheDom() {
+  el.stats = $('#stats');
+  el.insights = $('#insights');
+  el.hdrSub = $('#hdr-sub');
+  el.darkBtn = $('#darkBtn');
+  el.darkLbl = $('#darkLbl');
+  el.darkIcon = el.darkBtn.querySelector('.dark-icon');
+  el.installBtn = $('#installBtn');
+  el.ytl = $('#ytl');
+  el.search = $('#search');
+  el.yearSlider = $('#yearSlider');
+  el.sliderVal = $('#sliderVal');
+  el.advToggle = $('#advToggle');
+  el.advPanel = $('#advPanel');
+  el.advCount = $('#advCount');
+  el.advClear = $('#advClear');
+  el.filterMonth = $('#filterMonth');
+  el.filterDuration = $('#filterDuration');
+  el.filterType = $('#filterType');
+  el.filterPax = $('#filterPax');
+  el.activeChips = $('#activeChips');
+  el.grid = $('#grid');
+  el.noResults = $('#noResults');
+  el.clearAll = $('#clearAll');
+  el.secCount = $('#secCount');
+  el.secTitleText = $('#secTitleText');
+  el.shareDialog = $('#shareDialog');
+  el.shareTitle = $('#shareTitle');
+  el.shareToast = $('#shareToast');
+  el.tplCard = $('#tpl-trip-card');
+}
+
+// ── Theme ────────────────────────────────────────────────────────
+function initTheme() {
+  const saved = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  state.isDark = saved ? saved === 'dark' : prefersDark;
+  applyTheme();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (!localStorage.getItem('theme')) {
+      state.isDark = e.matches;
+      applyTheme();
     }
-    if (!card) return;
+  });
+}
+function applyTheme() {
+  document.documentElement.setAttribute('data-dark', String(state.isDark));
+  el.darkBtn.setAttribute('aria-pressed', String(state.isDark));
+  el.darkIcon.textContent = state.isDark ? '☀' : '🌙';
+  el.darkLbl.textContent = state.isDark ? 'Claro' : 'Escuro';
+}
+function toggleTheme() {
+  state.isDark = !state.isDark;
+  localStorage.setItem('theme', state.isDark ? 'dark' : 'light');
+  applyTheme();
+  if (map) updateMapTiles();
+}
 
-    fillCard(card, trip);
-    card.style.animationDelay = `${idx * 30}ms`;
-    grid.appendChild(card);
+// ── Events ───────────────────────────────────────────────────────
+function bindEvents() {
+  el.darkBtn.addEventListener('click', toggleTheme);
+
+  // Status tabs
+  $$('.status-btn').forEach(b => b.addEventListener('click', () => {
+    state.filters.status = b.dataset.status;
+    $$('.status-btn').forEach(x => {
+      x.classList.toggle('active', x === b);
+      x.setAttribute('aria-selected', String(x === b));
+    });
+    render();
+  }));
+
+  // Continent pills
+  $$('.fbtn').forEach(b => b.addEventListener('click', () => {
+    state.filters.continent = b.dataset.cont;
+    $$('.fbtn').forEach(x => {
+      x.classList.toggle('active', x === b);
+      x.setAttribute('aria-selected', String(x === b));
+    });
+    render();
+  }));
+
+  // Search
+  el.search.addEventListener('input', () => {
+    state.filters.search = el.search.value.trim().toLowerCase();
+    render();
+  });
+
+  // Advanced toggle
+  el.advToggle.addEventListener('click', () => {
+    const open = el.advPanel.hidden;
+    el.advPanel.hidden = !open;
+    el.advToggle.setAttribute('aria-expanded', String(open));
+  });
+
+  // Advanced filters
+  ['filterMonth','filterDuration','filterType','filterPax'].forEach(id => {
+    el[id].addEventListener('change', () => {
+      state.filters[id.replace('filter','').toLowerCase()] = el[id].value;
+      render();
+    });
+  });
+
+  el.advClear.addEventListener('click', clearAdvanced);
+  el.clearAll.addEventListener('click', clearAll);
+
+  // Year slider
+  el.yearSlider.addEventListener('input', () => {
+    state.filters.maxYear = +el.yearSlider.value;
+    el.sliderVal.textContent = el.yearSlider.value;
+    updateSliderPct();
+    render();
+  });
+
+  // Share dialog actions
+  $$('[data-share-action]').forEach(b => b.addEventListener('click', () => {
+    handleShareAction(b.dataset.shareAction);
+  }));
+
+  // Hash routing
+  window.addEventListener('hashchange', applyHash);
+}
+
+function clearAdvanced() {
+  state.filters.month = 'all';
+  state.filters.duration = 'all';
+  state.filters.type = 'all';
+  state.filters.pax = 'all';
+  el.filterMonth.value = 'all';
+  el.filterDuration.value = 'all';
+  el.filterType.value = 'all';
+  el.filterPax.value = 'all';
+  render();
+}
+
+function clearAll() {
+  clearAdvanced();
+  state.filters.search = '';
+  state.filters.continent = 'all';
+  state.filters.status = 'all';
+  state.filters.year = 'all';
+  el.search.value = '';
+  $$('.fbtn').forEach(x => {
+    const active = x.dataset.cont === 'all';
+    x.classList.toggle('active', active);
+    x.setAttribute('aria-selected', String(active));
+  });
+  $$('.status-btn').forEach(x => {
+    const active = x.dataset.status === 'all';
+    x.classList.toggle('active', active);
+    x.setAttribute('aria-selected', String(active));
+  });
+  $$('.yl-item').forEach(x => x.classList.toggle('active', x.dataset.year === 'all'));
+  render();
+}
+
+// ── Year slider ──────────────────────────────────────────────────
+function initYearSlider() {
+  const years = state.trips.map(t => t.year);
+  const min = Math.min(...years);
+  const max = Math.max(...years);
+  el.yearSlider.min = min;
+  el.yearSlider.max = max;
+  el.yearSlider.value = max;
+  state.filters.maxYear = max;
+  el.sliderVal.textContent = max;
+  updateSliderPct();
+}
+function updateSliderPct() {
+  const min = +el.yearSlider.min, max = +el.yearSlider.max, v = +el.yearSlider.value;
+  const pct = ((v - min) / (max - min)) * 100;
+  el.yearSlider.style.setProperty('--pct', pct + '%');
+}
+
+// ── Year timeline ────────────────────────────────────────────────
+function renderYearTimeline() {
+  const years = [...new Set(state.trips.map(t => t.year))].sort();
+  const all = document.createElement('button');
+  all.className = 'yl-item active';
+  all.dataset.year = 'all';
+  all.innerHTML = `<span class="yl-dot">∞</span><span class="yl-yr">Tudo</span><span class="yl-count">${state.trips.length}</span>`;
+  el.ytl.appendChild(all);
+  years.forEach(y => {
+    const item = document.createElement('button');
+    item.className = 'yl-item';
+    item.dataset.year = y;
+    const count = state.trips.filter(t => t.year === y).length;
+    item.innerHTML = `<span class="yl-dot"></span><span class="yl-yr">${y}</span><span class="yl-count">${count}</span>`;
+    el.ytl.appendChild(item);
+  });
+  $$('.yl-item').forEach(item => {
+    item.addEventListener('click', () => {
+      state.filters.year = item.dataset.year;
+      $$('.yl-item').forEach(x => x.classList.toggle('active', x === item));
+      render();
+    });
   });
 }
 
-function activeFiltersActive() {
-  return activeFilters.status !== 'all'
-    || activeFilters.year !== null
-    || activeFilters.continent !== 'all'
-    || activeFilters.search !== ''
-    || activeFilters.month !== ''
-    || activeFilters.duration !== ''
-    || activeFilters.type !== ''
-    || activeFilters.pax !== '';
+// ── Pax filter populator ─────────────────────────────────────────
+function populatePaxFilter() {
+  const pax = [...new Set(state.trips.map(t => t.pax).filter(Boolean))].sort();
+  pax.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p; opt.textContent = p;
+    el.filterPax.appendChild(opt);
+  });
 }
 
-function buildCardElement(trip) {
-  const div = document.createElement('div');
-  div.innerHTML = `
-    <article class="card" data-trip-id="${trip.id}" data-status="${trip.status}" data-continent="${trip.continent || ''}" style="--stripe-col:${trip.col || '#22c55e'}">
-      <div class="card-stripe">
-        <div class="card-hero-name">${trip.flag || ''} ${trip.name}</div>
-        <div class="card-hero-sub">${trip.sub || ''}</div>
-      </div>
-      <div class="card-body">
-        <div class="card-hero">
-          <div class="card-emoji">${trip.emoji || '🌍'}</div>
-          <div class="card-info" style="flex:1;min-width:0">
-            <button class="card-toggle" aria-expanded="false" aria-controls="exp-${trip.id}">
-              <div class="card-row1">
-                <span class="card-name">${trip.name}</span>
-                <span class="card-chevron">▼</span>
-              </div>
-              <div class="card-date">${trip.label} · ${trip.flag || ''} ${trip.country}</div>
-              <div class="card-place">${trip.sub}</div>
-            </button>
-            <div class="card-tags">
-              <span class="ct ct-${(trip.continent || '').toLowerCase()}">${trip.continent}</span>
-              <span class="ct ct-${trip.type}">${trip.type}</span>
-              ${trip.nts ? `<span class="ct ct-nights">🌙 ${trip.nts}n</span>` : ''}
-              <span class="ct ${statusClass(trip.status)}">${statusLabel(trip.status)}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="card-exp" id="exp-${trip.id}" role="region" aria-label="Detalhes de ${trip.name}">
-        <div class="tabs" role="tablist">
-          <button class="tab active" role="tab" data-tab="highlights">✦ Destaques</button>
-          <button class="tab" role="tab" data-tab="route">🗺️ Rota</button>
-          <button class="tab" role="tab" data-tab="logistics">🏨 Logística</button>
-          <button class="tab" role="tab" data-tab="gallery">📷 Galeria</button>
-        </div>
-        <div class="tab-panel active" data-panel="highlights">
-          ${buildHighlights(trip)}
-        </div>
-        <div class="tab-panel" data-panel="route">
-          ${buildRoute(trip)}
-        </div>
-        <div class="tab-panel" data-panel="logistics">
-          ${buildLogistics(trip)}
-        </div>
-        <div class="tab-panel" data-panel="gallery">
-          ${buildGallery(trip)}
-        </div>
-        <div class="card-actions">
-          <button class="share-btn" data-share-id="${trip.id}">🔗 Compartilhar</button>
-          <button class="link-btn" data-permalink="${trip.id}"># Link</button>
-        </div>
-      </div>
-    </article>
-  `;
-  return div.querySelector('.card');
+// ── Filtering ────────────────────────────────────────────────────
+function applyFilters() {
+  const f = state.filters;
+  return state.trips.filter(t => {
+    if (f.status !== 'all' && t.status !== f.status) return false;
+    if (f.continent !== 'all' && t.continent !== f.continent) return false;
+    if (f.year !== 'all' && String(t.year) !== String(f.year)) return false;
+    if (f.maxYear && t.year > f.maxYear) return false;
+    if (f.month !== 'all' && String(t.month) !== String(f.month)) return false;
+    if (f.type !== 'all' && t.type !== f.type) return false;
+    if (f.pax !== 'all' && t.pax !== f.pax) return false;
+    if (f.duration !== 'all') {
+      const n = t.nts || 0;
+      if (f.duration === 'short' && n > 5) return false;
+      if (f.duration === 'medium' && (n < 6 || n > 10)) return false;
+      if (f.duration === 'long' && n < 11) return false;
+    }
+    if (f.search) {
+      const blob = [t.name, t.sub, t.pax, t.air, t.label, ...(t.highlights || [])].join(' ').toLowerCase();
+      if (!blob.includes(f.search)) return false;
+    }
+    return true;
+  });
 }
 
-function fillCard(card, trip) {
-  card.dataset.tripId = trip.id;
-  card.dataset.status = trip.status;
+// ── Render orchestrator ──────────────────────────────────────────
+function render() {
+  const visible = applyFilters();
+  renderStats(visible);
+  renderInsights(visible);
+  renderCards(visible);
+  renderActiveChips();
+  renderMapMarkers(visible);
+  updateAdvCount();
+  el.secCount.textContent = `${visible.length} viage${visible.length === 1 ? 'm' : 'ns'}`;
+  el.noResults.classList.toggle('show', visible.length === 0);
+}
 
-  const q  = sel => card.querySelector(sel);
-  const tx = (sel, val) => { const el = q(sel); if (el) el.textContent = val || ''; };
-  const ht = (sel, val) => { const el = q(sel); if (el) el.innerHTML = val || ''; };
-  const sh = (sel, show) => { const el = q(sel); if (el) el.hidden = !show; };
+function updateAdvCount() {
+  const f = state.filters;
+  const n = ['month','duration','type','pax'].filter(k => f[k] !== 'all').length;
+  el.advCount.hidden = n === 0;
+  el.advCount.textContent = n;
+}
 
-  // Stripe colour
-  const stripe = q('.card-stripe');
-  if (stripe) stripe.style.setProperty('--stripe-col', trip.col || '#22c55e');
+// ── Stats ────────────────────────────────────────────────────────
+function renderStats(visible) {
+  const trips = visible.length;
+  const countries = new Set(visible.map(t => t.name)).size;
+  const continents = new Set(visible.map(t => t.continent)).size;
+  const nights = visible.reduce((s, t) => s + (t.nts || 0), 0);
+  const km = visible.reduce((s, t) => s + (t.km || 0), 0);
+  const stats = [
+    { v: trips, l: 'Viagens' },
+    { v: countries, l: 'Destinos' },
+    { v: continents, l: 'Continentes' },
+    { v: nights, l: 'Noites' },
+    { v: km.toLocaleString('pt-BR'), l: 'km voados est.' }
+  ];
+  el.stats.innerHTML = stats.map(s =>
+    `<div class="stat" role="listitem"><div class="stat-v">${s.v}</div><div class="stat-l">${s.l}</div></div>`
+  ).join('');
+}
 
-  // Hero
-  tx('[data-hero-emoji]', trip.emoji || '🌍');
-  tx('[data-hero-flag]',  trip.flag  || '');
-  tx('[data-hero-name]',  trip.name  || '');
-  tx('[data-hero-sub]',   trip.sub   || '');
-
-  // Card header (toggle button)
-  tx('[data-name]',  trip.name  || '');
-  tx('[data-date]',  (trip.label || '') + (trip.country ? ' · ' + (trip.flag || '') + ' ' + trip.country : ''));
-  tx('[data-place]', trip.sub   || '');
-
-  // Status badges (only one visible)
-  sh('[data-badge-ok]',      trip.status === 'done');
-  sh('[data-badge-planned]', trip.status === 'planned');
-  sh('[data-badge-wish]',    trip.status === 'wishlist');
-
-  // Tags
-  const tagAir = q('[data-tag-air]');
-  const tagPax = q('[data-tag-pax]');
-  const tagNts = q('[data-tag-nts]');
-  if (tagAir) { tagAir.textContent = trip.air || ''; tagAir.hidden = !trip.air; }
-  if (tagPax) { tagPax.textContent = trip.pax || ''; tagPax.hidden = !trip.pax; }
-  if (tagNts) { tagNts.textContent = trip.nts ? trip.nts + 'n' : ''; tagNts.hidden = !trip.nts; }
-
-  // ── Expanded content ───────────────────────────────────────
-  // Diary: highlights + memory
-  const hlEl = q('[data-highlights]');
-  if (hlEl) {
-    const hl = (trip.highlights || []);
-    hlEl.innerHTML = hl.length ? hl.map(h => `<li>${h}</li>`).join('') : '<li>—</li>';
-  }
-  const memEl = q('[data-memory]');
-  if (memEl) {
-    memEl.textContent = trip.memory || '';
-    memEl.hidden = !trip.memory;
+// ── Insights ─────────────────────────────────────────────────────
+function renderInsights(visible) {
+  const done = visible.filter(t => t.status === 'done');
+  if (done.length === 0) {
+    el.insights.innerHTML = '';
+    return;
   }
 
-  // Route: mini-map + list
-  const mmEl = q('[data-minimap]');
-  if (mmEl && trip.lat) {
-    const mapId = `mini-map-${trip.id}`;
-    mmEl.id = mapId;
-  }
-  const routeEl = q('[data-route-list]');
-  if (routeEl) {
-    const items = [];
-    if (trip.air) items.push(`<li>✈️ <strong>Voo:</strong> ${trip.air}</li>`);
-    if (trip.km)  items.push(`<li>📏 <strong>Distância:</strong> ~${fmt(trip.km)} km</li>`);
-    if (trip.nts) items.push(`<li>🌙 <strong>Noites:</strong> ${trip.nts}</li>`);
-    if (trip.pax) items.push(`<li>👥 <strong>Com quem:</strong> ${trip.pax}</li>`);
-    routeEl.innerHTML = items.join('') || '<li>—</li>';
-  }
+  // Melhor mês = mês com mais viagens
+  const monthFreq = {};
+  done.forEach(t => { monthFreq[t.month] = (monthFreq[t.month] || 0) + 1; });
+  const bestMonth = +Object.entries(monthFreq).sort((a,b) => b[1]-a[1])[0][0];
 
-  // Logistics
-  const log = trip.logistics || {};
-  const hotelsEl = q('[data-log-hotels]');
-  if (hotelsEl) hotelsEl.innerHTML = (log.hotels || []).map(h => `<li>🏨 ${h}</li>`).join('') || '<li>—</li>';
-  const restsEl = q('[data-log-restaurants]');
-  if (restsEl) restsEl.innerHTML = (log.restaurants || []).map(r => `<li>🍽️ ${r}</li>`).join('') || '<li>—</li>';
-  tx('[data-log-tips]', log.tips || '—');
+  // Continente menos visitado (excluindo zero)
+  const continentFreq = {};
+  ['Asia','Europe','Americas','Africa','Oceania'].forEach(c => continentFreq[c] = 0);
+  done.forEach(t => { continentFreq[t.continent] = (continentFreq[t.continent] || 0) + 1; });
+  const leastEntries = Object.entries(continentFreq).filter(([,v]) => v > 0).sort((a,b) => a[1]-b[1]);
+  const leastContinent = leastEntries[0];
 
-  // Cost (if present)
-  const cost = trip.cost || {};
-  tx('[data-cost-total]', cost.total ? `Total estimado: ${cost.total}` : '—');
-  tx('[data-cost-curr]',  cost.currency || 'BRL');
-  tx('[data-cost-day]',   cost.perDay   || '—');
-  const barsEl = q('[data-cost-bars]');
-  if (barsEl && cost.breakdown) {
-    barsEl.innerHTML = Object.entries(cost.breakdown).map(([k, v]) =>
-      `<div class="cost-bar"><span>${k}</span><span>${v}</span></div>`
-    ).join('');
+  // País favorito (mais reincidente, ou primeiro alfabético)
+  const countryFreq = {};
+  done.forEach(t => { countryFreq[t.name] = (countryFreq[t.name] || 0) + 1; });
+  const favCountry = Object.entries(countryFreq).sort((a,b) => b[1]-a[1])[0];
+
+  // Custo médio por dia (apenas viagens com custo)
+  const withCost = done.filter(t => t.cost?.total && t.nts);
+  let avgCost = null;
+  if (withCost.length) {
+    const totalCost = withCost.reduce((s,t) => s + t.cost.total, 0);
+    const totalNts = withCost.reduce((s,t) => s + t.nts, 0);
+    avgCost = Math.round(totalCost / totalNts);
   }
 
-  // Gallery
-  const galleryEl = q('[data-gallery]');
-  const galleryEmpty = q('[data-gallery-empty]');
-  const photos = trip.gallery || [];
-  if (galleryEl) {
-    if (photos.length) {
-      galleryEl.innerHTML = photos.map(p =>
-        typeof p === 'string'
-          ? `<div class="gallery-item"><img src="${p}" alt="" loading="lazy"/></div>`
-          : `<div class="gallery-item">${p.emoji || '📷'}</div>`
-      ).join('');
-    } else {
-      galleryEl.innerHTML = '';
+  const insights = [
+    { icon: '📅', lbl: 'Mês favorito de viagem', v: `${MONTH_NAMES[bestMonth-1]} (${monthFreq[bestMonth]}×)` },
+    { icon: '🌐', lbl: 'Continente menos visitado', v: leastContinent ? `${CONTINENT_NAMES[leastContinent[0]]} (${leastContinent[1]}×)` : '—' },
+    { icon: '⭐', lbl: 'Destino mais visitado', v: favCountry ? `${favCountry[0]} (${favCountry[1]}×)` : '—' },
+    { icon: '💰', lbl: 'Custo médio por dia (BRL)', v: avgCost ? `R$ ${avgCost.toLocaleString('pt-BR')}` : '—' }
+  ];
+
+  el.insights.innerHTML = insights.map(i =>
+    `<div class="insight" role="listitem">
+       <div class="insight-icon" aria-hidden="true">${i.icon}</div>
+       <div class="insight-body">
+         <div class="insight-lbl">${i.lbl}</div>
+         <div class="insight-v">${i.v}</div>
+       </div>
+     </div>`
+  ).join('');
+}
+
+// ── Active chips ─────────────────────────────────────────────────
+function renderActiveChips() {
+  const f = state.filters;
+  const chips = [];
+  if (f.status !== 'all') chips.push({ k:'status', l:`Status: ${labelStatus(f.status)}` });
+  if (f.continent !== 'all') chips.push({ k:'continent', l:`Continente: ${CONTINENT_NAMES[f.continent]}` });
+  if (f.year !== 'all') chips.push({ k:'year', l:`Ano: ${f.year}` });
+  if (f.month !== 'all') chips.push({ k:'month', l:`Mês: ${MONTH_NAMES[+f.month-1]}` });
+  if (f.duration !== 'all') chips.push({ k:'duration', l:`Duração: ${labelDur(f.duration)}` });
+  if (f.type !== 'all') chips.push({ k:'type', l:`Tipo: ${TYPE_NAMES[f.type]}` });
+  if (f.pax !== 'all') chips.push({ k:'pax', l:`Com: ${f.pax}` });
+  if (f.search) chips.push({ k:'search', l:`"${f.search}"` });
+
+  el.activeChips.innerHTML = chips.map(c =>
+    `<span class="chip" data-k="${c.k}">${c.l}<button aria-label="Remover filtro ${c.l}">×</button></span>`
+  ).join('');
+
+  el.activeChips.querySelectorAll('.chip button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const k = btn.parentElement.dataset.k;
+      if (k === 'search') { state.filters.search = ''; el.search.value = ''; }
+      else if (k === 'continent') {
+        state.filters.continent = 'all';
+        $$('.fbtn').forEach(x => {
+          const a = x.dataset.cont === 'all';
+          x.classList.toggle('active', a); x.setAttribute('aria-selected', String(a));
+        });
+      }
+      else if (k === 'status') {
+        state.filters.status = 'all';
+        $$('.status-btn').forEach(x => {
+          const a = x.dataset.status === 'all';
+          x.classList.toggle('active', a); x.setAttribute('aria-selected', String(a));
+        });
+      }
+      else if (k === 'year') {
+        state.filters.year = 'all';
+        $$('.yl-item').forEach(x => x.classList.toggle('active', x.dataset.year === 'all'));
+      }
+      else {
+        state.filters[k] = 'all';
+        if (el['filter'+capitalize(k)]) el['filter'+capitalize(k)].value = 'all';
+      }
+      render();
+    });
+  });
+}
+function capitalize(s) { return s[0].toUpperCase() + s.slice(1); }
+function labelStatus(s) { return { done:'Realizadas', planned:'Planejadas', wishlist:'Wishlist' }[s] || s; }
+function labelDur(d) { return { short:'≤5 noites', medium:'6–10 noites', long:'11+ noites' }[d] || d; }
+
+// ── Card rendering ───────────────────────────────────────────────
+function renderCards(visible) {
+  el.grid.innerHTML = '';
+  const sorted = [...visible].sort((a, b) => {
+    if (a.year !== b.year) return b.year - a.year;
+    return (b.month || 0) - (a.month || 0);
+  });
+  sorted.forEach(trip => {
+    const node = el.tplCard.content.firstElementChild.cloneNode(true);
+    hydrateCard(node, trip);
+    el.grid.appendChild(node);
+  });
+  // Re-expand if route hash matches
+  if (state.expandedTrip) {
+    const card = el.grid.querySelector(`.card[data-trip-id="${state.expandedTrip}"]`);
+    if (card) {
+      expandCard(card, true);
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add('highlight');
+      setTimeout(() => card.classList.remove('highlight'), 1800);
     }
   }
-  if (galleryEmpty) galleryEmpty.hidden = photos.length > 0;
-
-  setupCardListeners(card, trip);
 }
 
-function buildHighlights(trip) {
-  const hl = (trip.highlights || []).map(h => `<li>${h}</li>`).join('');
-  const mem = trip.memory ? `<div class="memory">${trip.memory}</div>` : '';
-  return `
-    <ul class="hlights">${hl}</ul>
-    ${mem}
-  `;
-}
+function hydrateCard(node, trip) {
+  node.dataset.tripId = trip.id;
+  node.classList.toggle('planned', trip.status !== 'done');
+  node.style.setProperty('--stripe', trip.color);
 
-function buildRoute(trip) {
-  const mapId = `mini-map-${trip.id}`;
-  return `
-    <div class="mini-map" id="${mapId}"></div>
-    <ul class="route-list">
-      ${trip.air ? `<li><span class="route-icon">✈️</span> <strong>Voo:</strong> ${trip.air}</li>` : ''}
-      ${trip.km  ? `<li><span class="route-icon">📏</span> <strong>Distância:</strong> ~${fmt(trip.km)} km</li>` : ''}
-      ${trip.nts ? `<li><span class="route-icon">🌙</span> <strong>Noites:</strong> ${trip.nts}</li>` : ''}
-      ${trip.pax ? `<li><span class="route-icon">👥</span> <strong>Com quem:</strong> ${trip.pax}</li>` : ''}
-    </ul>
-  `;
-}
-
-function buildLogistics(trip) {
-  const log = trip.logistics || {};
-  const hotels = (log.hotels || []).map(h => `<li><span class="log-icon">🏨</span>${h}</li>`).join('');
-  const rests  = (log.restaurants || []).map(r => `<li><span class="log-icon">🍽️</span>${r}</li>`).join('');
-  const tips   = log.tips ? `<div class="log-tips"><strong>💡 Dica:</strong> ${log.tips}</div>` : '';
-  return `
-    ${hotels ? `<div class="log-section"><h6>Hospedagem</h6><ul class="log-list">${hotels}</ul></div>` : ''}
-    ${rests  ? `<div class="log-section"><h6>Restaurantes</h6><ul class="log-list">${rests}</ul></div>` : ''}
-    ${tips}
-  `;
-}
-
-function buildGallery(trip) {
-  // Placeholder gallery using emojis as stand-ins
-  const emojis = ['🏔️', '🌅', '🍽️', '🏛️', '🌊', '🛫'];
-  const items = emojis.map(e => `<div class="gallery-item">${e}</div>`).join('');
-  return `
-    <div class="gallery">${items}</div>
-    <p style="font-size:.72rem;color:var(--text3);margin-top:.5rem;text-align:center">
-      Adicione fotos às pastas de viagem para exibir aqui.
-    </p>
-  `;
-}
-
-function statusClass(s) {
-  if (s === 'done')    return 'ct badge-ok';
-  if (s === 'planned') return 'ct badge-planned';
-  return 'ct badge-wish';
-}
-
-function statusLabel(s) {
-  if (s === 'done')    return '✓ Feita';
-  if (s === 'planned') return '📅 Planejada';
-  return '💭 Wishlist';
-}
-
-// ── Card Setup ────────────────────────────────────────────────────
-function setupCardListeners(card, trip) {
-  // Toggle expand
-  const toggle = card.querySelector('.card-toggle');
-  if (toggle) {
-    toggle.addEventListener('click', e => {
-      e.stopPropagation();
-      toggleCard(card);
-    });
+  const hero = node.querySelector('[data-hero]');
+  if (trip.photo) {
+    hero.style.backgroundImage = `url(${trip.photo})`;
+  } else {
+    hero.style.background = `linear-gradient(135deg, ${trip.color}, ${trip.color2})`;
   }
+  node.querySelector('[data-hero-emoji]').textContent = isFlagEmoji(trip.emoji) ? '' : trip.emoji;
+  node.querySelector('[data-hero-flag]').textContent = trip.emoji;
+  const badge = node.querySelector('[data-hero-badge]');
+  if (trip.status === 'planned') { badge.hidden = false; badge.textContent = '📅 Planejada'; }
+  else if (trip.status === 'wishlist') { badge.hidden = false; badge.textContent = '⭐ Wishlist'; }
+  else if (trip.verified) { badge.hidden = false; badge.textContent = '✓ Confirmada'; }
+  node.querySelector('[data-hero-name]').textContent = trip.name;
+  node.querySelector('[data-hero-sub]').textContent = trip.sub;
 
-  // Card click (anywhere) also toggles
-  card.addEventListener('click', () => {
-    if (!card.classList.contains('expanded')) toggleCard(card);
+  node.querySelector('[data-name]').textContent = trip.name;
+  node.querySelector('[data-date]').textContent = trip.label;
+  node.querySelector('[data-place]').textContent = trip.sub;
+
+  const okBadge = node.querySelector('[data-badge-ok]');
+  const plBadge = node.querySelector('[data-badge-planned]');
+  const wsBadge = node.querySelector('[data-badge-wish]');
+  if (trip.status === 'done' && trip.verified) okBadge.hidden = false;
+  if (trip.status === 'planned') plBadge.hidden = false;
+  if (trip.status === 'wishlist') wsBadge.hidden = false;
+
+  node.querySelector('[data-tag-air]').textContent = '✈ ' + trip.air;
+  node.querySelector('[data-tag-pax]').textContent = '👥 ' + trip.pax;
+  node.querySelector('[data-tag-nts]').textContent = '🌙 ' + (trip.nts || '?') + ' noites';
+
+  // Tab content (lazy for route/cost/etc.)
+  const exp = node.querySelector('[data-exp]');
+  populateDiary(node, trip);
+  populateLogistics(node, trip);
+  populateCost(node, trip);
+  populateGallery(node, trip);
+  populateRouteList(node, trip);
+
+  // Toggle expand
+  const toggleBtn = node.querySelector('[data-toggle]');
+  toggleBtn.addEventListener('click', () => {
+    const open = exp.hidden;
+    expandCard(node, open);
+    if (open) {
+      window.history.replaceState(null, '', `#trip/${trip.id}`);
+      // Lazy mini-map when route tab opens later
+    } else if (location.hash.startsWith('#trip/')) {
+      window.history.replaceState(null, '', location.pathname);
+    }
   });
 
   // Tabs
-  card.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', e => {
-      e.stopPropagation();
-      const panel = tab.dataset.tab;
-      card.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      card.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      tab.classList.add('active');
-      const pEl = card.querySelector(`[data-panel="${panel}"]`);
-      if (pEl) pEl.classList.add('active');
-      if (panel === 'route') {
-        const mapId = `mini-map-${trip.id}`;
-        setTimeout(() => initMiniMap(mapId, trip), 50);
+  node.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.tab;
+      node.querySelectorAll('.tab').forEach(t => {
+        const active = t === tab;
+        t.classList.toggle('active', active);
+        t.setAttribute('aria-selected', String(active));
+      });
+      node.querySelectorAll('.tab-panel').forEach(p => {
+        p.hidden = p.dataset.panel !== target;
+        p.classList.toggle('active', p.dataset.panel === target);
+      });
+      if (target === 'route') {
+        const miniHost = node.querySelector('[data-minimap]');
+        if (!miniHost.dataset.ready) {
+          renderMiniMap(miniHost, trip);
+          miniHost.dataset.ready = '1';
+        }
       }
     });
   });
 
-  // Share button
-  const shareBtn = card.querySelector('.share-btn');
-  if (shareBtn) {
-    shareBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      openShareDialog(trip);
-    });
-  }
-
-  // Permalink
-  const linkBtn = card.querySelector('.link-btn');
-  if (linkBtn) {
-    linkBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      const url = `${location.href.split('#')[0]}#${trip.id}`;
-      copyToClipboard(url);
-      showToast('🔗 Link copiado!');
-    });
-  }
-}
-
-function toggleCard(card) {
-  const isExpanded = card.classList.contains('expanded');
-  // Collapse all others
-  $$('.card.expanded').forEach(c => {
-    if (c !== card) {
-      c.classList.remove('expanded');
-      const t = c.querySelector('.card-toggle');
-      if (t) t.setAttribute('aria-expanded', 'false');
-    }
+  // Share + permalink
+  node.querySelector('[data-share]').addEventListener('click', e => {
+    e.stopPropagation();
+    openShare(trip);
   });
-
-  card.classList.toggle('expanded', !isExpanded);
-  const toggle = card.querySelector('.card-toggle');
-  if (toggle) toggle.setAttribute('aria-expanded', !isExpanded ? 'true' : 'false');
-
-  if (!isExpanded) {
-    // Update URL hash
-    const tripId = card.dataset.tripId;
-    history.replaceState(null, '', `#${tripId}`);
-
-    // Fly map to this trip
-    const trip = allTrips.find(t => t.id === tripId);
-    if (trip && mainMap && trip.lat) {
-      mainMap.flyTo([trip.lat, trip.lon], 5, { duration: 1.2 });
-    }
-  } else {
-    history.replaceState(null, '', location.pathname + location.search);
-  }
-}
-
-// ── Filters ───────────────────────────────────────────────────────
-function applyFilters() {
-  let result = allTrips.slice();
-
-  // Status
-  if (activeFilters.status !== 'all') {
-    result = result.filter(t => t.status === activeFilters.status);
-  }
-
-  // Year (from timeline dot)
-  if (activeFilters.year !== null) {
-    result = result.filter(t => t.year === activeFilters.year);
-  }
-
-  // Max year (from slider)
-  result = result.filter(t => t.year <= activeFilters.maxYear);
-
-  // Continent
-  if (activeFilters.continent !== 'all') {
-    result = result.filter(t => t.continent === activeFilters.continent);
-  }
-
-  // Search
-  if (activeFilters.search) {
-    const q = activeFilters.search.toLowerCase();
-    result = result.filter(t =>
-      t.name.toLowerCase().includes(q) ||
-      t.sub.toLowerCase().includes(q) ||
-      t.country.toLowerCase().includes(q) ||
-      (t.highlights || []).some(h => h.toLowerCase().includes(q))
-    );
-  }
-
-  // Month
-  if (activeFilters.month) {
-    result = result.filter(t => t.month === parseInt(activeFilters.month));
-  }
-
-  // Duration
-  if (activeFilters.duration) {
-    const [min, max] = activeFilters.duration.split('-').map(Number);
-    result = result.filter(t => t.nts >= min && t.nts <= (max || 99));
-  }
-
-  // Type
-  if (activeFilters.type) {
-    result = result.filter(t => t.type === activeFilters.type);
-  }
-
-  // Pax
-  if (activeFilters.pax) {
-    result = result.filter(t => t.pax === activeFilters.pax);
-  }
-
-  filteredTrips = result;
-  renderCards();
-  renderMapMarkers(filteredTrips.length ? filteredTrips : allTrips);
-  renderActiveChips();
-  updateFilterCount();
-}
-
-function renderActiveChips() {
-  const container = $('activeChips');
-  if (!container) return;
-  const chips = [];
-
-  if (activeFilters.status !== 'all')
-    chips.push({ key: 'status', label: `Status: ${activeFilters.status}` });
-  if (activeFilters.year !== null)
-    chips.push({ key: 'year', label: `Ano: ${activeFilters.year}` });
-  if (activeFilters.continent !== 'all')
-    chips.push({ key: 'continent', label: `Continente: ${activeFilters.continent}` });
-  if (activeFilters.search)
-    chips.push({ key: 'search', label: `"${activeFilters.search}"` });
-  if (activeFilters.month) {
-    const months = ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-    chips.push({ key: 'month', label: `Mês: ${months[activeFilters.month] || activeFilters.month}` });
-  }
-  if (activeFilters.duration)
-    chips.push({ key: 'duration', label: `Duração: ${activeFilters.duration}n` });
-  if (activeFilters.type)
-    chips.push({ key: 'type', label: `Tipo: ${activeFilters.type}` });
-  if (activeFilters.pax)
-    chips.push({ key: 'pax', label: `Com: ${activeFilters.pax}` });
-
-  container.innerHTML = chips.map(c => `
-    <div class="chip">
-      <span>${c.label}</span>
-      <span class="chip-remove" data-remove="${c.key}" title="Remover" role="button" tabindex="0">×</span>
-    </div>
-  `).join('');
-
-  container.querySelectorAll('.chip-remove').forEach(btn => {
-    btn.addEventListener('click', () => removeFilter(btn.dataset.remove));
-    btn.addEventListener('keydown', e => { if (e.key === 'Enter') removeFilter(btn.dataset.remove); });
+  node.querySelector('[data-permalink]').addEventListener('click', e => {
+    e.stopPropagation();
+    const url = `${location.origin}${location.pathname}#trip/${trip.id}`;
+    copyText(url);
+    toast('🔗 Link copiado!');
   });
 }
 
-function removeFilter(key) {
-  if (key === 'status')    { activeFilters.status = 'all'; syncStatusBtns(); }
-  if (key === 'year')      {
-    activeFilters.year = null;
-    $$('.ytl-dot').forEach(d => d.classList.remove('active'));
+function isFlagEmoji(s) {
+  return /\p{Regional_Indicator}/u.test(s || '');
+}
+
+function expandCard(card, open) {
+  const exp = card.querySelector('[data-exp]');
+  const btn = card.querySelector('[data-toggle]');
+  exp.hidden = !open;
+  btn.setAttribute('aria-expanded', String(open));
+  state.expandedTrip = open ? card.dataset.tripId : null;
+}
+
+function populateDiary(node, trip) {
+  const hl = node.querySelector('[data-highlights]');
+  hl.innerHTML = (trip.highlights || []).map(h => `<span class="hl">${escapeHtml(h)}</span>`).join('');
+  node.querySelector('[data-memory]').textContent = trip.memory || '';
+}
+
+function populateLogistics(node, trip) {
+  const log = trip.logistics || {};
+  const ulHotels = node.querySelector('[data-log-hotels]');
+  const ulRests = node.querySelector('[data-log-restaurants]');
+  ulHotels.innerHTML = (log.hotels || []).map(h => `<li>${escapeHtml(h)}</li>`).join('') || '<li style="color:var(--text3)">—</li>';
+  ulRests.innerHTML = (log.restaurants || []).map(h => `<li>${escapeHtml(h)}</li>`).join('') || '<li style="color:var(--text3)">—</li>';
+  node.querySelector('[data-log-tips]').textContent = log.tips || '—';
+}
+
+function populateCost(node, trip) {
+  const c = trip.cost || {};
+  if (!c.total) {
+    node.querySelector('[data-cost-total]').textContent = '—';
+    node.querySelector('[data-cost-bars]').innerHTML = '<p style="color:var(--text3);font-size:.8rem">Sem dados de custo registrados.</p>';
+    node.querySelector('[data-cost-curr]').textContent = '';
+    node.querySelector('[data-cost-day]').textContent = '—';
+    return;
   }
-  if (key === 'continent') { activeFilters.continent = 'all'; syncContinentSelect(); }
-  if (key === 'search')    { activeFilters.search = ''; const el = $('search'); if (el) el.value = ''; }
-  if (key === 'month')     { activeFilters.month = ''; syncAdvSelect('month-select', ''); }
-  if (key === 'duration')  { activeFilters.duration = ''; syncAdvSelect('filterDuration', ''); }
-  if (key === 'type')      { activeFilters.type = ''; syncAdvSelect('filterType', ''); }
-  if (key === 'pax')       { activeFilters.pax = ''; syncAdvSelect('filterPax', ''); }
-  applyFilters();
+  node.querySelector('[data-cost-total]').textContent = formatMoney(c.total, c.currency);
+  const breakdown = c.breakdown || {};
+  const max = Math.max(...Object.values(breakdown), 1);
+  const labels = { voos: '✈ Voos', hospedagem: '🏨 Hospedagem', passeios: '🎟 Passeios', comida: '🍴 Comida' };
+  const bars = Object.entries(breakdown).map(([k, v]) => {
+    const pct = (v / max) * 100;
+    return `<div class="cost-bar">
+      <span class="cost-bar-lbl">${labels[k] || k}</span>
+      <div class="cost-bar-track"><div class="cost-bar-fill" style="width:${pct}%"></div></div>
+      <span class="cost-bar-v">${formatMoney(v, c.currency)}</span>
+    </div>`;
+  }).join('');
+  node.querySelector('[data-cost-bars]').innerHTML = bars;
+  node.querySelector('[data-cost-curr]').textContent = c.currency || 'BRL';
+  node.querySelector('[data-cost-day]').textContent = formatMoney(Math.round(c.total / (trip.nts || 1)), c.currency);
 }
 
-function syncStatusBtns() {
-  $$('.status-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.status === activeFilters.status);
-  });
-}
-
-function syncContinentSelect() {
-  $$('.fbtn[data-cont]').forEach(btn => {
-    const active = btn.dataset.cont === activeFilters.continent;
-    btn.classList.toggle('active', active);
-    btn.setAttribute('aria-selected', active);
-  });
-}
-
-function syncAdvSelect(id, val) {
-  const el = $(id);
-  if (el) el.value = val;
-}
-
-function updateFilterCount() {
-  // Update trip count in section header
-  const secEl = $('secCount');
-  if (secEl) secEl.textContent = `${filteredTrips.length} / ${allTrips.length}`;
-  // Update advanced filter badge (how many advanced filters active)
-  const badgeEl = $('advCount');
-  const advActive = ['month','duration','type','pax'].filter(k => activeFilters[k] && activeFilters[k] !== '').length;
-  if (badgeEl) {
-    badgeEl.textContent = advActive;
-    badgeEl.hidden = advActive === 0;
+function populateGallery(node, trip) {
+  const gal = node.querySelector('[data-gallery]');
+  const empty = node.querySelector('[data-gallery-empty]');
+  const photos = trip.gallery || [];
+  if (photos.length === 0) {
+    gal.hidden = true;
+    empty.hidden = false;
+    return;
   }
+  gal.innerHTML = photos.map(src =>
+    `<img loading="lazy" src="${src}" alt="Foto de ${escapeHtml(trip.name)}">`
+  ).join('');
 }
 
-// ── Controls Setup ────────────────────────────────────────────────
-function setupControls() {
-  // Dark mode
-  const darkBtn = $('darkBtn');
-  if (darkBtn) darkBtn.addEventListener('click', toggleDark);
+function populateRouteList(node, trip) {
+  const list = node.querySelector('[data-route-list]');
+  list.innerHTML = (trip.route || []).map(stop =>
+    `<li><span>${escapeHtml(stop.name)}</span><span class="route-coord">${stop.lat.toFixed(2)}, ${stop.lon.toFixed(2)}</span></li>`
+  ).join('');
+}
 
-  // Theme toggle
-  const themeBtn = $('theme-toggle');
-  if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+function formatMoney(n, c = 'BRL') {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: c, maximumFractionDigits: 0 }).format(n);
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch]));
+}
 
-  // Status filter buttons
-  $$('.status-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      activeFilters.status = btn.dataset.status || 'all';
-      syncStatusBtns();
-      applyFilters();
-    });
-  });
+// ── Leaflet map ──────────────────────────────────────────────────
+let map, markerCluster, routeLayer, currentTileLayer;
+const TILES = {
+  light: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+  dark:  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+};
+const TILES_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
-  // Search input
-  const searchInput = $('search');
-  if (searchInput) {
-    let debounce;
-    searchInput.addEventListener('input', () => {
-      clearTimeout(debounce);
-      debounce = setTimeout(() => {
-        activeFilters.search = searchInput.value.trim();
-        applyFilters();
-      }, 200);
-    });
-  }
-
-  // Advanced toggle
-  const advToggle = $('advToggle');
-  const advPanel = $('adv-panel');
-  if (advToggle && advPanel) {
-    advToggle.addEventListener('click', () => {
-      advPanel.hidden = !advPanel.hidden;
-      advToggle.setAttribute('aria-expanded', !advPanel.hidden);
-    });
-  }
-
-  // Advanced selects
-  const setupSelect = (id, key) => {
-    const el = $(id);
-    if (!el) return;
-    el.addEventListener('change', () => {
-      activeFilters[key] = el.value;
-      applyFilters();
-    });
-  };
-  setupSelect('filterMonth', 'month');
-  setupSelect('filterDuration', 'duration');
-  setupSelect('filterType', 'type');
-  setupSelect('filterPax', 'pax');
-  // continent handled by .fbtn buttons below;
-
-  // Clear advanced
-  const clearBtn = $('advClear');
-  if (clearBtn) {
-    clearBtn.addEventListener('click', () => {
-      activeFilters.month = activeFilters.duration = activeFilters.type = activeFilters.pax = '';
-      ['month-select','duration-select','type-select','pax-select'].forEach(id => {
-        const el = $(id); if (el) el.value = '';
+function initMap() {
+  map = L.map('map', {
+    zoomControl: true,
+    worldCopyJump: true,
+    minZoom: 2,
+    maxZoom: 8
+  }).setView([15, 0], 2);
+  currentTileLayer = L.tileLayer(state.isDark ? TILES.dark : TILES.light, {
+    attribution: TILES_ATTR, subdomains: 'abcd', maxZoom: 19
+  }).addTo(map);
+  markerCluster = L.markerClusterGroup({
+    maxClusterRadius: 40,
+    iconCreateFunction: cluster => {
+      const count = cluster.getChildCount();
+      return L.divIcon({
+        html: `<div class="cluster-icon">${count}</div>`,
+        className: 'cluster-wrap',
+        iconSize: [36, 36]
       });
-      applyFilters();
+    }
+  });
+  map.addLayer(markerCluster);
+  routeLayer = L.layerGroup().addTo(map);
+}
+
+function updateMapTiles() {
+  if (currentTileLayer) map.removeLayer(currentTileLayer);
+  currentTileLayer = L.tileLayer(state.isDark ? TILES.dark : TILES.light, {
+    attribution: TILES_ATTR, subdomains: 'abcd', maxZoom: 19
+  }).addTo(map);
+}
+
+function renderMapMarkers(visible) {
+  if (!map) return;
+  markerCluster.clearLayers();
+  routeLayer.clearLayers();
+  const bounds = [];
+  visible.forEach(trip => {
+    const cls = ['pin-marker'];
+    if (trip.status === 'planned') cls.push('planned');
+    if (trip.status === 'wishlist') cls.push('wishlist');
+    const icon = L.divIcon({
+      html: `<div class="${cls.join(' ')}" style="--col:${trip.color}"><span class="pin-pulse"></span></div>`,
+      className: 'pin-wrap',
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
     });
+    const marker = L.marker([trip.lat, trip.lon], { icon, title: trip.name });
+    marker.bindPopup(`
+      <div class="lp-name">${trip.emoji} ${escapeHtml(trip.name)}</div>
+      <div class="lp-sub">${escapeHtml(trip.sub)}</div>
+      <div class="lp-meta">${trip.label} · ${trip.nts || '?'} noites</div>
+      <a class="lp-link" href="#trip/${trip.id}">Ver detalhes →</a>
+    `);
+    marker.on('click', () => {
+      window.history.replaceState(null, '', `#trip/${trip.id}`);
+    });
+    markerCluster.addLayer(marker);
+    bounds.push([trip.lat, trip.lon]);
+  });
+
+  // Route arcs for filtered year
+  if (state.filters.year !== 'all') {
+    const yearTrips = visible
+      .filter(t => String(t.year) === String(state.filters.year))
+      .sort((a, b) => (a.month || 0) - (b.month || 0));
+    for (let i = 0; i < yearTrips.length - 1; i++) {
+      const a = yearTrips[i], b = yearTrips[i+1];
+      const line = L.polyline(buildArc([a.lat, a.lon], [b.lat, b.lon], 20), {
+        color: a.color,
+        weight: 2,
+        opacity: .7,
+        dashArray: '6 5'
+      });
+      routeLayer.addLayer(line);
+    }
   }
 
-  // Year slider
-  const slider = $('yearSlider');
-  const slVal  = $('sliderVal');
-  if (slider) {
-    slider.addEventListener('input', () => {
-      activeFilters.maxYear = parseInt(slider.value);
-      if (slVal) slVal.textContent = `até ${slider.value}`;
-      applyFilters();
-    });
+  if (bounds.length && !map._userInteracted) {
+    try { map.fitBounds(bounds, { padding: [40, 40], maxZoom: 5 }); } catch(e){}
   }
-
-  // Continent filter pills
-  $$('.fbtn[data-cont]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      activeFilters.continent = btn.dataset.cont || 'all';
-      syncContinentSelect();
-      applyFilters();
-    });
-  });
-
-  // Clear-all button in no-results
-  const clearAllBtn = $('clearAll');
-  if (clearAllBtn) clearAllBtn.addEventListener('click', () => {
-    activeFilters.status = 'all'; activeFilters.year = null;
-    activeFilters.continent = 'all'; activeFilters.search = '';
-    activeFilters.month = ''; activeFilters.duration = '';
-    activeFilters.type = ''; activeFilters.pax = '';
-    activeFilters.maxYear = 2027;
-    const searchEl = $('search'); if (searchEl) searchEl.value = '';
-    syncStatusBtns(); syncContinentSelect();
-    ['filterMonth','filterDuration','filterType','filterPax'].forEach(id => {
-      const el = $(id); if (el) el.value = 'all';
-    });
-    applyFilters();
-  });
-
-  // Initial filter apply
-  filteredTrips = allTrips.slice();
-  applyFilters();
 }
 
-// ── Share ─────────────────────────────────────────────────────────
-let _shareTrip = null;
-
-function setupShareDialog() {
-  const dialog = $('shareDialog');
-  if (!dialog) return;
-
-  dialog.querySelector('.share-close')?.addEventListener('click', () => dialog.close ? dialog.close() : dialog.removeAttribute('open'));
-  dialog.addEventListener('click', e => {
-    if (e.target === dialog) { dialog.close ? dialog.close() : dialog.removeAttribute('open'); }
-  });
-
-  dialog.querySelector('[data-share-action="copy"]')?.addEventListener('click', () => {
-    copyToClipboard(shareUrl());
-    showToast('🔗 Link copiado!');
-    dialog.close ? dialog.close() : dialog.removeAttribute('open');
-  });
-
-  dialog.querySelector('[data-share-action="whatsapp"]')?.addEventListener('click', () => {
-    const text = `Olha essa viagem: ${_shareTrip?.name} — ${shareUrl()}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-  });
-
-  dialog.querySelector('[data-share-action="x"]')?.addEventListener('click', () => {
-    const url = shareUrl();
-    const text = `${_shareTrip?.emoji || '✈️'} ${_shareTrip?.name} — minha viagem ao/à ${_shareTrip?.country}!`;
-    window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
-  });
-
-  dialog.querySelector('[data-share-action="native"]')?.addEventListener('click', async () => {
-    if (!navigator.share) { showToast('Compartilhamento não suportado'); return; }
-    try {
-      await navigator.share({ title: _shareTrip?.name, text: `${_shareTrip?.emoji || '✈️'} ${_shareTrip?.name} — ${_shareTrip?.sub}`, url: shareUrl() });
-    } catch {}
-  });
+function buildArc(p1, p2, steps = 20) {
+  const [lat1, lon1] = p1, [lat2, lon2] = p2;
+  const arc = [];
+  const lift = Math.min(20, Math.hypot(lat2-lat1, lon2-lon1) * 0.15);
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const lat = lat1 + (lat2 - lat1) * t + Math.sin(Math.PI * t) * lift;
+    const lon = lon1 + (lon2 - lon1) * t;
+    arc.push([lat, lon]);
+  }
+  return arc;
 }
 
-function openShareDialog(trip) {
-  _shareTrip = trip;
-  const dialog = $('shareDialog');
-  const titleEl = $('shareTitle');
-  if (dialog) { dialog.showModal ? dialog.showModal() : dialog.setAttribute('open', ''); }
-  if (titleEl) titleEl.textContent = `${trip.flag || '✈️'} ${trip.name}`;
+// Mini-map for trip route tab
+function renderMiniMap(host, trip) {
+  host.style.height = '240px';
+  const m = L.map(host, {
+    zoomControl: false, dragging: true, scrollWheelZoom: false, doubleClickZoom: true,
+    minZoom: 1, maxZoom: 14
+  });
+  L.tileLayer(state.isDark ? TILES.dark : TILES.light, {
+    attribution: TILES_ATTR, subdomains: 'abcd'
+  }).addTo(m);
+  const stops = (trip.route && trip.route.length) ? trip.route : [{ name: trip.name, lat: trip.lat, lon: trip.lon }];
+  const latlngs = stops.map(s => [s.lat, s.lon]);
+  stops.forEach((s, i) => {
+    L.marker([s.lat, s.lon], {
+      title: s.name,
+      icon: L.divIcon({
+        html: `<div class="mini-pin" style="background:${trip.color}">${i+1}</div>`,
+        className: 'mini-pin-wrap',
+        iconSize: [22, 22], iconAnchor: [11, 11]
+      })
+    }).bindTooltip(s.name).addTo(m);
+  });
+  if (latlngs.length > 1) {
+    L.polyline(latlngs, { color: trip.color, weight: 3, opacity: .8 }).addTo(m);
+  }
+  if (latlngs.length === 1) {
+    m.setView(latlngs[0], 8);
+  } else {
+    m.fitBounds(latlngs, { padding: [20, 20] });
+  }
+  // Allow scroll-wheel zoom on focus
+  host.addEventListener('click', () => m.scrollWheelZoom.enable());
 }
 
-function shareUrl() {
-  return `${location.origin}${location.pathname}#${_shareTrip?.id || ''}`;
+// ── Share ────────────────────────────────────────────────────────
+let activeShareTrip = null;
+function openShare(trip) {
+  activeShareTrip = trip;
+  el.shareTitle.textContent = `Compartilhar: ${trip.name}`;
+  if (typeof el.shareDialog.showModal === 'function') {
+    el.shareDialog.showModal();
+  } else {
+    el.shareDialog.setAttribute('open','');
+  }
 }
 
-// ── Toast ─────────────────────────────────────────────────────────
-function showToast(msg) {
-  const toast = $('shareToast');
-  if (!toast) return;
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
+function buildShareText(trip) {
+  const url = `${location.origin}${location.pathname}#trip/${trip.id}`;
+  return `${trip.emoji} ${trip.name} — ${trip.sub}\n${trip.label} · ${trip.nts || '?'} noites\n\n"${trip.memory || ''}"\n\n${url}`;
 }
 
-// ── Clipboard ─────────────────────────────────────────────────────
-async function copyToClipboard(text) {
+function handleShareAction(action) {
+  if (!activeShareTrip) return;
+  const text = buildShareText(activeShareTrip);
+  const url = `${location.origin}${location.pathname}#trip/${activeShareTrip.id}`;
+  if (action === 'copy') {
+    copyText(text);
+    toast('📋 Texto copiado!');
+  } else if (action === 'whatsapp') {
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+  } else if (action === 'x') {
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${activeShareTrip.emoji} ${activeShareTrip.name} — ${activeShareTrip.label}`)}&url=${encodeURIComponent(url)}`, '_blank', 'noopener');
+  } else if (action === 'native') {
+    if (navigator.share) {
+      navigator.share({ title: `Minhas Viagens — ${activeShareTrip.name}`, text, url }).catch(()=>{});
+    } else {
+      copyText(text);
+      toast('📋 Sem compartilhamento nativo — texto copiado.');
+    }
+  }
+  el.shareDialog.close?.();
+}
+
+async function copyText(text) {
   try {
     await navigator.clipboard.writeText(text);
   } catch {
-    const el = document.createElement('textarea');
-    el.value = text; document.body.appendChild(el);
-    el.select(); document.execCommand('copy');
-    document.body.removeChild(el);
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
   }
 }
 
-// ── PWA ───────────────────────────────────────────────────────────
-function setupPWA() {
+function toast(msg) {
+  el.shareToast.textContent = msg;
+  el.shareToast.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.shareToast.classList.remove('show'), 2200);
+}
+
+// ── Routing (hash) ───────────────────────────────────────────────
+function initRouting() { applyHash(); }
+function applyHash() {
+  const h = location.hash.replace(/^#/, '');
+  if (h.startsWith('trip/')) {
+    const id = h.slice(5);
+    if (state.trips.find(t => t.id === id)) {
+      state.expandedTrip = id;
+      const card = el.grid.querySelector(`.card[data-trip-id="${id}"]`);
+      if (card) {
+        expandCard(card, true);
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('highlight');
+        setTimeout(() => card.classList.remove('highlight'), 1800);
+      }
+    }
+  } else if (h === 'planned' || h === 'wishlist' || h === 'done') {
+    state.filters.status = h;
+    $$('.status-btn').forEach(x => {
+      const a = x.dataset.status === h;
+      x.classList.toggle('active', a); x.setAttribute('aria-selected', String(a));
+    });
+    render();
+  }
+}
+
+// ── PWA ──────────────────────────────────────────────────────────
+function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW register fail', err));
+  });
+}
+
+let deferredPrompt = null;
+function setupInstallPrompt() {
   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();
-    deferredInstall = e;
-    const btn = $('installBtn');
-    if (btn) btn.style.display = 'flex';
+    deferredPrompt = e;
+    el.installBtn.hidden = false;
   });
-
-  const btn = $('installBtn');
-  if (btn) {
-    btn.addEventListener('click', async () => {
-      if (!deferredInstall) return;
-      await deferredInstall.prompt();
-      const { outcome } = await deferredInstall.userChoice;
-      if (outcome === 'accepted') {
-        btn.style.display = 'none';
-        deferredInstall = null;
-      }
-    });
-  }
-
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    });
-  }
+  el.installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') el.installBtn.hidden = true;
+    deferredPrompt = null;
+  });
+  window.addEventListener('appinstalled', () => {
+    el.installBtn.hidden = true;
+  });
 }
 
-// ── Permalink ─────────────────────────────────────────────────────
-function checkPermalink() {
-  const hash = location.hash.replace('#', '');
-  if (!hash) return;
-  setTimeout(() => {
-    const card = document.querySelector(`[data-trip-id="${hash}"]`);
-    if (!card) return;
-    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => {
-      if (!card.classList.contains('expanded')) toggleCard(card);
-    }, 500);
-  }, 600);
+// ── Cluster icon styles (injected) ───────────────────────────────
+const injStyle = document.createElement('style');
+injStyle.textContent = `
+.cluster-wrap { background: transparent; }
+.cluster-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #0ea5e9, #0369a1);
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: .82rem;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
 }
-
-// ── Scroll to Top ─────────────────────────────────────────────────
-function setupScrollToTop() {
-  const btn = $('scroll-top');
-  if (!btn) return;
-  window.addEventListener('scroll', () => {
-    btn.classList.toggle('show', window.scrollY > 400);
-  }, { passive: true });
-  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+.pin-wrap, .mini-pin-wrap { background: transparent; border: 0; }
+.mini-pin {
+  width: 22px; height: 22px; border-radius: 50%;
+  color: white; font-weight: 700; font-size: .68rem;
+  display: flex; align-items: center; justify-content: center;
+  border: 2.5px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,.3);
 }
+`;
+document.head.appendChild(injStyle);
 
-// ── Keyboard navigation ───────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    $$('.card.expanded').forEach(c => {
-      c.classList.remove('expanded');
-      const t = c.querySelector('.card-toggle');
-      if (t) t.setAttribute('aria-expanded', 'false');
-    });
-    const shareDialogEl = $('shareDialog');
-    if (shareDialogEl) { try { shareDialogEl.close(); } catch {} }
-    history.replaceState(null, '', location.pathname + location.search);
-  }
-});
+// Track if user interacted with map to avoid auto-fitBounds resetting view
+function trackMapInteraction() {
+  if (!map) return;
+  ['dragstart','zoomstart'].forEach(evt => map.on(evt, () => { map._userInteracted = true; }));
+}
+setTimeout(trackMapInteraction, 100);
 
-// ── Start ─────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', init);
-
-// ── Public API (for sketchy.js) ───────────────────────────────────
-window.viagensApp = {
-  getTrips:     () => allTrips,
-  getFiltered:  () => filteredTrips,
-  applyFilters,
-  toggleCard,
-  showToast,
-  openShareDialog,
-};
+// ── Go! ──────────────────────────────────────────────────────────
+boot();

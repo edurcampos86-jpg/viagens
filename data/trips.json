@@ -1,4 +1,10 @@
 {
+  "config": {
+    "owner": "Eduardo Campos",
+    "period": "2021–2026",
+    "title": "Minhas Viagens",
+    "tagline": "Memórias e planos pelo mundo"
+  },
   "trips": [
     {
       "id": "iguacu-2021",
@@ -20,11 +26,20 @@
       "nts": 4,
       "km": 1100,
       "type": "leisure",
-      "highlights": ["Cataratas do Iguaçu", "Parque das Aves", "Lado argentino"],
+      "highlights": [
+        "Cataratas do Iguaçu",
+        "Parque das Aves",
+        "Lado argentino"
+      ],
       "memory": "A imensidão das cataratas deixa qualquer um sem palavras — água por todos os lados.",
       "logistics": {
-        "hotels": ["Hotel das Cataratas"],
-        "restaurants": ["Restaurante Ipê", "Búfalo Branco"],
+        "hotels": [
+          "Hotel das Cataratas"
+        ],
+        "restaurants": [
+          "Restaurante Ipê",
+          "Búfalo Branco"
+        ],
         "tips": "Prefira visitar as cataratas cedo pela manhã para evitar multidões."
       }
     },
@@ -41,18 +56,27 @@
       "month": 11,
       "label": "Nov 2021",
       "lat": -23.6529,
-      "lon": -70.4000,
+      "lon": -70.4,
       "col": "#f97316",
       "pax": "casal",
       "air": "GRU→SCL→CJC",
       "nts": 6,
       "km": 3800,
       "type": "adventure",
-      "highlights": ["Valle de la Luna", "Geyser del Tatio", "Laguna Cejar"],
+      "highlights": [
+        "Valle de la Luna",
+        "Geyser del Tatio",
+        "Laguna Cejar"
+      ],
       "memory": "O silêncio absoluto do deserto ao amanhecer e o céu estrelado mais lindo que já vi.",
       "logistics": {
-        "hotels": ["Alto Atacama Desert Lodge"],
-        "restaurants": ["Adobe Restaurant", "La Estaka"],
+        "hotels": [
+          "Alto Atacama Desert Lodge"
+        ],
+        "restaurants": [
+          "Adobe Restaurant",
+          "La Estaka"
+        ],
         "tips": "Leve protetor solar FPS 100+ — a altitude intensifica o sol. Aclimatize-se por 1 dia antes de tours exigentes."
       }
     },
@@ -76,11 +100,20 @@
       "nts": 7,
       "km": 1800,
       "type": "leisure",
-      "highlights": ["Palermo", "San Telmo", "La Boca e Caminito"],
+      "highlights": [
+        "Palermo",
+        "San Telmo",
+        "La Boca e Caminito"
+      ],
       "memory": "Parrilla incrível, tango nas ruas, e o calor portenho no verão austral.",
       "logistics": {
-        "hotels": ["Palermo Soho Boutique Hotel"],
-        "restaurants": ["Don Julio", "El Preferido de Palermo"],
+        "hotels": [
+          "Palermo Soho Boutique Hotel"
+        ],
+        "restaurants": [
+          "Don Julio",
+          "El Preferido de Palermo"
+        ],
         "tips": "Use pesos em dinheiro — o câmbio paralelo ('blue') oferece valor muito melhor."
       }
     },
@@ -97,18 +130,27 @@
       "month": 2,
       "label": "Fev 2022",
       "lat": -34.9667,
-      "lon": -54.9500,
+      "lon": -54.95,
       "col": "#22c55e",
       "pax": "casal",
       "air": "GRU→MVD",
       "nts": 5,
       "km": 2100,
       "type": "leisure",
-      "highlights": ["Praia Mansa e Brava", "La Mano (Monumento)", "Casapueblo em Punta Ballena"],
+      "highlights": [
+        "Praia Mansa e Brava",
+        "La Mano (Monumento)",
+        "Casapueblo em Punta Ballena"
+      ],
       "memory": "Sofisticação uruguaia com praias paradisíacas — ótimo custo-benefício comparado a outros destinos premium.",
       "logistics": {
-        "hotels": ["L'Auberge Hotel"],
-        "restaurants": ["Lo de Tere", "Parador La Huella"],
+        "hotels": [
+          "L'Auberge Hotel"
+        ],
+        "restaurants": [
+          "Lo de Tere",
+          "Parador La Huella"
+        ],
         "tips": "Fevereiro é alta temporada — reserve com meses de antecedência."
       }
     },
@@ -132,11 +174,20 @@
       "nts": 5,
       "km": 4200,
       "type": "leisure",
-      "highlights": ["Centro Histórico Amuralhado", "Ilhas do Rosário", "Getsemaní"],
+      "highlights": [
+        "Centro Histórico Amuralhado",
+        "Ilhas do Rosário",
+        "Getsemaní"
+      ],
       "memory": "Cores vibrantes, música por todos os cantos e a energia única da cidade colonial.",
       "logistics": {
-        "hotels": ["Hotel Tcherassi Spa + Hotel"],
-        "restaurants": ["Carmen", "La Cevichería"],
+        "hotels": [
+          "Hotel Tcherassi Spa + Hotel"
+        ],
+        "restaurants": [
+          "Carmen",
+          "La Cevichería"
+        ],
         "tips": "Agende passeio de barco para as Ilhas do Rosário com antecedência. Evite exposição ao sol entre 11h e 15h."
       }
     },
@@ -160,11 +211,20 @@
       "nts": 8,
       "km": 5600,
       "type": "leisure",
-      "highlights": ["Chichén Itzá", "Cenotes Ik Kil", "Playa del Carmen"],
+      "highlights": [
+        "Chichén Itzá",
+        "Cenotes Ik Kil",
+        "Playa del Carmen"
+      ],
       "memory": "Mergulho nos cenotes — uma experiência mística e refrescante no calor do Yucatán.",
       "logistics": {
-        "hotels": ["Grand Hyatt Playa del Carmen"],
-        "restaurants": ["La Fisheria", "Axiote"],
+        "hotels": [
+          "Grand Hyatt Playa del Carmen"
+        ],
+        "restaurants": [
+          "La Fisheria",
+          "Axiote"
+        ],
         "tips": "Alugue carro para explorar a Riviera Maya com liberdade. Cenotes ficam fora de Cancún — vale o desvio."
       }
     },
@@ -188,11 +248,20 @@
       "nts": 7,
       "km": 9800,
       "type": "leisure",
-      "highlights": ["Little Venice ao pôr do sol", "Paradise Beach", "Chora (centro histórico)"],
+      "highlights": [
+        "Little Venice ao pôr do sol",
+        "Paradise Beach",
+        "Chora (centro histórico)"
+      ],
       "memory": "O Mediterrâneo em setembro é perfeito — turistas diminuem, preços caem e o clima é ideal.",
       "logistics": {
-        "hotels": ["Cavo Tagoo Mykonos"],
-        "restaurants": ["Scorpios", "Nammos"],
+        "hotels": [
+          "Cavo Tagoo Mykonos"
+        ],
+        "restaurants": [
+          "Scorpios",
+          "Nammos"
+        ],
         "tips": "Alugue quadriciclo para explorar a ilha. Setembro é melhor que julho/agosto: menos gente, mesmo clima."
       }
     },
@@ -216,11 +285,21 @@
       "nts": 10,
       "km": 9300,
       "type": "leisure",
-      "highlights": ["Torre de Belém", "Livraria Lello no Porto", "Douro Valley"],
+      "highlights": [
+        "Torre de Belém",
+        "Livraria Lello no Porto",
+        "Douro Valley"
+      ],
       "memory": "A facilidade do idioma e a saudade portuguesa tornam Portugal quase um lar longe do lar.",
       "logistics": {
-        "hotels": ["Bairro Alto Hotel (Lisboa)", "The Yeatman (Porto)"],
-        "restaurants": ["Belcanto", "Cantinho do Avillez"],
+        "hotels": [
+          "Bairro Alto Hotel (Lisboa)",
+          "The Yeatman (Porto)"
+        ],
+        "restaurants": [
+          "Belcanto",
+          "Cantinho do Avillez"
+        ],
         "tips": "Visite o Museu do Azulejo em Lisboa. No Porto, não perca um cruzeiro pelo Rio Douro ao fim de tarde."
       }
     },
@@ -244,11 +323,21 @@
       "nts": 12,
       "km": 16800,
       "type": "adventure",
-      "highlights": ["Templo Wat Phra Kaew", "Floating Market", "Elefantes em Chiang Mai"],
+      "highlights": [
+        "Templo Wat Phra Kaew",
+        "Floating Market",
+        "Elefantes em Chiang Mai"
+      ],
       "memory": "Bangkok é caos e beleza simultâneos — a culinária de rua é simplesmente extraordinária.",
       "logistics": {
-        "hotels": ["Mandarin Oriental Bangkok", "137 Pillars House Chiang Mai"],
-        "restaurants": ["Jay Fai", "Bo.lan"],
+        "hotels": [
+          "Mandarin Oriental Bangkok",
+          "137 Pillars House Chiang Mai"
+        ],
+        "restaurants": [
+          "Jay Fai",
+          "Bo.lan"
+        ],
         "tips": "Vá em janeiro — é a estação seca. Sempre descalce ao entrar em templos. Uber/Grab é mais barato que táxi."
       }
     },
@@ -265,18 +354,28 @@
       "month": 3,
       "label": "Mar 2023",
       "lat": -8.3405,
-      "lon": 115.0920,
+      "lon": 115.092,
       "col": "#06b6d4",
       "pax": "casal",
       "air": "GRU→SIN→DPS",
       "nts": 10,
       "km": 18200,
       "type": "leisure",
-      "highlights": ["Templo Tanah Lot", "Terraços de arroz de Tegalalang", "Ubud Art Market"],
+      "highlights": [
+        "Templo Tanah Lot",
+        "Terraços de arroz de Tegalalang",
+        "Ubud Art Market"
+      ],
       "memory": "A espiritualidade balinesa está em cada esquina — flores de oferenda, incenso e gamelan ao amanhecer.",
       "logistics": {
-        "hotels": ["COMO Shambhala Estate (Ubud)", "Alila Seminyak"],
-        "restaurants": ["Locavore", "Mozaic"],
+        "hotels": [
+          "COMO Shambhala Estate (Ubud)",
+          "Alila Seminyak"
+        ],
+        "restaurants": [
+          "Locavore",
+          "Mozaic"
+        ],
         "tips": "Base em Ubud para cultura, Seminyak para praias. Alugue moto em Ubud para mais liberdade. Evite plástico — leve garrafa reutilizável."
       }
     },
@@ -293,18 +392,27 @@
       "month": 4,
       "label": "Abr 2023",
       "lat": -13.1631,
-      "lon": -72.5450,
+      "lon": -72.545,
       "col": "#22c55e",
       "pax": "casal",
       "air": "GRU→LIM→CUZ",
       "nts": 7,
       "km": 4800,
       "type": "adventure",
-      "highlights": ["Machu Picchu ao nascer do sol", "Trilha Inca", "Valle Sagrado dos Incas"],
+      "highlights": [
+        "Machu Picchu ao nascer do sol",
+        "Trilha Inca",
+        "Valle Sagrado dos Incas"
+      ],
       "memory": "Acordar às 4h para ver Machu Picchu emergir da névoa antes dos turistas chegarem — absoluto e indescritível.",
       "logistics": {
-        "hotels": ["Inkaterra Machu Picchu Pueblo Hotel"],
-        "restaurants": ["Cicciolina (Cusco)", "MAP Café"],
+        "hotels": [
+          "Inkaterra Machu Picchu Pueblo Hotel"
+        ],
+        "restaurants": [
+          "Cicciolina (Cusco)",
+          "MAP Café"
+        ],
         "tips": "Aclimatize 2 dias em Cusco antes de subir. Compre ingresso para Machu Picchu com 1-2 meses de antecedência. Trem Vistadome é a melhor opção de transporte."
       }
     },
@@ -328,11 +436,21 @@
       "nts": 12,
       "km": 9700,
       "type": "leisure",
-      "highlights": ["Coliseu de Roma", "Positano", "Capri"],
+      "highlights": [
+        "Coliseu de Roma",
+        "Positano",
+        "Capri"
+      ],
       "memory": "A Costa Amalfitana em junho é um sonho — limoncellos ao por do sol e pizza napolitana de verdade.",
       "logistics": {
-        "hotels": ["Hotel de Russie (Roma)", "Le Sirenuse (Positano)"],
-        "restaurants": ["La Pergola (Roma)", "Ristorante Max (Positano)"],
+        "hotels": [
+          "Hotel de Russie (Roma)",
+          "Le Sirenuse (Positano)"
+        ],
+        "restaurants": [
+          "La Pergola (Roma)",
+          "Ristorante Max (Positano)"
+        ],
         "tips": "Em Roma: entre cedo no Vaticano. Na Costa Amalfitana: evite carro — use barcos e balsas entre as cidades."
       }
     },
@@ -356,11 +474,21 @@
       "nts": 14,
       "km": 18600,
       "type": "leisure",
-      "highlights": ["Templos de Kyoto no outono", "Shibuya Crossing", "Mercado Tsukiji"],
+      "highlights": [
+        "Templos de Kyoto no outono",
+        "Shibuya Crossing",
+        "Mercado Tsukiji"
+      ],
       "memory": "Outubro no Japão é pura perfeição — folhas vermelhas e alaranjadas emoldurando templos milenares.",
       "logistics": {
-        "hotels": ["The Peninsula Tokyo", "Aman Kyoto"],
-        "restaurants": ["Sukiyabashi Jiro", "Kikunoi (Kyoto)"],
+        "hotels": [
+          "The Peninsula Tokyo",
+          "Aman Kyoto"
+        ],
+        "restaurants": [
+          "Sukiyabashi Jiro",
+          "Kikunoi (Kyoto)"
+        ],
         "tips": "Compre o JR Pass antes de viajar — economiza muito nos shinkansens. Leve cartão de visita para apresentações formais."
       }
     },
@@ -376,19 +504,28 @@
       "year": 2024,
       "month": 1,
       "label": "Jan 2024",
-      "lat": -51.6300,
-      "lon": -72.5600,
+      "lat": -51.63,
+      "lon": -72.56,
       "col": "#22c55e",
       "pax": "casal",
       "air": "GRU→EZE→FTE",
       "nts": 9,
       "km": 3800,
       "type": "adventure",
-      "highlights": ["Glaciar Perito Moreno", "Torres del Paine", "Trekking W"],
+      "highlights": [
+        "Glaciar Perito Moreno",
+        "Torres del Paine",
+        "Trekking W"
+      ],
       "memory": "O estrondo do gelo quebrando no Perito Moreno ecoa pelo vale inteiro — natureza em sua forma mais bruta.",
       "logistics": {
-        "hotels": ["Los Sauces Casa Patagónica", "Explora Patagonia"],
-        "restaurants": ["La Tablita (El Calafate)"],
+        "hotels": [
+          "Los Sauces Casa Patagónica",
+          "Explora Patagonia"
+        ],
+        "restaurants": [
+          "La Tablita (El Calafate)"
+        ],
         "tips": "Janeiro é verão austral — ideal para trekking. Reserve o trekking Torres del Paine com 6+ meses de antecedência."
       }
     },
@@ -412,11 +549,20 @@
       "nts": 5,
       "km": 2800,
       "type": "leisure",
-      "highlights": ["Vinícolas do Vale do Maipo", "Cerro San Cristóbal", "Bairro Lastarria"],
+      "highlights": [
+        "Vinícolas do Vale do Maipo",
+        "Cerro San Cristóbal",
+        "Bairro Lastarria"
+      ],
       "memory": "Santiago me surpreendeu — cidade elegante com gastronomia sofisticada e vinho excepcional.",
       "logistics": {
-        "hotels": ["The Singular Santiago"],
-        "restaurants": ["Boragó", "Ambrosía Bistró"],
+        "hotels": [
+          "The Singular Santiago"
+        ],
+        "restaurants": [
+          "Boragó",
+          "Ambrosía Bistró"
+        ],
         "tips": "Visite as vinícolas do Vale do Maipo no dia de chegada. Uber funciona muito bem na cidade."
       }
     },
@@ -440,11 +586,21 @@
       "nts": 10,
       "km": 7200,
       "type": "adventure",
-      "highlights": ["Vulcão Arenal", "Zip-line na floresta tropical", "Praia Manuel Antonio"],
+      "highlights": [
+        "Vulcão Arenal",
+        "Zip-line na floresta tropical",
+        "Praia Manuel Antonio"
+      ],
       "memory": "Pura vida! A Costa Rica é biodiversidade pura — preguiças, tucanos e macacos no café da manhã.",
       "logistics": {
-        "hotels": ["Nayara Springs (Arenal)", "Lapa Rios Lodge (Osa)"],
-        "restaurants": ["Restaurante Don Rufino", "La Luna Restaurant"],
+        "hotels": [
+          "Nayara Springs (Arenal)",
+          "Lapa Rios Lodge (Osa)"
+        ],
+        "restaurants": [
+          "Restaurante Don Rufino",
+          "La Luna Restaurant"
+        ],
         "tips": "Alugue 4x4 — estradas nas áreas rurais são difíceis. Junho é início da época chuvosa — manhãs são belas, tarde pode chover."
       }
     },
@@ -468,11 +624,20 @@
       "nts": 7,
       "km": 9800,
       "type": "leisure",
-      "highlights": ["Iate particular pelas ilhas", "Sunset em Little Venice", "Restaurante Spilia"],
+      "highlights": [
+        "Iate particular pelas ilhas",
+        "Sunset em Little Venice",
+        "Restaurante Spilia"
+      ],
       "memory": "Segunda visita, dessa vez com grupo de amigos — totalmente diferente e igualmente incrível.",
       "logistics": {
-        "hotels": ["Cavo Tagoo Mykonos"],
-        "restaurants": ["Spilia Seaside Restaurant", "Scorpios"],
+        "hotels": [
+          "Cavo Tagoo Mykonos"
+        ],
+        "restaurants": [
+          "Spilia Seaside Restaurant",
+          "Scorpios"
+        ],
         "tips": "Contrate um iate por um dia para explorar ilhas próximas como Delos e Rhenia."
       }
     },
@@ -496,11 +661,21 @@
       "nts": 12,
       "km": 17200,
       "type": "leisure",
-      "highlights": ["Baía de Phang Nga", "Ilhas Phi Phi", "Mergulho em Ko Lanta"],
+      "highlights": [
+        "Baía de Phang Nga",
+        "Ilhas Phi Phi",
+        "Mergulho em Ko Lanta"
+      ],
       "memory": "Sul da Tailândia é completamente diferente de Bangkok — praias de cartão postal e água cristalina turquesa.",
       "logistics": {
-        "hotels": ["Amanpuri (Phuket)", "Rayavadee (Krabi)"],
-        "restaurants": ["Suay Restaurant", "Bampot Kitchen & Bar"],
+        "hotels": [
+          "Amanpuri (Phuket)",
+          "Rayavadee (Krabi)"
+        ],
+        "restaurants": [
+          "Suay Restaurant",
+          "Bampot Kitchen & Bar"
+        ],
         "tips": "Janeiro é perfeito para o sul — estação seca. Use barcos para se mover entre as ilhas."
       }
     },
@@ -524,11 +699,21 @@
       "nts": 12,
       "km": 7600,
       "type": "adventure",
-      "highlights": ["Big Five no Kruger", "Cape Point", "Vinícolas de Stellenbosch"],
+      "highlights": [
+        "Big Five no Kruger",
+        "Cape Point",
+        "Vinícolas de Stellenbosch"
+      ],
       "memory": "Ver um leão a 5 metros do jipe ao amanhecer — adrenalina pura. A natureza africana é de tirar o fôlego.",
       "logistics": {
-        "hotels": ["Singita Lebombo Lodge (Kruger)", "Ellerman House (Cidade do Cabo)"],
-        "restaurants": ["La Colombe", "Test Kitchen (Cidade do Cabo)"],
+        "hotels": [
+          "Singita Lebombo Lodge (Kruger)",
+          "Ellerman House (Cidade do Cabo)"
+        ],
+        "restaurants": [
+          "La Colombe",
+          "Test Kitchen (Cidade do Cabo)"
+        ],
         "tips": "Março é ótimo para wildlife — savana seca e animais concentram-se perto da água. Reserve o lodge de safari com 1 ano de antecedência."
       }
     },
@@ -552,10 +737,16 @@
       "nts": 10,
       "km": 19200,
       "type": "adventure",
-      "highlights": ["Esqui em Niseko", "Festival da Neve de Sapporo", "Culinária de Hokkaido"],
+      "highlights": [
+        "Esqui em Niseko",
+        "Festival da Neve de Sapporo",
+        "Culinária de Hokkaido"
+      ],
       "memory": "",
       "logistics": {
-        "hotels": ["Park Hyatt Niseko Hanazono"],
+        "hotels": [
+          "Park Hyatt Niseko Hanazono"
+        ],
         "restaurants": [],
         "tips": "Fevereiro é o melhor mês para neve em Niseko. Reserve o Hotel com antecedência — muito concorrido."
       }
@@ -580,10 +771,16 @@
       "nts": 10,
       "km": 8800,
       "type": "leisure",
-      "highlights": ["Medina de Fez", "Deserto do Saara", "Jardins da Menara"],
+      "highlights": [
+        "Medina de Fez",
+        "Deserto do Saara",
+        "Jardins da Menara"
+      ],
       "memory": "",
       "logistics": {
-        "hotels": ["La Mamounia (Marrakech)"],
+        "hotels": [
+          "La Mamounia (Marrakech)"
+        ],
         "restaurants": [],
         "tips": "Abril evita o calor extremo do verão. Contrate guia local para navegar a medina."
       }
@@ -608,10 +805,16 @@
       "nts": 9,
       "km": 11400,
       "type": "adventure",
-      "highlights": ["Fiorde de Geiranger", "Aurora Boreal", "Trem Flamsbana"],
+      "highlights": [
+        "Fiorde de Geiranger",
+        "Aurora Boreal",
+        "Trem Flamsbana"
+      ],
       "memory": "",
       "logistics": {
-        "hotels": ["Juvet Landscape Hotel"],
+        "hotels": [
+          "Juvet Landscape Hotel"
+        ],
         "restaurants": [],
         "tips": "Setembro oferece folhagem de outono e últimas chances de dias longos. Para aurora boreal, prefira outubro-março."
       }
