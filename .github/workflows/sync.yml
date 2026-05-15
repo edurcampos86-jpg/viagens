@@ -10,6 +10,11 @@ on:
         description: "Override INITIAL_LOOKBACK_DAYS for this run"
         required: false
         default: ""
+      backfill_photos:
+        description: "Skip Gmail; backfill gallery for done trips without photos"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -43,6 +48,7 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           INITIAL_LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days }}
+          BACKFILL_PHOTOS: ${{ github.event.inputs.backfill_photos }}
         run: python scripts/sync.py
 
       - name: Check for changes

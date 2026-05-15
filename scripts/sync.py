@@ -49,6 +49,10 @@ CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
 REFRESH_TOKEN = os.environ.get("GOOGLE_REFRESH_TOKEN")
 TOKEN_URI = "https://oauth2.googleapis.com/token"
 
+# Backfill mode: skip Gmail discovery; for each existing trip with
+# status='done' and no gallery, fetch photos in its year-month window and attach.
+BACKFILL_PHOTOS = os.environ.get("BACKFILL_PHOTOS", "").lower() in ("1", "true", "yes")
+
 SCOPES = [
     "https://www.googleapis.com/auth/gmail.readonly",
     "https://www.googleapis.com/auth/photoslibrary.readonly",
@@ -510,16 +514,56 @@ def attach_photos(creds: Credentials, trips: list[dict], added: list[dict]) -> i
     return count
 
 
+def backfill_existing_photos(creds: Credentials, trips: list[dict]) -> tuple[int, list[dict]]:
+    """For each trip with status='done' and no gallery, fetch photos in its
+    year-month window and attach up to 12 of them. Returns (total, updated_trips)."""
+    updated: list[dict] = []
+    total = 0
+    for t in trips:
+        if t.get("status") != "done":
+            continue
+        if t.get("gallery"):
+            continue
+        year = t.get("year")
+        month = t.get("month")
+        if not (isinstance(year, int) and isinstance(month, int)):
+            log(f"  backfill skip {t.get('name')}: missing year/month")
+            continue
+        try:
+            start = date(year, month, 1)
+            end = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
+            urls = fetch_photos_for_period(creds, start, end)
+            if urls:
+                t["gallery"] = urls[:12]
+                total += len(urls[:12])
+                updated.append(t)
+                log(f"  backfill {t.get('name')} {year}-{month:02d}: {len(urls[:12])} photos")
+            else:
+                log(f"  backfill {t.get('name')} {year}-{month:02d}: no photos found")
+        except Exception as e:
+            log(f"  backfill failed for {t.get('name')}: {e}")
+    return total, updated
+
+
 # ── report ──────────────────────────────────────────────────────────
 
-def write_report(added: list[dict], photo_count: int) -> None:
+def write_report(added: list[dict], photo_count: int, backfilled: Optional[list[dict]] = None) -> None:
     lines = [
         "# Sync report",
         "",
         f"Run: {datetime.now(timezone.utc).isoformat()}",
-        f"Trips added: **{len(added)}**  ·  Photos attached: **{photo_count}**",
-        "",
     ]
+    if backfilled is not None:
+        lines.append(f"Mode: **backfill** · Trips updated: **{len(backfilled)}** · Photos attached: **{photo_count}**")
+    else:
+        lines.append(f"Trips added: **{len(added)}**  ·  Photos attached: **{photo_count}**")
+    lines.append("")
+    if backfilled:
+        lines.append("## Trips with backfilled photos")
+        for t in backfilled:
+            n = len(t.get("gallery") or [])
+            lines.append(f"- **{t.get('flag','')} {t.get('name')}** — {t.get('label')} "
+                         f"({t.get('country')}): {n} photos")
     if added:
         lines.append("## New trips")
         for t in added:
@@ -541,6 +585,19 @@ def main() -> int:
     state = load_state()
     trips_data = load_trips()
     existing = trips_data.get("trips", [])
+
+    if BACKFILL_PHOTOS:
+        log("BACKFILL_PHOTOS=true → skipping Gmail; filling gallery for done trips without photos")
+        photo_count, backfilled = backfill_existing_photos(creds, existing)
+        log(f"Backfill: {len(backfilled)} trips updated, {photo_count} photos attached.")
+        if backfilled:
+            trips_data["trips"] = existing  # mutated in place
+            save_trips(trips_data)
+        save_state(state)
+        write_report([], photo_count, backfilled=backfilled)
+        if not backfilled:
+            log("No trips needed backfill — nothing to commit.")
+        return 0
 
     fragments = fetch_gmail_fragments(creds, state)
     new_trips = fragments_to_trips(fragments)
