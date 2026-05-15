@@ -1,0 +1,640 @@
+/* ── SKETCHY HERO REDESIGN ─────────────────────────────────────
+   Mapa gigante no topo + timeline horizontal estilo régua +
+   próxima viagem em destaque + cards colapsados.
+   Activated when <html data-layout="hero"> (default ON).
+*/
+
+/* Hide the original 2-col layout when hero layout is on */
+html[data-layout="hero"] .layout > .col-left .map-wrap,
+html[data-layout="hero"] .layout > .col-left .map-legend {
+  display: none;
+}
+html[data-layout="hero"] .sk-hero-stack {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 18px clamp(12px, 3vw, 24px) 8px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+/* ── BIG MAP HERO ───────────────────────────────────── */
+html[data-layout="hero"] .sk-bigmap-wrap {
+  position: relative;
+  background: var(--surface);
+  border: 1.6px solid var(--text);
+  border-radius: 4px;
+  overflow: hidden;
+  filter: url(#sk-rough);
+  box-shadow: 3px 4px 0 rgba(0,0,0,0.12);
+}
+html[data-layout="hero"] .sk-bigmap {
+  width: 100%;
+  height: clamp(360px, 58vh, 620px);
+  background: var(--surface2);
+}
+html[data-layout="hero"] .sk-bigmap-overlay {
+  position: absolute;
+  top: 12px; left: 12px;
+  background: var(--surface);
+  border: 1.5px solid var(--text);
+  padding: 6px 12px;
+  font-family: 'Caveat', cursive;
+  font-size: 1.6rem;
+  color: var(--text);
+  filter: url(#sk-rough);
+  z-index: 500;
+  transform: rotate(-2deg);
+  pointer-events: none;
+}
+html[data-layout="hero"] .sk-bigmap-stats {
+  position: absolute;
+  top: 12px; right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 500;
+}
+html[data-layout="hero"] .sk-bigmap-stat {
+  background: var(--surface);
+  border: 1.5px solid var(--text);
+  padding: 6px 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  filter: url(#sk-rough);
+  display: flex; flex-direction: column; align-items: center;
+  line-height: 1.1;
+}
+html[data-layout="hero"] .sk-bigmap-stat strong {
+  font-family: 'Caveat', cursive;
+  font-size: 1.6rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+html[data-layout="hero"] .sk-bigmap-legend {
+  position: absolute;
+  bottom: 12px; left: 12px;
+  background: var(--surface);
+  border: 1.5px solid var(--text);
+  padding: 8px 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  filter: url(#sk-rough);
+  z-index: 500;
+  display: flex; gap: 12px; align-items: center;
+  flex-wrap: wrap;
+}
+html[data-layout="hero"] .sk-bigmap-legend .leg-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  display: inline-block; margin-right: 4px;
+  border: 1.5px solid var(--text);
+}
+html[data-layout="hero"] .sk-bigmap-legend .leg-line {
+  display: inline-block;
+  width: 24px; height: 2.5px;
+  background: var(--accent);
+  margin-right: 4px;
+}
+
+/* Country fills on Leaflet */
+.sk-country-fill {
+  fill: var(--accent);
+  fill-opacity: 0.32;
+  stroke: var(--accent2);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  transition: fill-opacity .2s;
+  filter: url(#sk-rough);
+  cursor: pointer;
+}
+.sk-country-fill:hover {
+  fill-opacity: 0.55;
+}
+.sk-country-fill.future {
+  fill: var(--future);
+  stroke: var(--future);
+  stroke-dasharray: 6 4;
+  fill-opacity: 0.18;
+}
+
+/* Animated route line */
+.sk-route-line {
+  fill: none;
+  stroke: #1d1a16;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 6 5;
+  stroke-dashoffset: 0;
+  filter: url(#sk-rough);
+  animation: sk-route-draw 4s ease-in-out 0.5s both;
+}
+@keyframes sk-route-draw {
+  from { stroke-dasharray: 6000; stroke-dashoffset: 6000; }
+  to   { stroke-dasharray: 6 5; stroke-dashoffset: 0; }
+}
+.sk-route-future {
+  stroke: var(--future);
+  stroke-width: 2;
+  opacity: 0.7;
+  animation-delay: 4s;
+}
+
+/* Cluster numbered tags (override leaflet markercluster) */
+.sk-cluster-icon {
+  background: var(--accent);
+  color: #f5efde;
+  border: 2px solid #1d1a16;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Caveat', cursive;
+  font-size: 1.3rem;
+  font-weight: 700;
+  filter: url(#sk-rough);
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.18);
+}
+.sk-cluster-icon::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 1.5px dashed var(--accent);
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+/* Individual pin */
+.sk-pin-icon {
+  background: var(--accent);
+  border: 2px solid #1d1a16;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  filter: url(#sk-rough);
+  box-shadow: 1px 2px 0 rgba(0,0,0,0.25);
+}
+.sk-pin-icon.future {
+  background: var(--surface);
+  border-color: var(--future);
+  border-style: dashed;
+}
+
+/* Country hover tooltip */
+.sk-country-tip {
+  background: var(--surface) !important;
+  border: 1.6px solid var(--text) !important;
+  color: var(--text) !important;
+  font-family: 'Patrick Hand', sans-serif !important;
+  font-size: 0.95rem !important;
+  padding: 8px 12px !important;
+  filter: url(#sk-rough);
+  box-shadow: 2px 3px 0 rgba(0,0,0,0.15) !important;
+  border-radius: 3px !important;
+  max-width: 260px;
+}
+.sk-country-tip::before { display: none !important; }
+.sk-country-tip .tip-flag {
+  font-size: 1.4rem;
+  margin-right: 6px;
+}
+.sk-country-tip .tip-title {
+  font-family: 'Caveat', cursive;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.sk-country-tip .tip-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text2);
+}
+.sk-country-tip .tip-hl {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--text2);
+}
+
+/* ── HORIZONTAL TIMELINE RAIL ────────────────────────── */
+html[data-layout="hero"] .sk-rail-wrap {
+  background: var(--surface);
+  border: 1.6px solid var(--text);
+  border-radius: 4px;
+  padding: 16px 0 8px;
+  filter: url(#sk-rough);
+  box-shadow: 3px 4px 0 rgba(0,0,0,0.12);
+  position: relative;
+}
+html[data-layout="hero"] .sk-rail-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 0 20px 10px;
+}
+html[data-layout="hero"] .sk-rail-title {
+  font-family: 'Caveat', cursive;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+}
+html[data-layout="hero"] .sk-rail-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text2);
+}
+html[data-layout="hero"] .sk-rail-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 20px 20px 24px;
+  scrollbar-width: thin;
+}
+html[data-layout="hero"] .sk-rail-scroll::-webkit-scrollbar { height: 8px; }
+html[data-layout="hero"] .sk-rail-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+html[data-layout="hero"] .sk-rail {
+  display: flex;
+  gap: 0;
+  align-items: flex-start;
+  position: relative;
+  padding-top: 38px;
+  min-width: max-content;
+}
+/* Big ruler line */
+html[data-layout="hero"] .sk-rail::before {
+  content: '';
+  position: absolute;
+  top: 26px;
+  left: 0; right: 0;
+  height: 2.5px;
+  background: var(--text);
+  filter: url(#sk-rough);
+}
+html[data-layout="hero"] .sk-year {
+  display: flex; flex-direction: column;
+  align-items: center;
+  min-width: 220px;
+  flex-shrink: 0;
+  position: relative;
+  padding: 0 12px;
+  border-right: 1.5px dashed var(--border2);
+}
+html[data-layout="hero"] .sk-year:last-child { border-right: none; }
+html[data-layout="hero"] .sk-year-tick {
+  position: absolute;
+  top: -32px;
+  left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column;
+  align-items: center;
+}
+html[data-layout="hero"] .sk-year-tick .tick-mark {
+  width: 1.5px; height: 10px;
+  background: var(--text);
+}
+html[data-layout="hero"] .sk-year-tick .tick-label {
+  font-family: 'Caveat', cursive;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  margin-top: 4px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.08);
+}
+html[data-layout="hero"] .sk-year-tick .tick-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+html[data-layout="hero"] .sk-year-trips {
+  display: flex; flex-direction: column;
+  gap: 6px;
+  margin-top: 18px;
+  width: 100%;
+}
+html[data-layout="hero"] .sk-rail-trip {
+  display: flex; align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1.4px solid var(--text);
+  border-radius: 3px;
+  filter: url(#sk-rough);
+  cursor: pointer;
+  position: relative;
+  transition: transform .15s, box-shadow .15s;
+  text-align: left;
+}
+html[data-layout="hero"] .sk-rail-trip:nth-child(odd) { transform: rotate(-0.4deg); }
+html[data-layout="hero"] .sk-rail-trip:nth-child(even) { transform: rotate(0.3deg); }
+html[data-layout="hero"] .sk-rail-trip:hover {
+  transform: rotate(0) translateY(-2px);
+  box-shadow: 2px 4px 0 rgba(0,0,0,0.15);
+  border-color: var(--accent);
+}
+html[data-layout="hero"] .sk-rail-trip.future {
+  border-style: dashed;
+  border-color: var(--future);
+  background: var(--future-soft);
+}
+html[data-layout="hero"] .sk-rail-trip .trip-flag {
+  font-size: 1.6rem; flex-shrink: 0; line-height: 1;
+}
+html[data-layout="hero"] .sk-rail-trip .trip-info { min-width: 0; flex: 1; }
+html[data-layout="hero"] .sk-rail-trip .trip-title {
+  font-family: 'Caveat', cursive;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text);
+}
+html[data-layout="hero"] .sk-rail-trip .trip-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text2);
+  margin-top: 3px;
+}
+html[data-layout="hero"] .sk-rail-trip.future .trip-meta { color: var(--future); }
+html[data-layout="hero"] .sk-rail-trip.active {
+  background: var(--accent);
+  color: #f5efde;
+  border-color: var(--accent2);
+  transform: rotate(0);
+  box-shadow: 2px 4px 0 rgba(0,0,0,0.2);
+}
+html[data-layout="hero"] .sk-rail-trip.active .trip-title,
+html[data-layout="hero"] .sk-rail-trip.active .trip-meta { color: #f5efde; }
+
+/* Now-marker on the rail */
+html[data-layout="hero"] .sk-rail-now {
+  position: absolute;
+  top: -24px;
+  width: 2px;
+  background: var(--accent);
+  height: 56px;
+  z-index: 2;
+}
+html[data-layout="hero"] .sk-rail-now::before {
+  content: 'HOJE';
+  position: absolute;
+  top: -16px; left: 50%; transform: translateX(-50%);
+  background: var(--accent);
+  color: #f5efde;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  filter: url(#sk-rough);
+}
+
+/* ── NEXT TRIP HERO ──────────────────────────────────── */
+html[data-layout="hero"] .sk-next-trip {
+  background: linear-gradient(110deg, var(--surface) 0%, var(--surface2) 100%);
+  border: 1.8px solid var(--text);
+  border-radius: 4px;
+  padding: 22px 26px;
+  filter: url(#sk-rough);
+  box-shadow: 3px 4px 0 rgba(0,0,0,0.15);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: center;
+  position: relative;
+}
+html[data-layout="hero"] .sk-next-trip::before {
+  content: 'PRÓXIMA VIAGEM';
+  position: absolute;
+  top: -10px; left: 24px;
+  background: var(--future);
+  color: #f5efde;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 1.5px;
+  padding: 2px 10px;
+  border: 1.5px solid var(--text);
+  filter: url(#sk-rough);
+}
+html[data-layout="hero"] .sk-next-title {
+  font-family: 'Caveat', cursive;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 0.95;
+  color: var(--text);
+}
+html[data-layout="hero"] .sk-next-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text2);
+  margin-top: 4px;
+}
+html[data-layout="hero"] .sk-next-meta {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  margin-top: 12px;
+}
+html[data-layout="hero"] .sk-next-chip {
+  background: var(--surface);
+  border: 1.4px solid var(--text);
+  padding: 4px 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  filter: url(#sk-rough);
+  border-radius: 3px;
+}
+html[data-layout="hero"] .sk-next-countdown {
+  text-align: center;
+  background: var(--accent);
+  color: #f5efde;
+  padding: 18px 24px;
+  border: 2px solid var(--text);
+  filter: url(#sk-rough);
+  border-radius: 4px;
+  min-width: 140px;
+}
+html[data-layout="hero"] .sk-next-countdown .days {
+  font-family: 'Caveat', cursive;
+  font-size: 4.2rem;
+  font-weight: 700;
+  line-height: 0.9;
+  display: block;
+}
+html[data-layout="hero"] .sk-next-countdown .lbl {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 4px;
+  display: block;
+}
+
+/* ── COLLAPSED CARDS — section title style ──────────── */
+html[data-layout="hero"] .col-right .sec-title {
+  font-size: 1.6rem;
+  margin-top: 24px;
+}
+html[data-layout="hero"] .col-right .sec-title::before {
+  content: '🗂  ';
+}
+/* Cards become compact list */
+html[data-layout="hero"] .card {
+  transform: none !important;
+}
+html[data-layout="hero"] .card:not(.expanded) .card-hero {
+  display: none;
+}
+html[data-layout="hero"] .card:not(.expanded) .card-stripe {
+  display: none;
+}
+html[data-layout="hero"] .card:not(.expanded) .card-tags {
+  display: none;
+}
+html[data-layout="hero"] .card:not(.expanded) .card-body > .card-toggle {
+  padding: 12px 16px;
+}
+html[data-layout="hero"] .card:not(.expanded) .card-name {
+  font-size: 1.4rem;
+}
+html[data-layout="hero"] .card:not(.expanded) .card-place {
+  font-size: 0.85rem;
+}
+html[data-layout="hero"] .card.expanded .card-hero { display: block; }
+
+/* Force hide the old left sticky map (it's empty now since we moved the map out) */
+html[data-layout="hero"] .col-left .map-wrap,
+html[data-layout="hero"] .col-left .map-legend {
+  display: none;
+}
+
+/* Tighter status + filters in left sidebar when hero on */
+html[data-layout="hero"] .col-left {
+  position: static !important;
+  max-height: none !important;
+}
+
+/* Two columns layout still good for filters | cards under hero */
+@media (min-width: 1024px) {
+  html[data-layout="hero"] .layout {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  }
+}
+
+/* ── ALBUM LINK ──────────────────────────────────────── */
+.sk-album-card {
+  margin-top: 12px;
+  display: block;
+  background: var(--surface);
+  border: 1.5px solid var(--text);
+  padding: 12px 14px;
+  filter: url(#sk-rough);
+  text-decoration: none;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform .15s;
+  border-radius: 3px;
+}
+.sk-album-card:hover {
+  transform: translate(-1px, -2px);
+  box-shadow: 2px 4px 0 rgba(0,0,0,0.15);
+}
+.sk-album-card .alb-icon {
+  font-size: 1.8rem;
+  width: 44px; height: 44px;
+  background: var(--surface3);
+  border: 1.5px solid var(--text);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  filter: url(#sk-rough);
+  flex-shrink: 0;
+}
+.sk-album-card .alb-info { flex: 1; min-width: 0; }
+.sk-album-card .alb-title {
+  font-family: 'Caveat', cursive;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.sk-album-card .alb-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text2);
+  margin-top: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 240px;
+}
+.sk-album-card .alb-arrow {
+  font-family: 'Caveat', cursive;
+  font-size: 1.6rem;
+  color: var(--accent);
+}
+
+.sk-album-input {
+  margin-top: 8px;
+  display: flex; gap: 6px;
+}
+.sk-album-input input {
+  flex: 1;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  padding: 6px 8px;
+  background: var(--surface);
+  border: 1.4px solid var(--text);
+  border-radius: 3px;
+}
+.sk-album-input button {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: var(--accent);
+  color: #f5efde;
+  border: 1.4px solid var(--text);
+  padding: 6px 10px;
+  cursor: pointer;
+  filter: url(#sk-rough);
+}
+
+/* ── MOBILE ──────────────────────────────────────────── */
+@media (max-width: 720px) {
+  html[data-layout="hero"] .sk-bigmap {
+    height: 320px;
+  }
+  html[data-layout="hero"] .sk-bigmap-stats {
+    top: auto; bottom: 8px; right: 8px;
+    flex-direction: column;
+    gap: 4px;
+  }
+  html[data-layout="hero"] .sk-bigmap-stat {
+    padding: 3px 8px;
+    font-size: 0.58rem;
+  }
+  html[data-layout="hero"] .sk-bigmap-stat strong { font-size: 1.1rem; }
+  html[data-layout="hero"] .sk-bigmap-overlay { font-size: 1.2rem; padding: 4px 8px; }
+  html[data-layout="hero"] .sk-bigmap-legend {
+    bottom: 8px; left: 8px; padding: 4px 8px;
+    font-size: 0.56rem;
+    gap: 6px;
+  }
+  html[data-layout="hero"] .sk-year { min-width: 180px; }
+  html[data-layout="hero"] .sk-next-trip {
+    grid-template-columns: 1fr;
+  }
+  html[data-layout="hero"] .sk-next-title { font-size: 2.2rem; }
+  html[data-layout="hero"] .sk-next-countdown { padding: 14px; min-width: auto; }
+  html[data-layout="hero"] .sk-next-countdown .days { font-size: 3rem; }
+  html[data-layout="hero"] .sk-rail-title { font-size: 1.5rem; }
+  html[data-layout="hero"] .sk-rail-trip .trip-title { font-size: 1.1rem; }
+}
