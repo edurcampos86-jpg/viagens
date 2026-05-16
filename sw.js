@@ -1,4 +1,4 @@
-const VERSION = 'viagens-v2';
+const VERSION = 'viagens-v3';
 const CORE = [
   './',
   './index.html',

@@ -168,7 +168,7 @@
         <span class="leg"><span class="leg-d" style="background:#22c55e"></span>Américas</span>
         <span class="leg"><span class="leg-d" style="background:#f97316"></span>África</span>
         <span class="leg"><span class="leg-d" style="background:#10b981"></span>Oceania</span>
-        <span class="leg-note">Clique no pin para abrir · Pin tracejado = planejado/wishlist</span>
+        <span class="leg-note">Clique no pin para abrir · Pin tracejado = planejado/wishlist · No modo planejamento: linha pontilhada de São Paulo até o destino, pin maior = mais próximo</span>
       </div>
     </aside>
 
@@ -176,12 +176,31 @@
     <section class="col-right" aria-labelledby="trip-list-title">
       <h2 id="trip-list-title" class="sec-title">
         <span id="secTitleText">📅 Linha do Tempo das Viagens</span>
-        <span class="sec-count" id="secCount" aria-live="polite"></span>
+        <div class="sec-actions">
+          <button class="sec-action" id="compareBtn" hidden aria-pressed="false">
+            <span aria-hidden="true">⚖</span> Comparar
+          </button>
+          <span class="sec-count" id="secCount" aria-live="polite"></span>
+        </div>
       </h2>
+
+      <!-- NEXT-TRIPS TIMELINE (mostrada só quando "Planejadas"/"Wishlist") -->
+      <div class="next-timeline" id="nextTimeline" hidden aria-label="Timeline das próximas viagens"></div>
+
       <div class="grid" id="grid"></div>
       <div class="no-results" id="noResults" role="status">
-        <p>😕 Nenhuma viagem encontrada com esses filtros.</p>
-        <button class="link-btn" id="clearAll">Limpar todos os filtros</button>
+        <div data-empty-default>
+          <p>😕 Nenhuma viagem encontrada com esses filtros.</p>
+          <button class="link-btn" id="clearAll">Limpar todos os filtros</button>
+        </div>
+        <div data-empty-planned hidden>
+          <p class="empty-title">🗺 Sua próxima aventura começa aqui</p>
+          <p class="empty-sub">Nenhuma viagem planejada ainda. Adicione a primeira em <code>data/trips.json</code> com <code>"status": "planned"</code>.</p>
+        </div>
+        <div data-empty-wishlist hidden>
+          <p class="empty-title">⭐ Sonhe sem limite</p>
+          <p class="empty-sub">Sem destinos na wishlist. Adicione em <code>data/trips.json</code> com <code>"status": "wishlist"</code>.</p>
+        </div>
       </div>
     </section>
 
@@ -192,6 +211,10 @@
 <!-- TRIP TEMPLATE (used by JS to clone) -->
 <template id="tpl-trip-card">
   <article class="card" role="article">
+    <label class="card-compare" data-compare-wrap hidden>
+      <input type="checkbox" data-compare-input />
+      <span aria-hidden="true">⚖</span>
+    </label>
     <div class="card-stripe"></div>
     <div class="card-body">
       <div class="card-hero" data-hero>
@@ -200,6 +223,7 @@
         <span class="card-hero-emoji" data-hero-emoji aria-hidden="true"></span>
         <span class="card-hero-flag" data-hero-flag aria-hidden="true"></span>
         <span class="card-hero-badge" data-hero-badge hidden></span>
+        <span class="card-hero-countdown" data-hero-countdown hidden></span>
         <div class="card-hero-info">
           <div class="card-hero-name" data-hero-name></div>
           <div class="card-hero-sub" data-hero-sub></div>
@@ -221,61 +245,39 @@
             <span class="ct ct-air" data-tag-air></span>
             <span class="ct ct-pax" data-tag-pax></span>
             <span class="ct ct-nts" data-tag-nts></span>
+            <span class="ct ct-cd" data-tag-countdown hidden></span>
           </div>
         </div>
         <span class="card-chevron" aria-hidden="true">›</span>
       </button>
       <div class="card-exp" data-exp hidden>
-        <div class="tabs" role="tablist" aria-label="Detalhes da viagem">
-          <button class="tab active" role="tab" aria-selected="true" data-tab="diary">📖 Diário</button>
-          <button class="tab" role="tab" aria-selected="false" data-tab="route">🗺 Roteiro</button>
-          <button class="tab" role="tab" aria-selected="false" data-tab="logistics">✈ Logística</button>
-          <button class="tab" role="tab" aria-selected="false" data-tab="cost">💰 Custos</button>
-          <button class="tab" role="tab" aria-selected="false" data-tab="gallery">📸 Galeria</button>
-        </div>
-        <div class="tab-panels">
-          <div class="tab-panel active" role="tabpanel" data-panel="diary">
-            <div class="hlights" data-highlights></div>
-            <blockquote class="memory" data-memory></blockquote>
-          </div>
-          <div class="tab-panel" role="tabpanel" data-panel="route" hidden>
-            <div class="mini-map" data-minimap></div>
-            <ol class="route-list" data-route-list></ol>
-          </div>
-          <div class="tab-panel" role="tabpanel" data-panel="logistics" hidden>
-            <div class="log-section">
-              <h4>Hotéis</h4>
-              <ul class="log-list" data-log-hotels></ul>
-            </div>
-            <div class="log-section">
-              <h4>Restaurantes</h4>
-              <ul class="log-list" data-log-restaurants></ul>
-            </div>
-            <div class="log-section">
-              <h4>Dicas</h4>
-              <p class="log-tips" data-log-tips></p>
-            </div>
-          </div>
-          <div class="tab-panel" role="tabpanel" data-panel="cost" hidden>
-            <div class="cost-total" data-cost-total></div>
-            <div class="cost-bars" data-cost-bars></div>
-            <p class="cost-note">Estimativa em <span data-cost-curr></span> · ~<span data-cost-day></span>/dia</p>
-          </div>
-          <div class="tab-panel" role="tabpanel" data-panel="gallery" hidden>
-            <div class="gallery" data-gallery></div>
-            <p class="gallery-empty" data-gallery-empty hidden>Sem fotos ainda — adicione URLs em <code>data/trips.json</code> (campo <code>gallery</code>).</p>
-          </div>
-        </div>
+        <div class="tabs" role="tablist" aria-label="Detalhes da viagem" data-tabs></div>
+        <div class="tab-panels" data-panels></div>
         <div class="card-actions">
           <button class="share-btn" data-share>
             <span aria-hidden="true">📤</span> Compartilhar
           </button>
           <button class="link-btn" data-permalink>🔗 Copiar link</button>
+          <button class="link-btn" data-ics hidden>📆 Adicionar à agenda</button>
+          <button class="link-btn" data-promote hidden>
+            <span data-promote-label>📅 Mover para Planejadas</span>
+          </button>
         </div>
       </div>
     </div>
   </article>
 </template>
+
+<!-- COMPARE DIALOG -->
+<dialog id="compareDialog" class="compare-dialog" aria-labelledby="compareTitle">
+  <form method="dialog" class="compare-sheet">
+    <header class="compare-head">
+      <h3 id="compareTitle">⚖ Comparar destinos</h3>
+      <button type="submit" class="compare-close" aria-label="Fechar">×</button>
+    </header>
+    <div class="compare-grid" id="compareGrid"></div>
+  </form>
+</dialog>
 
 <!-- SHARE DIALOG -->
 <dialog id="shareDialog" class="share-dialog" aria-labelledby="shareTitle">
