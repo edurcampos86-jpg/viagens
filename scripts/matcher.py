@@ -184,6 +184,28 @@ def apply_matched_fragments(
                 "amount": frag.amount,
             })
 
+        if frag.kind in ("hotel", "stay"):
+            entry: dict = {
+                "nome": frag.provider or "Hospedagem confirmada",
+                "confirmada": True,
+            }
+            if frag.checkin:
+                entry["check_in"] = frag.checkin
+            if frag.checkout:
+                entry["check_out"] = frag.checkout
+            if frag.amount:
+                entry["preco_real"] = {
+                    "valor": round(float(frag.amount), 2),
+                    "moeda": frag.currency or "BRL",
+                }
+            hospedagem = trip.setdefault("hospedagem", [])
+            duplicate = any(
+                h.get("nome") == entry["nome"] and h.get("check_in") == entry.get("check_in")
+                for h in hospedagem
+            )
+            if not duplicate:
+                hospedagem.append(entry)
+
         matched_count += 1
         updated_set[trip["id"]] = trip
 

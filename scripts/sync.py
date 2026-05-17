@@ -197,10 +197,28 @@ def load_trips() -> dict:
 
 def save_trips(data: dict) -> None:
     TRIPS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    TRIPS_PATH.write_text(
-        json.dumps(data, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    new_content = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
+    if TRIPS_PATH.exists():
+        old_content = TRIPS_PATH.read_text(encoding="utf-8")
+        if old_content == new_content:
+            return
+        backup_trips_existing()
+    TRIPS_PATH.write_text(new_content, encoding="utf-8")
+
+
+def backup_trips_existing() -> None:
+    """Snapshot do trips.json atual em data/backups/. Idempotente por dia:
+    preserva o PRIMEIRO backup do dia (estado mais próximo do início do dia)
+    e ignora chamadas seguintes do mesmo dia."""
+    if not TRIPS_PATH.exists():
+        return
+    backups_dir = REPO_ROOT / "data" / "backups"
+    backups_dir.mkdir(parents=True, exist_ok=True)
+    backup_path = backups_dir / f"trips.{date.today().isoformat()}.json"
+    if backup_path.exists():
+        return
+    backup_path.write_bytes(TRIPS_PATH.read_bytes())
+    log(f"backup criado: {backup_path.relative_to(REPO_ROOT)}")
 
 
 def get_credentials() -> Credentials:
@@ -481,6 +499,7 @@ def fragments_to_trips(fragments: list[TripFragment]) -> list[dict]:
                 "providers": providers,
                 "refs": [f.ref for f in b["fragments"] if f.ref],
             },
+            "hospedagem": [],
             "_auto": True,
         }
         trips.append(trip)
