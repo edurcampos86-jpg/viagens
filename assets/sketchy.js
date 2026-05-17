@@ -145,7 +145,16 @@
       const body = card.querySelector('.card-body');
       if (!body) return;
 
-      const state = loadChecklist(tripId);
+      const userState = loadChecklist(tripId);
+      const autoState = trip.checklistAuto || {};
+      // Merge: auto-detected (from email sync) wins UNLESS user explicitly unchecked.
+      // userState[k] === false means the user manually unchecked an auto item.
+      const state = {};
+      CHECKLIST.forEach(([k]) => {
+        if (userState[k] === false) state[k] = false;
+        else if (autoState[k]) state[k] = true;
+        else state[k] = !!userState[k];
+      });
       const total = CHECKLIST.length;
       const done = CHECKLIST.filter(([k]) => state[k]).length;
       const pct = Math.round((done / total) * 100);
@@ -165,12 +174,18 @@
         </h5>
         <div class="sk-progress"><div class="sk-progress-fill" style="width:${pct}%"></div></div>
         <ul>
-          ${CHECKLIST.map(([k, label]) => `
-            <li class="${state[k] ? 'done' : ''}">
+          ${CHECKLIST.map(([k, label]) => {
+            const auto = autoState[k];
+            const autoBadge = auto && typeof auto === 'object'
+              ? `<span class="sk-auto" title="Detectado via ${auto.provider || 'email'}${auto.ref ? ' (' + auto.ref + ')' : ''}${auto.amount ? ' · R$ ' + auto.amount.toFixed(2) : ''}">🔗 ${auto.provider || 'auto'}</span>`
+              : '';
+            return `
+            <li class="${state[k] ? 'done' : ''}${auto ? ' auto' : ''}">
               <input type="checkbox" data-k="${k}" ${state[k] ? 'checked' : ''} aria-label="${label}"/>
-              <span>${label}</span>
+              <span>${label}</span>${autoBadge}
             </li>
-          `).join('')}
+          `;
+          }).join('')}
         </ul>
       `;
 

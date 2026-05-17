@@ -591,6 +591,23 @@ html[data-theme="sketchy"] .sk-checklist li input[type="checkbox"] {
   flex-shrink: 0;
 }
 html[data-theme="sketchy"] .sk-checklist li.done span { text-decoration: line-through; opacity: 0.55; }
+html[data-theme="sketchy"] .sk-checklist li.auto {
+  background: linear-gradient(90deg, rgba(34,197,94,.12), transparent);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+html[data-theme="sketchy"] .sk-auto {
+  font-family: 'Patrick Hand', sans-serif;
+  font-size: 0.72rem;
+  background: rgba(34,197,94,.18);
+  color: #15803d;
+  border: 1px solid rgba(34,197,94,.4);
+  padding: 1px 8px;
+  border-radius: 99px;
+  font-weight: 700;
+  margin-left: 6px;
+  cursor: help;
+}
 html[data-theme="sketchy"] .sk-countdown {
   font-family: 'Caveat', cursive;
   font-size: 1.4rem;

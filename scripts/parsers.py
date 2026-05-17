@@ -41,6 +41,10 @@ class TripFragment:
     country: Optional[str] = None
     checkin: Optional[str] = None      # ISO date
     checkout: Optional[str] = None     # ISO date
+    amount: Optional[float] = None     # Price in BRL (or local currency, see currency)
+    currency: Optional[str] = None     # ISO 4217 (e.g. "BRL", "EUR")
+    event_name: Optional[str] = None   # For tickets: festival/event name
+    event_city: Optional[str] = None   # For tickets: city where event happens
 
     def to_dict(self) -> dict:
         return {k: v for k, v in asdict(self).items() if v is not None}
@@ -91,6 +95,71 @@ def matches_any(subject: str, body: str, keywords: list[str]) -> bool:
     return any(k.lower() in blob for k in keywords)
 
 
+def extract_amount(text: str) -> tuple[Optional[float], Optional[str]]:
+    """
+    Best-effort price extraction. Returns (amount, currency_code).
+    Recognizes patterns like:
+      R$ 1.234,56 · R$1234,56 · BRL 1234.56
+      EUR 1,234.56 · € 1.234,56
+      USD 99.99 · $ 99,99
+    Picks the LARGEST monetary value found (usually the trip total, not a tax line).
+    """
+    candidates: list[tuple[float, str]] = []
+    # Pattern A: prefix currency (R$, BRL, $, USD, EUR, €, £, GBP)
+    pat = re.compile(
+        r"(R\$|BRL|US\$|USD|\$|EUR|€|GBP|£)\s*([\d.,]+)",
+        re.IGNORECASE,
+    )
+    cur_map = {"r$": "BRL", "brl": "BRL", "us$": "USD", "usd": "USD",
+               "$": "USD", "eur": "EUR", "€": "EUR", "gbp": "GBP", "£": "GBP"}
+    for m in pat.finditer(text):
+        raw_cur = m.group(1).lower()
+        raw_amt = m.group(2)
+        cur = cur_map.get(raw_cur, "BRL")
+        val = _parse_amount_str(raw_amt)
+        if val is not None and val > 0:
+            candidates.append((val, cur))
+    # Pattern B: suffix currency ("99,99 BRL" / "1234.56 EUR")
+    pat2 = re.compile(r"([\d][\d.,]{2,})\s*(BRL|EUR|USD|GBP)\b", re.IGNORECASE)
+    for m in pat2.finditer(text):
+        val = _parse_amount_str(m.group(1))
+        if val is not None and val > 0:
+            candidates.append((val, m.group(2).upper()))
+    if not candidates:
+        return None, None
+    # Return the largest (trip total typically dominates line items / fees)
+    candidates.sort(key=lambda x: -x[0])
+    return candidates[0]
+
+
+def _parse_amount_str(s: str) -> Optional[float]:
+    """
+    Parse '1.234,56' (pt-BR) or '1,234.56' (en) or '1234' / '1234.56' / '1234,56'.
+    """
+    s = s.strip()
+    if not s:
+        return None
+    # If both . and , present: the LAST one is the decimal separator
+    if "." in s and "," in s:
+        if s.rfind(",") > s.rfind("."):
+            s = s.replace(".", "").replace(",", ".")
+        else:
+            s = s.replace(",", "")
+    elif "," in s:
+        # Decimal comma (pt-BR) — unless it's a thousands separator with no decimals
+        # Heuristic: if there are exactly 2 digits after the LAST comma, treat as decimal
+        right = s.rsplit(",", 1)[1]
+        if len(right) == 2:
+            s = s.replace(".", "").replace(",", ".")
+        else:
+            s = s.replace(",", "")
+    # Else: only dots, treat as standard
+    try:
+        return float(s)
+    except ValueError:
+        return None
+
+
 # ── per-provider parsers ─────────────────────────────────────────────
 
 def parse_booking(subject: str, body: str, from_addr: str) -> Optional[TripFragment]:
@@ -126,6 +195,7 @@ def parse_booking(subject: str, body: str, from_addr: str) -> Optional[TripFragm
     if not (city or ref):
         return None
 
+    amount, currency = extract_amount(body)
     return TripFragment(
         kind="hotel",
         provider="Booking.com",
@@ -134,6 +204,8 @@ def parse_booking(subject: str, body: str, from_addr: str) -> Optional[TripFragm
         city=city,
         checkin=checkin,
         checkout=checkout,
+        amount=amount,
+        currency=currency,
     )
 
 
@@ -190,6 +262,7 @@ def parse_latam(subject: str, body: str, from_addr: str) -> Optional[TripFragmen
 
     if not (origin and destination):
         return None
+    amount, currency = extract_amount(body)
     return TripFragment(
         kind="flight",
         provider="LATAM",
@@ -198,6 +271,8 @@ def parse_latam(subject: str, body: str, from_addr: str) -> Optional[TripFragmen
         origin=origin,
         destination=destination,
         checkin=checkin,
+        amount=amount,
+        currency=currency,
     )
 
 
@@ -263,9 +338,161 @@ def parse_gol(subject: str, body: str, from_addr: str) -> Optional[TripFragment]
     )
 
 
+# ── ticket / event parsers ───────────────────────────────────────────
+
+def _event_city_from_text(text: str) -> Optional[str]:
+    """Try to find a Brazilian city + UF or a major capital in the text."""
+    # "em São Paulo - SP" / "São Paulo/SP" / "Brasília, DF"
+    m = re.search(r"\b([A-ZÁÉÍÓÚÂÊÔÃÇ][A-Za-zÀ-ÿ\s'\-]+?)\s*[\-/,]\s*([A-Z]{2})\b", text)
+    if m:
+        return m.group(1).strip()
+    # Bare capital list (cheap fallback)
+    for city in ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador", "Belo Horizonte",
+                 "Curitiba", "Porto Alegre", "Florianópolis", "Recife", "Fortaleza",
+                 "Boom", "Bruxelas", "Antwerp", "Amsterdã"]:
+        if city.lower() in text.lower():
+            return city
+    return None
+
+
+def parse_sympla(subject: str, body: str, from_addr: str) -> Optional[TripFragment]:
+    """Sympla — Brazilian event/ticket platform."""
+    if "sympla" not in from_addr.lower() and "sympla" not in body.lower():
+        return None
+    if not matches_any(subject, body, [
+        "ingresso", "confirmação", "confirmacao", "pedido", "compra confirmada",
+        "ticket", "your order"
+    ]):
+        return None
+
+    # Event name often appears in subject after a colon, or as a line in body
+    event_name = None
+    m = re.search(r"(?:ingresso|seu pedido|confirmação)[:\s\-]+(.{5,80}?)(?:\.|\n|$)", subject + "\n" + body[:500], re.I)
+    if m:
+        event_name = m.group(1).strip(" -—:")
+    if not event_name:
+        # First non-empty line of body that's not the standard footer
+        for line in body.split("\n")[:15]:
+            line = line.strip()
+            if 5 < len(line) < 80 and "sympla" not in line.lower():
+                event_name = line
+                break
+
+    # Event date — Sympla often shows "qua, 15 de jun de 2026 19:00"
+    checkin = None
+    m = re.search(r"(\d{1,2}\s+(?:de\s+)?[a-zç]{3,9}(?:\s+de)?\s+\d{4})", body, re.I)
+    if m:
+        d = parse_date_flexible(m.group(1))
+        if d:
+            checkin = d.isoformat()
+
+    ref = None
+    m = re.search(r"(?:pedido|order)[\s#:]*([A-Z0-9\-]{6,20})", body, re.I)
+    if m:
+        ref = m.group(1)
+
+    amount, currency = extract_amount(body)
+    city = _event_city_from_text(body)
+
+    return TripFragment(
+        kind="ticket",
+        provider="Sympla",
+        raw_subject=subject,
+        ref=ref,
+        city=city,
+        event_city=city,
+        event_name=event_name,
+        checkin=checkin,
+        amount=amount,
+        currency=currency,
+    )
+
+
+def parse_ingresse(subject: str, body: str, from_addr: str) -> Optional[TripFragment]:
+    """Ingresse — Brazilian event ticket platform."""
+    if "ingresse" not in from_addr.lower() and "ingresse" not in body.lower():
+        return None
+    if not matches_any(subject, body, ["ingresso", "confirma", "compra"]):
+        return None
+
+    event_name = None
+    m = re.search(r"(?:evento|event)[:\s]+(.{5,80}?)(?:\.|\n)", body, re.I)
+    if m:
+        event_name = m.group(1).strip()
+
+    checkin = None
+    m = re.search(r"(\d{1,2}/\d{1,2}/\d{2,4}|\d{1,2}\s+[a-zç]{3,9}\s+\d{4})", body)
+    if m:
+        d = parse_date_flexible(m.group(1))
+        if d:
+            checkin = d.isoformat()
+
+    amount, currency = extract_amount(body)
+    city = _event_city_from_text(body)
+
+    return TripFragment(
+        kind="ticket",
+        provider="Ingresse",
+        raw_subject=subject,
+        city=city,
+        event_city=city,
+        event_name=event_name,
+        checkin=checkin,
+        amount=amount,
+        currency=currency,
+    )
+
+
+def parse_eventim(subject: str, body: str, from_addr: str) -> Optional[TripFragment]:
+    """Eventim — international ticket platform."""
+    if "eventim" not in from_addr.lower() and "eventim" not in body.lower():
+        return None
+    if not matches_any(subject, body, ["ticket", "ingresso", "confirma", "purchase"]):
+        return None
+
+    amount, currency = extract_amount(body)
+    city = _event_city_from_text(body)
+
+    return TripFragment(
+        kind="ticket",
+        provider="Eventim",
+        raw_subject=subject,
+        city=city,
+        event_city=city,
+        amount=amount,
+        currency=currency or "EUR",
+    )
+
+
+def parse_tomorrowland(subject: str, body: str, from_addr: str) -> Optional[TripFragment]:
+    """Tomorrowland — Belgian festival, direct from tomorrowland.com."""
+    if "tomorrowland" not in from_addr.lower() and "tomorrowland" not in subject.lower():
+        return None
+    if not matches_any(subject, body, ["ticket", "package", "confirma", "boom", "registration"]):
+        return None
+
+    amount, currency = extract_amount(body)
+    # Tomorrowland is in Boom, Belgium
+    return TripFragment(
+        kind="ticket",
+        provider="Tomorrowland",
+        raw_subject=subject,
+        city="Boom",
+        country="Bélgica",
+        event_city="Boom",
+        event_name="Tomorrowland",
+        amount=amount,
+        currency=currency or "EUR",
+    )
+
+
 # ── registry ─────────────────────────────────────────────────────────
 
-PARSERS = [parse_booking, parse_airbnb, parse_latam, parse_decolar, parse_smiles, parse_gol]
+PARSERS = [
+    parse_booking, parse_airbnb,
+    parse_latam, parse_decolar, parse_smiles, parse_gol,
+    parse_sympla, parse_ingresse, parse_eventim, parse_tomorrowland,
+]
 
 
 def parse_email(subject: str, body: str, from_addr: str) -> Optional[TripFragment]:

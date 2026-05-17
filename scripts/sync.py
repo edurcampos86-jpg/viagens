@@ -36,6 +36,12 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 
 from parsers import parse_email, TripFragment
+from matcher import (
+    apply_matched_fragments,
+    match_fragment_to_trip,
+    KIND_TO_CHECKLIST,
+    KIND_TO_BUDGET,
+)
 
 # ── paths ────────────────────────────────────────────────────────────
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -64,7 +70,9 @@ INITIAL_LOOKBACK_DAYS = 365
 # Gmail search — junta domínios que mandam confirmações relevantes
 GMAIL_QUERY = (
     "(from:booking.com OR from:airbnb.com OR from:latam.com OR from:smiles.com.br "
-    "OR from:decolar.com OR from:despegar.com OR from:voegol.com.br) "
+    "OR from:decolar.com OR from:despegar.com OR from:voegol.com.br "
+    "OR from:sympla.com.br OR from:ingresse.com OR from:eventim.com "
+    "OR from:tomorrowland.com OR from:newsletter@tomorrowland.com) "
     "newer_than:{days}d"
 )
 
@@ -547,7 +555,9 @@ def backfill_existing_photos(creds: Credentials, trips: list[dict]) -> tuple[int
 
 # ── report ──────────────────────────────────────────────────────────
 
-def write_report(added: list[dict], photo_count: int, backfilled: Optional[list[dict]] = None) -> None:
+def write_report(added: list[dict], photo_count: int,
+                 backfilled: Optional[list[dict]] = None,
+                 updated_trips: Optional[list[dict]] = None) -> None:
     lines = [
         "# Sync report",
         "",
@@ -556,14 +566,37 @@ def write_report(added: list[dict], photo_count: int, backfilled: Optional[list[
     if backfilled is not None:
         lines.append(f"Mode: **backfill** · Trips updated: **{len(backfilled)}** · Photos attached: **{photo_count}**")
     else:
-        lines.append(f"Trips added: **{len(added)}**  ·  Photos attached: **{photo_count}**")
+        n_upd = len(updated_trips or [])
+        lines.append(f"Trips added: **{len(added)}** · Auto-updated: **{n_upd}** · Photos attached: **{photo_count}**")
     lines.append("")
+
+    if updated_trips:
+        lines.append("## 🔗 Trips auto-updated (checklist / orçamento)")
+        for t in updated_trips:
+            lines.append(f"- **{t.get('flag','')} {t.get('name')}** — {t.get('label')} "
+                         f"({t.get('country')})")
+            auto = t.get("checklistAuto") or {}
+            for key, meta in auto.items():
+                if isinstance(meta, dict):
+                    amt = meta.get("amount")
+                    amt_s = f" · R$ {amt:.2f}" if amt else ""
+                    lines.append(f"  - ✓ checklist `{key}`: {meta.get('provider','')}"
+                                 f"{' (' + meta.get('ref','') + ')' if meta.get('ref') else ''}{amt_s}")
+            budget = t.get("budget") or {}
+            committed = budget.get("committed") or {}
+            if committed:
+                total = sum(float(v or 0) for v in committed.values())
+                lines.append(f"  - 💰 comprometido: {budget.get('currency','BRL')} {total:.2f} "
+                             f"({', '.join(f'{k}={v}' for k, v in committed.items())})")
+        lines.append("")
+
     if backfilled:
         lines.append("## Trips with backfilled photos")
         for t in backfilled:
             n = len(t.get("gallery") or [])
             lines.append(f"- **{t.get('flag','')} {t.get('name')}** — {t.get('label')} "
                          f"({t.get('country')}): {n} photos")
+        lines.append("")
     if added:
         lines.append("## New trips")
         for t in added:
@@ -600,8 +633,16 @@ def main() -> int:
         return 0
 
     fragments = fetch_gmail_fragments(creds, state)
-    new_trips = fragments_to_trips(fragments)
-    log(f"Built {len(new_trips)} new trip candidates from {len(fragments)} fragments.")
+
+    # First pass: match each fragment to existing planned trips, updating
+    # checklistAuto + budget.committed in-place. Unmatched fragments fall through.
+    matched_count, unmatched, updated_trips = apply_matched_fragments(fragments, existing)
+    log(f"Matched {matched_count} fragment(s) to existing trips "
+        f"(updated {len(updated_trips)}). {len(unmatched)} unmatched.")
+
+    # Second pass: build new-trip candidates only from unmatched fragments.
+    new_trips = fragments_to_trips(unmatched)
+    log(f"Built {len(new_trips)} new trip candidates from {len(unmatched)} unmatched fragments.")
 
     combined, added = merge_trips(existing, new_trips)
     log(f"After merge: {len(combined)} total, {len(added)} added.")
@@ -609,14 +650,17 @@ def main() -> int:
     photo_count = 0
     if added:
         photo_count = attach_photos(creds, combined, added)
+
+    # Persist if anything changed (matched updates OR new additions)
+    if added or updated_trips:
         trips_data["trips"] = combined
         save_trips(trips_data)
 
     save_state(state)
-    write_report(added, photo_count)
+    write_report(added, photo_count, updated_trips=updated_trips)
 
-    if not added:
-        log("No new trips — nothing to commit.")
+    if not added and not updated_trips:
+        log("No changes — nothing to commit.")
     return 0
 
 
