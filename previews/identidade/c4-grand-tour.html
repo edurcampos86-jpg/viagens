@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposta C4 — Solar (vibrante, claro, dinâmico)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+  :root {
+    --bg:        #fff8ee;          /* warm cream */
+    --bg-deep:   #fdedd0;          /* darker cream */
+    --bg-card:   #ffffff;
+    --fg:        #0d3858;          /* deep ocean blue */
+    --fg-soft:   #2a5673;
+    --muted:     #6e8294;
+    --line:      #f0e3d0;
+    --line-2:    #e3d4ba;
+
+    --coral:     #ff5c3d;          /* sunset coral — accent principal */
+    --coral-d:   #e84221;
+    --coral-soft:#ffe9e1;
+    --ocean:     #1e88a8;          /* turquoise ocean */
+    --ocean-d:   #186e89;
+    --ocean-soft:#dbeff5;
+    --sun:       #f4a024;          /* golden sun */
+    --sun-d:     #d68610;
+    --sun-soft:  #fff0d1;
+    --leaf:      #4a9b5e;          /* green for sync/positive */
+    --leaf-soft: #e0f0e2;
+
+    --shadow-1:  0 1px 2px rgba(13,56,88,.05), 0 4px 12px rgba(13,56,88,.06);
+    --shadow-2:  0 8px 24px rgba(13,56,88,.10), 0 2px 6px rgba(13,56,88,.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--fg); -webkit-font-smoothing: antialiased; }
+  body { font-family: 'Inter', -apple-system, sans-serif; font-size: 16px; line-height: 1.5; }
+  .micro { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; }
+
+  /* Sutil paper grain */
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+    background:
+      radial-gradient(ellipse 800px 600px at 10% 10%, rgba(244,160,36,.08), transparent),
+      radial-gradient(ellipse 700px 500px at 90% 80%, rgba(255,92,61,.06), transparent);
+  }
+
+  .back { position: fixed; top: 20px; left: 20px; z-index: 1000; background: rgba(255,255,255,.92); backdrop-filter: blur(8px); padding: 8px 14px; border: 1px solid var(--line-2); border-radius: 999px; text-decoration: none; color: var(--fg); font-size: 13px; font-weight: 600; transition: all .2s; box-shadow: var(--shadow-1); }
+  .back:hover { background: var(--coral); color: white; border-color: var(--coral); transform: translateX(-2px); }
+
+  /* === HERO === */
+  .hero { position: relative; height: 92vh; min-height: 560px; background: var(--fg) center/cover no-repeat; overflow: hidden; }
+  .hero::after { content: ""; position: absolute; inset: 0; background:
+    linear-gradient(180deg, rgba(13,56,88,.55) 0%, rgba(13,56,88,.05) 35%, transparent 55%, rgba(255,92,61,.35) 88%, rgba(244,160,36,.5) 100%);
+  }
+  .hero-content { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 32px 24px 56px; color: white; z-index: 2; }
+  @media (min-width: 720px) { .hero-content { padding: 40px 56px 64px; } }
+  .hero-top { display: flex; align-items: center; gap: 12px; }
+  .hero-top .micro { color: var(--sun); }
+  .hero-top .sep { width: 32px; height: 2px; background: var(--sun); border-radius: 1px; }
+  .hero-bottom { max-width: 920px; }
+  .hero-kicker { color: var(--sun); margin-bottom: 16px; text-shadow: 0 2px 8px rgba(0,0,0,.3); }
+  .hero-title { font-weight: 800; font-size: clamp(48px, 10vw, 128px); letter-spacing: -0.04em; line-height: 0.92; color: white; text-shadow: 0 2px 20px rgba(0,0,0,.25); }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 28px; color: rgba(255,255,255,.9); font-size: 14px; font-weight: 500; }
+  .hero-cd { position: absolute; bottom: 56px; right: 24px; text-align: right; z-index: 3; padding: 20px 28px; background: rgba(255,255,255,.12); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.2); border-radius: 12px; animation: pulse-glow 3s ease-in-out infinite; }
+  @media (min-width: 720px) { .hero-cd { right: 56px; } }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 24px rgba(244,160,36,.3); }
+    50% { box-shadow: 0 0 40px rgba(255,92,61,.5); }
+  }
+  .hero-cd-n { font-weight: 800; font-size: clamp(56px, 10vw, 112px); letter-spacing: -0.05em; line-height: 0.85;
+    background: linear-gradient(135deg, var(--sun) 0%, var(--coral) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero-cd-l { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; margin-top: 6px; color: rgba(255,255,255,.85); font-weight: 700; }
+
+  /* === STATS === */
+  .stats { padding: 48px 24px; background: var(--bg); }
+  .stats-grid { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (min-width: 720px) { .stats-grid { grid-template-columns: repeat(4, 1fr); padding: 0 32px; gap: 24px; } }
+  .stat { background: var(--bg-card); border-radius: 12px; padding: 20px 22px; box-shadow: var(--shadow-1); border-top: 3px solid var(--coral); transition: transform .2s, box-shadow .2s; }
+  .stat:nth-child(2) { border-top-color: var(--ocean); }
+  .stat:nth-child(3) { border-top-color: var(--sun); }
+  .stat:nth-child(4) { border-top-color: var(--leaf); }
+  .stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
+  .stat-n { font-weight: 800; font-size: clamp(32px, 5vw, 44px); letter-spacing: -0.03em; line-height: 1; color: var(--fg); }
+  .stat-l { color: var(--muted); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; margin-top: 8px; font-weight: 700; }
+
+  /* === AGENTES === */
+  .agents { padding: 24px 0 48px; }
+  .agents-head { max-width: 1240px; margin: 0 auto 20px; padding: 0 24px; display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  @media (min-width: 720px) { .agents-head { padding: 0 56px; } }
+  .agents-h { font-weight: 700; font-size: 22px; letter-spacing: -0.02em; color: var(--fg); display: flex; align-items: center; gap: 10px; }
+  .agents-h .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--leaf); animation: live-pulse 2s ease-in-out infinite; }
+  @keyframes live-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(74,155,94,.5); }
+    50% { box-shadow: 0 0 0 6px rgba(74,155,94,0); }
+  }
+  .agents-sub { color: var(--muted); font-size: 12px; }
+  .agents-track { max-width: 1240px; margin: 0 auto; padding: 0 24px 8px; overflow-x: auto; scrollbar-width: thin; }
+  @media (min-width: 720px) { .agents-track { padding: 0 56px 8px; } }
+  .agents-row { display: flex; gap: 14px; padding-bottom: 14px; min-width: max-content; }
+  .agent-card { background: var(--bg-card); border-radius: 10px; padding: 16px 18px; min-width: 290px; max-width: 330px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow-1); transition: all .2s; cursor: pointer; position: relative; overflow: hidden; }
+  .agent-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+  .agent-card.audit::before  { background: linear-gradient(180deg, var(--coral) 0%, var(--coral-d) 100%); }
+  .agent-card.curate::before { background: linear-gradient(180deg, var(--ocean) 0%, var(--ocean-d) 100%); }
+  .agent-card.sync::before   { background: linear-gradient(180deg, var(--leaf) 0%, #3a7d4b 100%); }
+  .agent-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-2); }
+  .agent-card.audit:hover  { background: linear-gradient(180deg, white 60%, var(--coral-soft) 100%); }
+  .agent-card.curate:hover { background: linear-gradient(180deg, white 60%, var(--ocean-soft) 100%); }
+  .agent-card.sync:hover   { background: linear-gradient(180deg, white 60%, var(--leaf-soft) 100%); }
+  .agent-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 800; }
+  .agent-badge.audit  { color: var(--coral-d); }
+  .agent-badge.curate { color: var(--ocean-d); }
+  .agent-badge.sync   { color: #3a7d4b; }
+  .agent-msg { font-size: 14px; line-height: 1.45; color: var(--fg); }
+  .agent-msg strong { color: var(--fg); font-weight: 700; }
+  .agent-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* === SECTIONS gerais === */
+  .sec { padding: 64px 24px 48px; max-width: 1240px; margin: 0 auto; }
+  @media (min-width: 720px) { .sec { padding: 88px 56px 64px; } }
+  .sec-head { margin-bottom: 32px; display: flex; align-items: baseline; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  .sec-h { font-weight: 800; font-size: clamp(32px, 5vw, 56px); letter-spacing: -0.03em; line-height: 1; color: var(--fg); }
+  .sec-h em { font-style: normal;
+    background: linear-gradient(120deg, var(--coral) 0%, var(--sun) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sec-count { color: var(--muted); font-weight: 600; font-size: 14px; }
+  .sec-sub { color: var(--muted); font-size: 14px; max-width: 560px; margin-top: 8px; }
+
+  /* === KANBAN === */
+  .kanban-sec { padding: 64px 0; background: linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%); position: relative; }
+  .kanban-head { max-width: 1240px; margin: 0 auto 32px; padding: 0 24px; display: flex; align-items: baseline; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  @media (min-width: 720px) { .kanban-head { padding: 0 56px; } }
+  .kanban { max-width: 1240px; margin: 0 auto; padding: 0 24px; display: grid; gap: 20px; grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .kanban { padding: 0 56px; grid-template-columns: 1fr 1fr 1fr; gap: 24px; } }
+  .col { background: var(--bg-card); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 12px; min-height: 240px; box-shadow: var(--shadow-1); position: relative; overflow: hidden; }
+  .col::before { content: ""; position: absolute; left: 0; top: 0; right: 0; height: 4px; }
+  .col.confirmed::before  { background: linear-gradient(90deg, var(--coral), var(--coral-d)); }
+  .col.planning::before   { background: linear-gradient(90deg, var(--sun), var(--coral)); }
+  .col.wish::before       { background: linear-gradient(90deg, var(--ocean), #66c0d8); }
+  .col-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .col-h { font-weight: 700; font-size: 16px; color: var(--fg); display: flex; align-items: center; gap: 8px; }
+  .col-h .icon { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 11px; }
+  .col-h .icon.confirmed { background: var(--coral); color: white; }
+  .col-h .icon.planning  { background: var(--sun); color: white; }
+  .col-h .icon.wish      { background: var(--ocean); color: white; }
+  .col-count { font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: 0.12em; padding: 2px 8px; background: var(--bg); border-radius: 999px; }
+  .col-empty { color: var(--muted); font-size: 13px; font-style: italic; padding: 16px 0; text-align: center; }
+
+  .next-card { background: var(--bg); border-radius: 10px; padding: 14px 16px; transition: all .2s; cursor: pointer; position: relative; overflow: hidden; }
+  .next-card:hover { transform: translateX(2px); background: white; box-shadow: var(--shadow-1); }
+  .next-card-photo { width: 100%; aspect-ratio: 16/8; background: var(--line) center/cover no-repeat; border-radius: 6px; margin-bottom: 10px; }
+  .next-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .next-card-flag { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.05em; }
+  .next-card-flag .flag { font-size: 16px; margin-right: 4px; }
+  .next-card-cd { font-weight: 800; font-size: 13px;
+    background: linear-gradient(135deg, var(--coral) 0%, var(--sun) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .next-card-cd.distant { color: var(--muted); background: none; -webkit-background-clip: unset; background-clip: unset; -webkit-text-fill-color: var(--muted); }
+  .next-card-name { font-weight: 700; font-size: 15px; line-height: 1.25; margin-bottom: 4px; color: var(--fg); }
+  .next-card-meta { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
+  .next-card-bar { height: 3px; background: var(--line); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+  .next-card-bar > div { height: 100%; background: linear-gradient(90deg, var(--ocean), var(--leaf)); transition: width 1s cubic-bezier(.2,.7,.2,1); }
+  .next-card-status { font-size: 10px; color: var(--muted); margin-top: 6px; letter-spacing: 0.05em; font-weight: 600; }
+  .next-card-decision { font-size: 12px; color: var(--coral-d); margin-top: 10px; padding: 6px 10px; background: var(--coral-soft); border-radius: 6px; border-left: 2px solid var(--coral); font-weight: 500; display: flex; gap: 6px; align-items: flex-start; }
+  .next-card-decision::before { content: "⚠"; flex-shrink: 0; }
+
+  /* === MAPA === */
+  .map-section { padding: 64px 0; background: var(--bg); border-top: 1px solid var(--line); }
+  .map-head { max-width: 1240px; margin: 0 auto 24px; padding: 0 24px; display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  @media (min-width: 720px) { .map-head { padding: 0 56px; } }
+  .map-controls { display: flex; gap: 6px; flex-wrap: wrap; }
+  .map-btn { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700; background: var(--bg-card); color: var(--fg-soft); border: 1px solid var(--line-2); padding: 8px 14px; border-radius: 999px; cursor: pointer; transition: all .2s; box-shadow: var(--shadow-1); }
+  .map-btn.active { background: linear-gradient(135deg, var(--coral), var(--coral-d)); color: white; border-color: var(--coral-d); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,92,61,.3); }
+  .map-btn:hover:not(.active) { color: var(--fg); border-color: var(--coral); }
+  #map-wrap { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+  @media (min-width: 720px) { #map-wrap { padding: 0 56px; } }
+  #map { width: 100%; height: 70vh; min-height: 480px; background: #eaf2f5; border-radius: 14px; box-shadow: var(--shadow-2); overflow: hidden; }
+  /* Pins coloridos por continente */
+  .pin {
+    width: 14px; height: 14px; border-radius: 50%;
+    cursor: pointer; transition: transform .15s;
+  }
+  .pin.done    { border: 2px solid white; }
+  .pin.planned { background: transparent !important; border: 3px solid; }
+  .pin.wish    { background: white !important; border: 2px solid; }
+  .pin:hover { transform: scale(1.5); }
+  .pin.pulse { animation: pin-pulse 2s ease-in-out infinite; }
+  @keyframes pin-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 currentColor; }
+    50%      { box-shadow: 0 0 0 10px transparent; }
+  }
+  .leaflet-popup-content-wrapper { background: white; color: var(--fg); border-radius: 10px; padding: 4px 6px; box-shadow: var(--shadow-2); }
+  .leaflet-popup-tip { background: white; }
+  .leaflet-popup-content { margin: 12px 16px; font-family: 'Inter', sans-serif; font-size: 13px; }
+  .leaflet-popup-content .pop-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; color: var(--fg); }
+  .leaflet-popup-content .pop-meta { color: var(--muted); font-size: 11px; letter-spacing: 0.05em; font-weight: 600; }
+  .leaflet-popup-content .pop-tag { display: inline-block; margin-top: 6px; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  .pop-tag.done    { background: var(--leaf-soft); color: #3a7d4b; }
+  .pop-tag.planned { background: var(--coral-soft); color: var(--coral-d); }
+  .pop-tag.wish    { background: var(--ocean-soft); color: var(--ocean-d); }
+
+  /* === ÚLTIMA === */
+  .last { display: grid; grid-template-columns: 1fr; gap: 32px; }
+  @media (min-width: 760px) { .last { grid-template-columns: 1.2fr 1fr; gap: 64px; align-items: center; } }
+  .last-img { aspect-ratio: 4/5; background: var(--line) center/cover no-repeat; border-radius: 14px; box-shadow: var(--shadow-2); }
+  .last-meta { display: flex; flex-direction: column; gap: 16px; }
+  .last-name { font-weight: 800; font-size: clamp(36px, 6vw, 56px); letter-spacing: -0.03em; line-height: 1; color: var(--fg); }
+  .last-dates { color: var(--muted); font-size: 15px; font-weight: 500; }
+  .last-memory { font-size: 18px; line-height: 1.55; color: var(--fg-soft); max-width: 500px; border-left: 3px solid var(--coral); padding-left: 20px; margin-top: 12px; font-style: italic; }
+
+  /* === TIMELINE === */
+  .timeline-section { padding: 64px 0 96px; background: var(--bg); border-top: 1px solid var(--line); }
+  .timeline-head { max-width: 1240px; margin: 0 auto 56px; padding: 0 24px; display: flex; align-items: baseline; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  @media (min-width: 720px) { .timeline-head { padding: 0 56px; } }
+  .timeline { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; }
+  @media (min-width: 760px) { .timeline { padding: 0 56px; } }
+  @media (min-width: 760px) {
+    .timeline::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, var(--coral) 0%, var(--sun) 50%, var(--ocean) 100%); transform: translateX(-1px); border-radius: 1px; opacity: 0.25; }
+  }
+  .year-block { position: relative; }
+  .year-marker { position: relative; margin: 48px 0 24px; text-align: center; z-index: 2; }
+  @media (max-width: 759px) { .year-marker { text-align: left; } }
+  .year-marker .year-n { display: inline-block; font-weight: 900; font-size: 64px; letter-spacing: -0.04em; padding: 0 18px; background: var(--bg); position: relative; z-index: 1; line-height: 1;
+    background-image: linear-gradient(135deg, var(--coral) 0%, var(--sun) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .year-marker .year-narrative { font-size: 13px; color: var(--muted); margin-top: 8px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.5; font-weight: 500; }
+  @media (max-width: 759px) { .year-marker .year-narrative { margin-left: 0; } }
+
+  .tl-entry { display: grid; grid-template-columns: 1fr; gap: 16px; margin: 24px 0 56px; position: relative; }
+  @media (min-width: 760px) {
+    .tl-entry { grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+    .tl-entry.right > .tl-meta { order: 2; padding-left: 24px; }
+    .tl-entry.right > .tl-photo { order: 1; padding-right: 24px; }
+    .tl-entry.left > .tl-meta { padding-right: 24px; text-align: right; }
+    .tl-entry.left > .tl-photo { padding-left: 24px; }
+    .tl-entry::before { content: ""; position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--coral), var(--sun));
+      transform: translate(-50%, -50%); z-index: 2; box-shadow: 0 0 0 4px var(--bg), 0 0 16px rgba(255,92,61,.4);
+    }
+  }
+  .tl-photo { aspect-ratio: 4/3; background: var(--line) center/cover no-repeat; border-radius: 10px; box-shadow: var(--shadow-1); transition: transform .3s, box-shadow .3s; }
+  .tl-entry:hover .tl-photo { transform: scale(1.02); box-shadow: var(--shadow-2); }
+  .tl-meta { display: flex; flex-direction: column; gap: 10px; }
+  .tl-kicker { color: var(--coral-d); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; }
+  .tl-name { font-weight: 800; font-size: clamp(22px, 3vw, 30px); letter-spacing: -0.02em; line-height: 1.1; color: var(--fg); }
+  .tl-sub { color: var(--muted); font-size: 13px; font-weight: 500; }
+  .tl-memory { color: var(--fg-soft); font-size: 15px; line-height: 1.55; margin-top: 4px; font-style: italic; }
+  .tl-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  @media (min-width: 760px) { .tl-entry.left .tl-tags { justify-content: flex-end; } }
+  .tl-tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; color: var(--ocean-d); padding: 3px 10px; background: var(--ocean-soft); border-radius: 999px; }
+
+  .ft { padding: 64px 24px 48px; text-align: center; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); background: var(--bg-deep); }
+  .ft strong { color: var(--coral-d); }
+
+  /* === Animações de entrada === */
+  .fade-in { opacity: 0; transform: translateY(12px); animation: fade-up .6s ease-out forwards; }
+  @keyframes fade-up { to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+  <a class="back" href="index.html">← Voltar</a>
+
+  <!-- HERO -->
+  <section class="hero" id="hero" hidden>
+    <div class="hero-content">
+      <div class="hero-top">
+        <span class="micro">Eduardo Campos</span>
+        <span class="sep"></span>
+        <span class="micro">Próxima viagem</span>
+      </div>
+      <div class="hero-bottom">
+        <div class="micro hero-kicker" id="hero-eyebrow"></div>
+        <h1 class="hero-title" id="hero-name"></h1>
+        <div class="hero-meta">
+          <span id="hero-dates"></span>
+          <span>·</span>
+          <span id="hero-place"></span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-cd" id="hero-cd" hidden>
+      <div class="hero-cd-n" id="hero-cd-n"></div>
+      <div class="hero-cd-l">dias para partir</div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats">
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-n" id="stat-trips">—</div><div class="stat-l">viagens realizadas</div></div>
+      <div class="stat"><div class="stat-n" id="stat-countries">—</div><div class="stat-l">países visitados</div></div>
+      <div class="stat"><div class="stat-n" id="stat-continents">—</div><div class="stat-l">continentes</div></div>
+      <div class="stat"><div class="stat-n" id="stat-km">—</div><div class="stat-l">mil km voados</div></div>
+    </div>
+  </section>
+
+  <!-- AGENTES -->
+  <section class="agents">
+    <div class="agents-head">
+      <div class="agents-h"><span class="live-dot"></span>Agentes em background</div>
+      <div class="agents-sub">Auditor · Curador · Sync — mockups gerados dos seus dados reais</div>
+    </div>
+    <div class="agents-track">
+      <div class="agents-row" id="agents-row"></div>
+    </div>
+  </section>
+
+  <!-- KANBAN PRÓXIMAS -->
+  <section class="kanban-sec">
+    <div class="kanban-head">
+      <div>
+        <h2 class="sec-h">Próximas <em>viagens</em></h2>
+        <p class="sec-sub">Visão compacta — confirmadas, em planejamento e sonhos. O Modo Planejamento (Fase 4) expande isto.</p>
+      </div>
+    </div>
+    <div class="kanban" id="kanban"></div>
+  </section>
+
+  <!-- MAPA -->
+  <section class="map-section">
+    <div class="map-head">
+      <div>
+        <h2 class="sec-h">A geografia <em>de tudo isto</em></h2>
+        <p class="sec-sub">Pins coloridos por continente · forma indica status · linhas tracejadas mostram rotas a percorrer.</p>
+      </div>
+      <div class="map-controls" id="map-controls">
+        <button class="map-btn active" data-filter="all">Tudo</button>
+        <button class="map-btn" data-filter="done">Realizadas</button>
+        <button class="map-btn" data-filter="planned">Próximas</button>
+        <button class="map-btn" data-filter="wishlist">Wishlist</button>
+      </div>
+    </div>
+    <div id="map-wrap"><div id="map"></div></div>
+  </section>
+
+  <!-- ÚLTIMA -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="sec-h">A última <em>memória</em></h2>
+      <span class="sec-count" id="last-count"></span>
+    </div>
+    <div class="last" id="last" hidden>
+      <div class="last-img" id="last-img"></div>
+      <div class="last-meta">
+        <div class="micro" id="last-kicker" style="color:var(--coral-d);"></div>
+        <h3 class="last-name" id="last-name"></h3>
+        <div class="last-dates" id="last-dates"></div>
+        <p class="last-memory" id="last-memory"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section class="timeline-section">
+    <div class="timeline-head">
+      <div>
+        <h2 class="sec-h">A linha <em>do tempo</em></h2>
+        <p class="sec-sub" style="margin-top:8px;">A história das viagens, ano por ano. Marcadores narrativos resumem cada período.</p>
+      </div>
+      <span class="sec-count">do mais recente ao mais antigo</span>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <footer class="ft">
+    Proposta C4 — Solar · vibrante · claro · dinâmico · paleta <strong>creme + ocean + coral + sun + leaf</strong> · interatividade no mapa, kanban e agentes
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script type="module">
+    const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const CONT_COLOR = { Asia: '#1e88a8', Europe: '#5b6bd6', Americas: '#4a9b5e', Africa: '#f4a024', Oceania: '#a26ed8' };
+    const fmtDate = iso => { if (!iso) return ''; const [y,m,d] = iso.split('-'); return `${parseInt(d)} ${MONTHS[parseInt(m)-1]}, ${y}`; };
+    const fmtRange = (s,e) => s && e ? `${fmtDate(s)} → ${fmtDate(e)}` : (s ? fmtDate(s) : '');
+    const imgFor = (trip, w=1600, h=900) => `https://picsum.photos/seed/${encodeURIComponent(trip.id)}/${w}/${h}`;
+    const CONTINENT = c => ({Asia:'Ásia',Europe:'Europa',Americas:'Américas',Africa:'África',Oceania:'Oceania'})[c] || c;
+    const fmtNum = n => new Intl.NumberFormat('pt-BR').format(n);
+
+    const tripStart = t => t.startDate || (t.year && t.month ? `${t.year}-${String(t.month).padStart(2,'0')}-01` : null);
+    const daysUntil = t => { const s = tripStart(t); if (!s) return null; const today = new Date(); today.setHours(0,0,0,0); return Math.round((new Date(s+'T00:00:00') - today) / 86400000); };
+
+    const SP = [-23.5505, -46.6333];
+    let map, allMarkers = [], routeLines = [];
+
+    function pinHtml(status, color) {
+      const cls = status === 'done' ? 'done' : status === 'wishlist' ? 'wish' : 'planned';
+      const pulse = (status === 'planned' || status === 'em_planejamento') ? 'pulse' : '';
+      return `<div class="pin ${cls} ${pulse}" style="background:${color};color:${color};border-color:${color};"></div>`;
+    }
+    function iconFor(t) {
+      const color = CONT_COLOR[t.continent] || '#888';
+      return L.divIcon({ className: '', html: pinHtml(t.status, color), iconSize: [16, 16], iconAnchor: [8, 8] });
+    }
+    function tripStatusForMap(t) {
+      if (t.status === 'done') return 'done';
+      if (t.status === 'wishlist') return 'wishlist';
+      return 'planned';
+    }
+    function applyMapFilter(filter) {
+      allMarkers.forEach(({ marker, status }) => {
+        const visible = filter === 'all' || filter === status;
+        if (visible) marker.addTo(map);
+        else map.removeLayer(marker);
+      });
+      routeLines.forEach(line => {
+        const visible = filter === 'all' || filter === 'planned';
+        if (visible) line.addTo(map);
+        else map.removeLayer(line);
+      });
+    }
+
+    function buildAgentsMockup(trips) {
+      const planned = trips.filter(t => t.status === 'planned' || t.status === 'em_planejamento');
+      const wishlist = trips.filter(t => t.status === 'wishlist');
+      const proxima = planned.sort((a,b) => daysUntil(a) - daysUntil(b))[0];
+      const semHotel = planned.filter(t => !t.hospedagem || t.hospedagem.length === 0)[0];
+
+      const cards = [];
+      cards.push({ type: 'audit', msg: `Passaporte com validade desconhecida — preencha <strong>documentos.json</strong> para o Auditor cruzar com suas datas.`, meta: 'Auditor · hoje' });
+      if (semHotel) cards.push({ type: 'audit', msg: `<strong>${semHotel.name}</strong> está em <em>em_planejamento</em> sem hospedagem confirmada — faltam ${daysUntil(semHotel)} dias.`, meta: `Auditor · ${daysUntil(semHotel)}d` });
+      cards.push({ type: 'curate', msg: wishlist[0] ? `<strong>${wishlist[0].name}</strong>: o Curador vai monitorar oportunidades (voo direto, promoção, alta temporada).` : 'Sem wishlist ativa para o Curador acompanhar.', meta: 'Curador · em breve' });
+      cards.push({ type: 'sync', msg: `Última sincronização Gmail/Photos: <strong>3h atrás</strong>. Nenhuma reserva nova importada.`, meta: 'Sync · há 3h' });
+      if (proxima) cards.push({ type: 'audit', msg: `<strong>${proxima.name}</strong> em ${daysUntil(proxima)} dias — checklist ainda em montagem.`, meta: 'Auditor · diário' });
+
+      document.getElementById('agents-row').innerHTML = cards.map((c, i) => `
+        <div class="agent-card ${c.type} fade-in" style="animation-delay:${0.05 * i}s">
+          <span class="agent-badge ${c.type}">
+            ${c.type === 'audit' ? '◐ Auditor' : c.type === 'curate' ? '✦ Curador' : '↻ Sync'}
+          </span>
+          <div class="agent-msg">${c.msg}</div>
+          <div class="agent-meta">${c.meta}</div>
+        </div>
+      `).join('');
+    }
+
+    function buildKanban(trips) {
+      const confirmadas = trips.filter(t => t.status === 'planned').sort((a,b) => daysUntil(a) - daysUntil(b));
+      const planejando = trips.filter(t => t.status === 'em_planejamento').sort((a,b) => daysUntil(a) - daysUntil(b));
+      const wish = trips.filter(t => t.status === 'wishlist');
+
+      const card = (t, i) => {
+        const d = daysUntil(t);
+        const cd = d == null ? '' : d < 90 ? `${d}d` : d < 365 ? `${Math.round(d/30)}m` : `${(d/365).toFixed(1)}a`;
+        const cdClass = d != null && d < 90 ? '' : 'distant';
+        const pct = t.checklistAuto ? Math.min(100, Object.keys(t.checklistAuto).length * 12) : Math.floor(15 + (i * 23) % 60);
+        const decisao = t.decisoes_pendentes && t.decisoes_pendentes[0] && t.decisoes_pendentes[0].titulo;
+        return `
+          <div class="next-card fade-in" style="animation-delay:${0.05 * i}s">
+            <div class="next-card-photo" style="background-image:url(${imgFor(t, 600, 300)})"></div>
+            <div class="next-card-top">
+              <span class="next-card-flag"><span class="flag">${t.flag || '📍'}</span>${CONTINENT(t.continent || '')}</span>
+              <span class="next-card-cd ${cdClass}">${cd}</span>
+            </div>
+            <div class="next-card-name">${t.name}</div>
+            <div class="next-card-meta">${t.label || ''}${t.sub ? ' · ' + t.sub : ''}</div>
+            ${t.status !== 'wishlist' ? `
+              <div class="next-card-bar"><div style="width:0%" data-pct="${pct}"></div></div>
+              <div class="next-card-status">checklist ${pct}%</div>
+            ` : ''}
+            ${decisao ? `<div class="next-card-decision">${decisao}</div>` : ''}
+          </div>
+        `;
+      };
+
+      const col = (title, dotClass, items) => `
+        <div class="col ${dotClass}">
+          <div class="col-head">
+            <div class="col-h"><span class="icon ${dotClass}">${dotClass === 'confirmed' ? '✓' : dotClass === 'planning' ? '◐' : '★'}</span>${title}</div>
+            <div class="col-count">${items.length}</div>
+          </div>
+          ${items.length ? items.map(card).join('') : '<div class="col-empty">vazio por enquanto</div>'}
+        </div>
+      `;
+
+      document.getElementById('kanban').innerHTML =
+        col('Confirmadas', 'confirmed', confirmadas) +
+        col('Em planejamento', 'planning', planejando) +
+        col('Wishlist', 'wish', wish);
+
+      // Animar progress bars
+      setTimeout(() => {
+        document.querySelectorAll('.next-card-bar > div').forEach(el => {
+          el.style.width = (el.dataset.pct || 0) + '%';
+        });
+      }, 250);
+    }
+
+    function yearNarrative(year, ents) {
+      const continentes = new Set(ents.map(t => CONTINENT(t.continent)).filter(Boolean));
+      const km = ents.reduce((s,t) => s + (Number(t.km) || 0), 0);
+      const tipos = new Set(ents.map(t => t.type).filter(Boolean));
+      const parts = [];
+      parts.push(`${ents.length} ${ents.length === 1 ? 'viagem' : 'viagens'}`);
+      if (continentes.size) parts.push(`${continentes.size} ${continentes.size === 1 ? 'continente' : 'continentes'}`);
+      if (km >= 1000) parts.push(`${fmtNum(Math.round(km/1000))} mil km`);
+      if (tipos.has('adventure')) parts.push('aventura');
+      if (tipos.has('festival')) parts.push('festivais');
+      if (tipos.has('luxury')) parts.push('refúgio');
+      return parts.join(' · ');
+    }
+
+    async function boot() {
+      const data = await (await fetch('../../data/trips.json')).json();
+      const trips = data.trips;
+      const done = trips.filter(t => t.status === 'done').sort((a,b) => (b.year - a.year) || (b.month - a.month));
+
+      // Hero
+      const futuras = trips.filter(t => ['planned','em_planejamento'].includes(t.status)).filter(t => daysUntil(t) >= 0).sort((a,b) => daysUntil(a) - daysUntil(b));
+      if (futuras.length) {
+        const t = futuras[0];
+        document.getElementById('hero').hidden = false;
+        document.getElementById('hero').style.backgroundImage = `url(${imgFor(t, 2400, 1400)})`;
+        document.getElementById('hero-eyebrow').textContent = CONTINENT(t.continent || '');
+        document.getElementById('hero-name').textContent = t.name;
+        document.getElementById('hero-dates').textContent = fmtRange(t.startDate, t.endDate) || t.label;
+        document.getElementById('hero-place').textContent = t.sub || '';
+        const d = daysUntil(t);
+        if (d != null) { document.getElementById('hero-cd').hidden = false; document.getElementById('hero-cd-n').textContent = d; }
+      }
+
+      // Stats
+      const countries = new Set(done.map(t => t.country).filter(Boolean));
+      const continents = new Set(done.map(t => t.continent).filter(Boolean));
+      const totalKm = done.reduce((s,t) => s + (Number(t.km) || 0), 0);
+      document.getElementById('stat-trips').textContent = done.length;
+      document.getElementById('stat-countries').textContent = countries.size;
+      document.getElementById('stat-continents').textContent = continents.size;
+      document.getElementById('stat-km').textContent = Math.round(totalKm / 1000);
+
+      // Agentes
+      buildAgentsMockup(trips);
+
+      // Kanban
+      buildKanban(trips);
+
+      // Mapa — Carto Voyager (light, colorido)
+      map = L.map('map', { zoomControl: true, scrollWheelZoom: false, worldCopyJump: true }).setView([20, -10], 2);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap © CARTO',
+        subdomains: 'abcd',
+        maxZoom: 18,
+      }).addTo(map);
+
+      trips.forEach(t => {
+        if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
+        const status = tripStatusForMap(t);
+        const color = CONT_COLOR[t.continent] || '#888';
+        const tagClass = status === 'done' ? 'done' : status === 'wishlist' ? 'wish' : 'planned';
+        const tagText = status === 'done' ? 'Realizada' : status === 'wishlist' ? 'Wishlist' : 'Próxima';
+        const m = L.marker([t.lat, t.lon], { icon: iconFor(t) })
+          .bindPopup(`
+            <div class="pop-name">${t.flag || ''} ${t.name}</div>
+            <div class="pop-meta">${t.label || ''} · ${CONTINENT(t.continent || '')}</div>
+            <span class="pop-tag ${tagClass}">${tagText}</span>
+          `);
+        m.addTo(map);
+        allMarkers.push({ marker: m, status });
+        if (status === 'planned' && !(Math.abs(t.lat - SP[0]) < 2 && Math.abs(t.lon - SP[1]) < 2)) {
+          const line = L.polyline([SP, [t.lat, t.lon]], {
+            color: color, weight: 1.5, opacity: 0.6, dashArray: '6,8', interactive: false,
+          });
+          line.addTo(map);
+          routeLines.push(line);
+        }
+      });
+
+      document.querySelectorAll('.map-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.map-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          applyMapFilter(btn.dataset.filter);
+        });
+      });
+
+      // Última
+      document.getElementById('last-count').textContent = `${done.length} realizadas até agora`;
+      if (done.length) {
+        const t = done[0];
+        document.getElementById('last').hidden = false;
+        document.getElementById('last-img').style.backgroundImage = `url(${imgFor(t, 1200, 1500)})`;
+        document.getElementById('last-kicker').textContent = CONTINENT(t.continent || '');
+        document.getElementById('last-name').textContent = t.name;
+        document.getElementById('last-dates').textContent = t.label;
+        document.getElementById('last-memory').textContent = t.memory || '';
+      }
+
+      // Timeline
+      const restantes = done.slice(1);
+      const porAno = {};
+      for (const t of restantes) { (porAno[t.year] ||= []).push(t); }
+      const anos = Object.keys(porAno).map(Number).sort((a,b) => b - a);
+      let altCount = 0;
+      document.getElementById('timeline').innerHTML = anos.map(ano => {
+        const ents = porAno[ano];
+        const entriesHtml = ents.map(t => {
+          const side = altCount++ % 2 === 0 ? 'right' : 'left';
+          return `
+            <div class="tl-entry ${side}">
+              <div class="tl-photo" style="background-image:url(${imgFor(t, 800, 600)})"></div>
+              <div class="tl-meta">
+                <div class="tl-kicker">${t.label} · ${CONTINENT(t.continent || '')}</div>
+                <h3 class="tl-name">${t.name}</h3>
+                <div class="tl-sub">${t.sub || ''}</div>
+                ${t.memory ? `<p class="tl-memory">${t.memory}</p>` : ''}
+                <div class="tl-tags">
+                  ${t.nts ? `<span class="tl-tag">${t.nts} noites</span>` : ''}
+                  ${t.pax ? `<span class="tl-tag">${t.pax}</span>` : ''}
+                  ${t.km ? `<span class="tl-tag">${fmtNum(t.km)} km</span>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+        return `
+          <div class="year-block">
+            <div class="year-marker">
+              <span class="year-n">${ano}</span>
+              <div class="year-narrative">${yearNarrative(ano, ents)}</div>
+            </div>
+            ${entriesHtml}
+          </div>
+        `;
+      }).join('');
+    }
+    boot().catch(e => console.error(e));
+  </script>
+</body>
+</html>
