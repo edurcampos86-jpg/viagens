@@ -1,23 +1,22 @@
 # Pendências Fase 1b — input humano por viagem
 
-Gerado em 2026-05-17. Total: 42 viagens · 6 planned · 0 em_planejamento · 3 wishlist · 33 done.
+Gerado em 2026-05-17. Total: 42 viagens · 2 planned · 4 em_planejamento · 3 wishlist · 33 done.
 
 **Como ler:** cada item lista os campos do schema novo que este trip ainda não tem populados. Campos podem ficar vazios indefinidamente; este relatório existe só para orientar a coleta.
 
 ## 🔴 Prioridade alta — `planned` (próximas viagens confirmadas)
 
-- ⏳ `sp-junho-2026` — **São Paulo — Só Track Boa + Pride** (Jun 2026)
-    - faltam: companhia, decisoes_pendentes, tags, documentos_necessarios, orcamento.estimado, inspiracao_fonte
-- ⏳ `europa-tomorrowland-2026` — **Europa — Tomorrowland Bélgica** (Jul 2026)
-    - faltam: companhia, decisoes_pendentes, tags, documentos_necessarios, orcamento.estimado, inspiracao_fonte
-- ⏳ `brasilia-2026` — **Brasília — Festa da Lili** (Ago 2026)
-    - faltam: companhia, decisoes_pendentes, tags, documentos_necessarios, orcamento.estimado, inspiracao_fonte
-- ⏳ `sanisland-2026` — **San Island — Maldivas** (Out 2026)
-    - faltam: companhia, decisoes_pendentes, tags, documentos_necessarios, orcamento.estimado, inspiracao_fonte
 - ⏳ `japao-2027` — **Japão — Hokkaido** (Fev 2027)
     - faltam: companhia, decisoes_pendentes, tags, documentos_necessarios, orcamento.estimado, inspiracao_fonte
 - ⏳ `marrocos-2027` — **Marrocos** (Abr 2027)
     - faltam: companhia, decisoes_pendentes, tags, documentos_necessarios, orcamento.estimado, inspiracao_fonte
+
+## 🟠 Prioridade alta — `em_planejamento`
+
+- ✅ `sp-junho-2026` — **São Paulo — Só Track Boa + Pride** (Jun 2026) — nada pendente
+- ✅ `europa-tomorrowland-2026` — **Europa — Tomorrowland Bélgica** (Jul 2026) — nada pendente
+- ✅ `brasilia-2026` — **Brasília — Festa da Lili** (Ago 2026) — nada pendente
+- ✅ `sanisland-2026` — **San Island — Maldivas** (Out 2026) — nada pendente
 
 ## 🟡 Prioridade média — `wishlist` (sonhos)
 
@@ -103,10 +102,10 @@ Gerado em 2026-05-17. Total: 42 viagens · 6 planned · 0 em_planejamento · 3 w
 
 | Campo | Trips pendentes |
 |---|---|
-| `companhia` | 42 |
-| `tags` | 42 |
-| `inspiracao_fonte` | 42 |
-| `decisoes_pendentes` | 9 |
-| `documentos_necessarios` | 9 |
-| `orcamento.estimado` | 9 |
+| `companhia` | 38 |
+| `tags` | 38 |
+| `inspiracao_fonte` | 38 |
+| `decisoes_pendentes` | 5 |
+| `documentos_necessarios` | 5 |
+| `orcamento.estimado` | 5 |
 
