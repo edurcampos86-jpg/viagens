@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edurcampos86-jpg.github.io/viagens/schemas/preferencias.schema.json",
+  "title": "Preferências de viajante",
+  "description": "Perfil do viajante — usado pelo Curador e por sugestões automáticas. Texto livre + listas de preferências.",
+  "type": "object",
+  "properties": {
+    "perfil": {
+      "type": "string",
+      "description": "Resumo do estilo de viagem em texto livre."
+    },
+    "evitar": {
+      "type": "array",
+      "description": "Coisas que devem ser evitadas (ex: 'madrugadas longas', 'voos com mais de 1 conexão').",
+      "items": { "type": "string" }
+    },
+    "preferir": {
+      "type": "array",
+      "description": "Preferências positivas (ex: 'conforto sem extravagância', 'experiências gastronômicas locais').",
+      "items": { "type": "string" }
+    },
+    "destinos_sonho": {
+      "type": "array",
+      "description": "Destinos aspiracionais ainda não realizados — usado pelo Curador como input.",
+      "items": { "type": "string" }
+    },
+    "epocas_disponiveis": {
+      "type": "array",
+      "description": "Períodos do ano em que viagens longas são possíveis.",
+      "items": {
+        "type": "object",
+        "required": ["descricao"],
+        "properties": {
+          "descricao":    { "type": "string", "description": "Ex: 'Carnaval', 'segunda quinzena de julho'." },
+          "duracao_max":  { "type": "integer", "minimum": 1, "description": "Em dias." },
+          "observacao":   { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "orcamento_referencia": {
+      "type": "object",
+      "description": "Referência de orçamento por categoria de viagem (não é teto rígido, só baseline).",
+      "properties": {
+        "moeda":              { "type": "string", "default": "BRL" },
+        "internacional_longa":{ "type": "number", "minimum": 0, "description": "Viagem internacional de 10+ dias." },
+        "internacional_curta":{ "type": "number", "minimum": 0 },
+        "nacional":           { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "milhas": {
+      "type": "object",
+      "description": "Programas de milhas usados — APENAS nomes, NUNCA números de conta ou senha.",
+      "properties": {
+        "programas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["nome"],
+            "properties": {
+              "nome":       { "type": "string", "description": "Ex: 'Smiles', 'Latam Pass'." },
+              "observacao": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "not": {
+    "anyOf": [
+      { "required": ["cpf"] },
+      { "required": ["senha"] },
+      { "required": ["password"] },
+      { "required": ["conta_numero"] }
+    ]
+  },
+  "additionalProperties": false
+}

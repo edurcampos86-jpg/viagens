@@ -1,0 +1,9 @@
+{
+  "passaporte": {
+    "pais_emissor": "Brasil",
+    "observacao": "Preencher 'valido_ate' (formato YYYY-MM-DD) na Fase 1b — só a data, NUNCA o número."
+  },
+  "vistos": [],
+  "vacinas": [],
+  "seguros_viagem": []
+}

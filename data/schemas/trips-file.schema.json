@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edurcampos86-jpg.github.io/viagens/schemas/trips-file.schema.json",
+  "title": "Arquivo trips.json",
+  "description": "Schema do arquivo data/trips.json inteiro: metadados + lista de viagens.",
+  "type": "object",
+  "required": ["config", "trips"],
+  "properties": {
+    "config": {
+      "type": "object",
+      "required": ["owner", "title"],
+      "properties": {
+        "owner":   { "type": "string" },
+        "title":   { "type": "string" },
+        "period":  { "type": "string" },
+        "tagline": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "atualizado_em": { "type": "string", "description": "Data ISO do último update." },
+    "fonte":         { "type": "string", "description": "Origem dos dados (texto livre)." },
+    "trips": {
+      "type": "array",
+      "items": { "$ref": "./trip.schema.json" }
+    }
+  },
+  "additionalProperties": true
+}

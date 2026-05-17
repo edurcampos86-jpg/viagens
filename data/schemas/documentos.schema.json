@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edurcampos86-jpg.github.io/viagens/schemas/documentos.schema.json",
+  "title": "Documentos pessoais — flags",
+  "description": "APENAS metadados (validades, status). NUNCA armazenar números reais de passaporte, CPF, RG, etc. Este schema bloqueia explicitamente esses campos.",
+  "type": "object",
+  "properties": {
+    "passaporte": {
+      "type": "object",
+      "description": "Passaporte brasileiro — só validade e país emissor. NUNCA número.",
+      "properties": {
+        "valido_ate":     { "type": "string", "format": "date" },
+        "pais_emissor":   { "type": "string", "default": "Brasil" },
+        "observacao":     { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "vistos": {
+      "type": "array",
+      "description": "Vistos obtidos. NUNCA registrar número do visto, só país, tipo, validade.",
+      "items": {
+        "type": "object",
+        "required": ["pais"],
+        "properties": {
+          "pais":         { "type": "string" },
+          "tipo":         { "type": "string", "description": "Ex: 'Schengen', 'Turismo B1/B2', 'eVisa Marrocos'." },
+          "emitido_em":   { "type": "string", "format": "date" },
+          "valido_ate":   { "type": "string", "format": "date" },
+          "multiplas_entradas": { "type": "boolean" },
+          "observacao":   { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "vacinas": {
+      "type": "array",
+      "description": "Vacinas relevantes para viagem internacional.",
+      "items": {
+        "type": "object",
+        "required": ["vacina"],
+        "properties": {
+          "vacina":        { "type": "string" },
+          "aplicada_em":   { "type": "string", "format": "date" },
+          "valido_ate":    { "type": "string", "format": "date" },
+          "doses":         { "type": "integer", "minimum": 1 },
+          "certificado_internacional": { "type": "boolean" },
+          "observacao":    { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "seguros_viagem": {
+      "type": "array",
+      "description": "Apólices ativas. NUNCA registrar número da apólice ou dados de cartão.",
+      "items": {
+        "type": "object",
+        "required": ["operadora"],
+        "properties": {
+          "operadora":   { "type": "string" },
+          "vigencia_de": { "type": "string", "format": "date" },
+          "vigencia_ate":{ "type": "string", "format": "date" },
+          "cobertura":   { "type": "string", "description": "Texto livre, ex: 'USD 60k médico + bagagem'." }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "not": {
+    "anyOf": [
+      { "required": ["cpf"] },
+      { "required": ["rg"] },
+      { "required": ["passaporte_numero"] },
+      { "required": ["passport_number"] },
+      { "required": ["numero_passaporte"] }
+    ]
+  },
+  "additionalProperties": false
+}
