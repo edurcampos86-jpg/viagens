@@ -22,3 +22,6 @@ Thumbs.db
 # Temp
 *.log
 .cache/
+
+# Claude Code (preferências pessoais locais — settings compartilhadas vão em .claude/settings.json)
+.claude/settings.local.json
