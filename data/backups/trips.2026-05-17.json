@@ -42,12 +42,7 @@
           "Búfalo Branco"
         ],
         "tips": "Prefira visitar as cataratas cedo pela manhã para evitar multidões."
-      },
-      "hospedagem": [
-        {
-          "nome": "Hotel das Cataratas"
-        }
-      ]
+      }
     },
     {
       "id": "atacama-2021",
@@ -85,12 +80,7 @@
           "La Estaka"
         ],
         "tips": "Leve protetor solar FPS 100+ — a altitude intensifica o sol. Aclimatize-se por 1 dia antes de tours exigentes."
-      },
-      "hospedagem": [
-        {
-          "nome": "Alto Atacama Desert Lodge"
-        }
-      ]
+      }
     },
     {
       "id": "argentina-2021",
@@ -129,15 +119,7 @@
           "La Tablita"
         ],
         "tips": "Use pesos em dinheiro — o câmbio paralelo ('blue') oferece valor muito melhor."
-      },
-      "hospedagem": [
-        {
-          "nome": "Palermo Soho Boutique Hotel"
-        },
-        {
-          "nome": "Los Sauces (El Calafate)"
-        }
-      ]
+      }
     },
     {
       "id": "florida-2022",
@@ -174,12 +156,7 @@
           "Bern's Steak House (Tampa)"
         ],
         "tips": "Compre ingressos antecipados e use o FastPass."
-      },
-      "hospedagem": [
-        {
-          "nome": "Hard Rock Hotel Universal Orlando"
-        }
-      ]
+      }
     },
     {
       "id": "punta-2022",
@@ -216,12 +193,7 @@
           "Parador La Huella"
         ],
         "tips": "Fevereiro é alta temporada — reserve com meses de antecedência."
-      },
-      "hospedagem": [
-        {
-          "nome": "L'Auberge Hotel"
-        }
-      ]
+      }
     },
     {
       "id": "cartagena-2022",
@@ -259,12 +231,7 @@
           "La Cevichería"
         ],
         "tips": "Agende passeio às Ilhas do Rosário com antecedência. Evite sol entre 11h e 15h."
-      },
-      "hospedagem": [
-        {
-          "nome": "Hotel Tcherassi Spa + Hotel"
-        }
-      ]
+      }
     },
     {
       "id": "ny-2022",
@@ -302,12 +269,7 @@
           "Le Bernardin"
         ],
         "tips": "Use o metrô — é a forma mais rápida de se locomover."
-      },
-      "hospedagem": [
-        {
-          "nome": "The Knickerbocker"
-        }
-      ]
+      }
     },
     {
       "id": "cancun-2022",
@@ -344,12 +306,7 @@
           "Axiote"
         ],
         "tips": "Alugue carro para explorar a Riviera Maya. Cenotes valem o desvio."
-      },
-      "hospedagem": [
-        {
-          "nome": "Grand Hyatt Playa del Carmen"
-        }
-      ]
+      }
     },
     {
       "id": "abc-2022",
@@ -386,12 +343,7 @@
           "Papiamento Restaurant"
         ],
         "tips": "Bonaire é paraíso de mergulho. Curaçao tem o melhor centro histórico."
-      },
-      "hospedagem": [
-        {
-          "nome": "Bucuti & Tara Beach Resort (Aruba)"
-        }
-      ]
+      }
     },
     {
       "id": "mykonos-2022",
@@ -428,12 +380,7 @@
           "Nammos"
         ],
         "tips": "Alugue quadriciclo para explorar a ilha. Setembro é melhor que julho/agosto."
-      },
-      "hospedagem": [
-        {
-          "nome": "Cavo Tagoo Mykonos"
-        }
-      ]
+      }
     },
     {
       "id": "lisboapo-2022",
@@ -473,15 +420,7 @@
           "Cantinho do Avillez"
         ],
         "tips": "Visite o Museu do Azulejo em Lisboa. No Porto, cruzeiro pelo Rio Douro ao fim de tarde."
-      },
-      "hospedagem": [
-        {
-          "nome": "Bairro Alto Hotel (Lisboa)"
-        },
-        {
-          "nome": "The Yeatman (Porto)"
-        }
-      ]
+      }
     },
     {
       "id": "tailandia-2023",
@@ -518,12 +457,7 @@
           "Bo.lan"
         ],
         "tips": "Vá em janeiro — é a estação seca. Sempre descalce ao entrar em templos. Uber/Grab é mais barato que táxi."
-      },
-      "hospedagem": [
-        {
-          "nome": "Mandarin Oriental Bangkok"
-        }
-      ]
+      }
     },
     {
       "id": "houston-2023",
@@ -560,12 +494,7 @@
           "Pappas Bros. Steakhouse"
         ],
         "tips": "Reserve com antecedência o tour de astronauta na NASA."
-      },
-      "hospedagem": [
-        {
-          "nome": "The Post Oak Hotel"
-        }
-      ]
+      }
     },
     {
       "id": "pragabud-2023",
@@ -604,15 +533,7 @@
           "Costes"
         ],
         "tips": "Pegue um trem direto entre Praga e Budapeste — é cênico e prático."
-      },
-      "hospedagem": [
-        {
-          "nome": "Four Seasons Hotel Prague"
-        },
-        {
-          "nome": "Four Seasons Gresham Palace Budapest"
-        }
-      ]
+      }
     },
     {
       "id": "bali-2023",
@@ -650,15 +571,7 @@
           "Mozaic"
         ],
         "tips": "Base em Ubud para cultura, Seminyak para praias."
-      },
-      "hospedagem": [
-        {
-          "nome": "COMO Shambhala Estate (Ubud)"
-        },
-        {
-          "nome": "Alila Seminyak"
-        }
-      ]
+      }
     },
     {
       "id": "machupicchu-2023",
@@ -695,12 +608,7 @@
           "MAP Café"
         ],
         "tips": "Aclimatize 2 dias em Cusco antes de subir. Compre ingresso com 1-2 meses de antecedência."
-      },
-      "hospedagem": [
-        {
-          "nome": "Inkaterra Machu Picchu Pueblo Hotel"
-        }
-      ]
+      }
     },
     {
       "id": "italia-2023",
@@ -738,12 +646,7 @@
           "Roscioli"
         ],
         "tips": "Entre cedo no Vaticano. Reserve Coliseu antecipado."
-      },
-      "hospedagem": [
-        {
-          "nome": "Hotel de Russie"
-        }
-      ]
+      }
     },
     {
       "id": "amsterda-2023",
@@ -781,15 +684,7 @@
           "De Kas (Amsterdã)"
         ],
         "tips": "Reserve Tomorrowland com 6+ meses. Amsterdã é melhor de bike."
-      },
-      "hospedagem": [
-        {
-          "nome": "Pulitzer Amsterdam"
-        },
-        {
-          "nome": "Hotel Amigo (Bruxelas)"
-        }
-      ]
+      }
     },
     {
       "id": "alemanha-2023",
@@ -827,12 +722,7 @@
           "Tim Raue"
         ],
         "tips": "Use o trem ICE entre cidades — confortável e rápido."
-      },
-      "hospedagem": [
-        {
-          "nome": "Hotel Adlon Kempinski (Berlim)"
-        }
-      ]
+      }
     },
     {
       "id": "japao-2023",
@@ -871,15 +761,7 @@
           "Kikunoi (Kyoto)"
         ],
         "tips": "Compre o JR Pass antes de viajar. Suzuka em outubro tem GP do Japão de F1."
-      },
-      "hospedagem": [
-        {
-          "nome": "The Peninsula Tokyo"
-        },
-        {
-          "nome": "Aman Kyoto"
-        }
-      ]
+      }
     },
     {
       "id": "patagonia-2024",
@@ -916,15 +798,7 @@
           "La Tablita (El Calafate)"
         ],
         "tips": "Janeiro é verão austral. Reserve trekking Torres del Paine com 6+ meses."
-      },
-      "hospedagem": [
-        {
-          "nome": "Los Sauces Casa Patagónica"
-        },
-        {
-          "nome": "Explora Patagonia"
-        }
-      ]
+      }
     },
     {
       "id": "santiago-2024",
@@ -961,12 +835,7 @@
           "Ambrosía Bistró"
         ],
         "tips": "Visite vinícolas no dia de chegada."
-      },
-      "hospedagem": [
-        {
-          "nome": "The Singular Santiago"
-        }
-      ]
+      }
     },
     {
       "id": "espanha-2024",
@@ -1006,15 +875,7 @@
           "Sublimotion (Ibiza)"
         ],
         "tips": "Compre Sagrada Família antecipado. Em Ibiza, vá de quadriciclo às calas escondidas."
-      },
-      "hospedagem": [
-        {
-          "nome": "Hotel Arts Barcelona"
-        },
-        {
-          "nome": "Six Senses Ibiza"
-        }
-      ]
+      }
     },
     {
       "id": "costarica-2024",
@@ -1052,15 +913,7 @@
           "La Luna Restaurant"
         ],
         "tips": "Alugue 4x4 — estradas rurais são difíceis."
-      },
-      "hospedagem": [
-        {
-          "nome": "Nayara Springs (Arenal)"
-        },
-        {
-          "nome": "Lapa Rios Lodge (Osa)"
-        }
-      ]
+      }
     },
     {
       "id": "havai-2024",
@@ -1099,12 +952,7 @@
           "Mama's Fish House"
         ],
         "tips": "Acordar cedo para trilha Diamond Head antes do calor. Alugue carro para North Shore."
-      },
-      "hospedagem": [
-        {
-          "nome": "Halekulani Honolulu"
-        }
-      ]
+      }
     },
     {
       "id": "mykonos-2025",
@@ -1143,12 +991,7 @@
           "Scorpios"
         ],
         "tips": "Contrate iate por um dia para Delos e Rhenia."
-      },
-      "hospedagem": [
-        {
-          "nome": "Cavo Tagoo Mykonos"
-        }
-      ]
+      }
     },
     {
       "id": "tailandia-2026",
@@ -1190,15 +1033,7 @@
           "Jay Fai (Bangkok)"
         ],
         "tips": "Janeiro é perfeito para o sul — estação seca. Use barcos para se mover entre as ilhas."
-      },
-      "hospedagem": [
-        {
-          "nome": "Amanpuri (Phuket)"
-        },
-        {
-          "nome": "Rayavadee (Krabi)"
-        }
-      ]
+      }
     },
     {
       "id": "africa-2026",
@@ -1238,15 +1073,7 @@
           "Test Kitchen"
         ],
         "tips": "Reserve safari com 1 ano de antecedência. Março: animais concentrados perto da água."
-      },
-      "hospedagem": [
-        {
-          "nome": "Sun City Resort"
-        },
-        {
-          "nome": "One&Only Cape Town"
-        }
-      ]
+      }
     },
     {
       "id": "noronha-2024",
@@ -1284,12 +1111,7 @@
           "Cacimba Bistrô"
         ],
         "tips": "Reserve com meses de antecedência. Pegue o passaporte do PARNAMAR no aeroporto."
-      },
-      "hospedagem": [
-        {
-          "nome": "Pousada Maravilha"
-        }
-      ]
+      }
     },
     {
       "id": "gramado-2023",
@@ -1327,12 +1149,7 @@
           "La Hacienda"
         ],
         "tips": "Vá em julho para o frio. Reserve restaurantes principais antecipadamente."
-      },
-      "hospedagem": [
-        {
-          "nome": "Saint Andrews Hotel"
-        }
-      ]
+      }
     },
     {
       "id": "rio-2023",
@@ -1370,12 +1187,7 @@
           "Olympe"
         ],
         "tips": "Reveillon em Copacabana exige reserva com muito tempo de antecedência."
-      },
-      "hospedagem": [
-        {
-          "nome": "Belmond Copacabana Palace"
-        }
-      ]
+      }
     },
     {
       "id": "jericoacoara-2025",
@@ -1413,12 +1225,7 @@
           "Naturalmente"
         ],
         "tips": "Use buggy 4x4 — caro mas vale. Não saia sem ver o pôr do sol na Duna."
-      },
-      "hospedagem": [
-        {
-          "nome": "Vila Kalango"
-        }
-      ]
+      }
     },
     {
       "id": "maragogi-2024",
@@ -1456,18 +1263,13 @@
           "Sur"
         ],
         "tips": "Para as Galés, vá em maré baixa. Compre ingresso antecipado."
-      },
-      "hospedagem": [
-        {
-          "nome": "Salinas do Maragogi"
-        }
-      ]
+      }
     },
     {
       "id": "sp-junho-2026",
       "name": "São Paulo — Só Track Boa + Pride",
       "sub": "São Paulo · SP",
-      "status": "em_planejamento",
+      "status": "planned",
       "continent": "Americas",
       "country": "Brasil",
       "flag": "🇧🇷",
@@ -1501,7 +1303,7 @@
       "id": "europa-tomorrowland-2026",
       "name": "Europa — Tomorrowland Bélgica",
       "sub": "Boom · Bruxelas · Bélgica",
-      "status": "em_planejamento",
+      "status": "planned",
       "continent": "Europe",
       "country": "Bélgica",
       "flag": "🇧🇪",
@@ -1535,7 +1337,7 @@
       "id": "brasilia-2026",
       "name": "Brasília — Festa da Lili",
       "sub": "Brasília · DF",
-      "status": "em_planejamento",
+      "status": "planned",
       "continent": "Americas",
       "country": "Brasil",
       "flag": "🇧🇷",
@@ -1568,7 +1370,7 @@
       "id": "sanisland-2026",
       "name": "San Island — Maldivas",
       "sub": "Male · Maldivas",
-      "status": "em_planejamento",
+      "status": "planned",
       "continent": "Asia",
       "country": "Maldivas",
       "flag": "🇲🇻",
@@ -1632,12 +1434,7 @@
         ],
         "restaurants": [],
         "tips": "Fevereiro é o melhor mês para neve em Niseko. Reserve o Hotel com antecedência."
-      },
-      "hospedagem": [
-        {
-          "nome": "Park Hyatt Niseko Hanazono"
-        }
-      ]
+      }
     },
     {
       "id": "marrocos-2027",
@@ -1673,12 +1470,7 @@
         ],
         "restaurants": [],
         "tips": "Abril evita o calor extremo do verão."
-      },
-      "hospedagem": [
-        {
-          "nome": "La Mamounia (Marrakech)"
-        }
-      ]
+      }
     },
     {
       "id": "noruega-2027",
@@ -1714,12 +1506,7 @@
         ],
         "restaurants": [],
         "tips": "Setembro oferece folhagem de outono e últimas chances de dias longos."
-      },
-      "hospedagem": [
-        {
-          "nome": "Juvet Landscape Hotel"
-        }
-      ]
+      }
     },
     {
       "id": "patagonia-wishlist",
@@ -1784,6 +1571,5 @@
       }
     }
   ],
-  "atualizado_em": "2026-05-17",
-  "fonte": "Mesclagem entre trips.json (GitHub Pages), index.html local e Google Photos Places · Fase 1b: hospedagem[] derivada de logistics.hotels[]"
-}
+  "atualizado_em": "2026-05-16",
+  "fonte": "Mesclagem entre trips.json (GitHub Pages), index.html local e Google Photos Places"}
