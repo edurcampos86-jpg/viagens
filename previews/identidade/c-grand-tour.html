@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposta C — Grand Tour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:     #ffffff;
+    --fg:     #000000;
+    --muted:  #707070;
+    --line:   #ebebeb;
+    --accent: #e85d20;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--fg); -webkit-font-smoothing: antialiased; }
+  body { font-family: 'Inter', -apple-system, sans-serif; font-size: 16px; line-height: 1.5; }
+  .display { font-weight: 800; letter-spacing: -0.03em; line-height: 0.95; }
+  .micro { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600; }
+
+  .back { position: fixed; top: 20px; left: 20px; z-index: 100; background: rgba(255,255,255,.9); backdrop-filter: blur(8px); padding: 8px 14px; border: 1px solid rgba(0,0,0,.1); border-radius: 999px; text-decoration: none; color: var(--fg); font-size: 13px; font-weight: 500; transition: all .15s; }
+  .back:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* Hero full-bleed */
+  .hero { position: relative; height: 100vh; min-height: 600px; background: #111 center/cover no-repeat; overflow: hidden; }
+  .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.15) 30%, rgba(0,0,0,.1) 60%, rgba(0,0,0,.85) 100%); }
+  .hero-content { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 32px 24px 48px; color: white; z-index: 2; }
+  @media (min-width: 720px) { .hero-content { padding: 40px 56px 56px; } }
+  .hero-top { display: flex; align-items: center; gap: 12px; }
+  .hero-top .micro { color: var(--accent); }
+  .hero-top .sep { width: 32px; height: 1px; background: var(--accent); }
+  .hero-bottom { max-width: 920px; }
+  .hero-kicker { color: var(--accent); margin-bottom: 16px; }
+  .hero-title { font-family: 'Inter', sans-serif; font-weight: 800; font-size: clamp(48px, 10vw, 128px); letter-spacing: -0.04em; line-height: 0.92; color: white; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 28px; color: rgba(255,255,255,.85); font-size: 14px; }
+  .hero-meta strong { color: var(--accent); font-weight: 600; }
+  .hero-cd { position: absolute; bottom: 48px; right: 24px; text-align: right; color: white; z-index: 3; }
+  @media (min-width: 720px) { .hero-cd { right: 56px; } }
+  .hero-cd-n { font-weight: 800; font-size: clamp(72px, 12vw, 144px); letter-spacing: -0.05em; line-height: 0.85; color: var(--accent); }
+  .hero-cd-l { font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; margin-top: 4px; color: rgba(255,255,255,.7); }
+
+  /* Section header */
+  .sec { padding: 96px 24px 64px; max-width: 1200px; margin: 0 auto; }
+  @media (min-width: 720px) { .sec { padding: 120px 56px 80px; } }
+  .sec-head { margin-bottom: 48px; display: flex; align-items: baseline; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  .sec-h { font-weight: 700; font-size: clamp(36px, 6vw, 64px); letter-spacing: -0.03em; line-height: 1; }
+  .sec-h em { font-style: normal; color: var(--accent); }
+  .sec-count { color: var(--muted); font-weight: 500; font-size: 14px; }
+
+  /* Última realizada — bloco editorial */
+  .last { display: grid; grid-template-columns: 1fr; gap: 32px; margin-bottom: 96px; }
+  @media (min-width: 760px) { .last { grid-template-columns: 1.2fr 1fr; gap: 64px; align-items: center; } }
+  .last-img { aspect-ratio: 4/5; background: #ddd center/cover no-repeat; }
+  .last-meta { display: flex; flex-direction: column; gap: 16px; }
+  .last-kicker { color: var(--muted); }
+  .last-name { font-weight: 700; font-size: clamp(36px, 6vw, 56px); letter-spacing: -0.03em; line-height: 1; }
+  .last-dates { color: var(--muted); font-size: 15px; }
+  .last-memory { font-size: 18px; line-height: 1.55; color: #222; max-width: 500px; border-left: 3px solid var(--accent); padding-left: 20px; margin-top: 12px; }
+
+  /* Grid foto-protagonista */
+  .list { display: grid; grid-template-columns: 1fr; gap: 0; }
+  .list-item { position: relative; aspect-ratio: 16/10; background: #111 center/cover no-repeat; overflow: hidden; cursor: pointer; transition: filter .4s; }
+  @media (min-width: 760px) {
+    .list { grid-template-columns: 1fr 1fr; }
+    .list-item { aspect-ratio: 4/5; }
+    .list-item:nth-child(3n) { grid-column: span 2; aspect-ratio: 16/9; }
+  }
+  .list-item::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,.75)); transition: opacity .3s; }
+  .list-item:hover { filter: brightness(1.08); }
+  .list-item-overlay { position: absolute; left: 0; right: 0; bottom: 0; padding: 28px 24px; color: white; z-index: 2; }
+  @media (min-width: 720px) { .list-item-overlay { padding: 32px 32px; } }
+  .list-item-kicker { color: var(--accent); margin-bottom: 8px; }
+  .list-item-name { font-weight: 700; font-size: clamp(22px, 3.5vw, 32px); letter-spacing: -0.02em; line-height: 1.05; color: white; }
+  .list-item-sub { color: rgba(255,255,255,.75); font-size: 13px; margin-top: 6px; }
+
+  .ft { padding: 64px 24px 48px; text-align: center; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+  <a class="back" href="index.html">← Voltar</a>
+
+  <section class="hero" id="hero" hidden>
+    <div class="hero-content">
+      <div class="hero-top">
+        <span class="micro">Eduardo Campos</span>
+        <span class="sep"></span>
+        <span class="micro" id="hero-kicker-top">Próxima viagem</span>
+      </div>
+      <div class="hero-bottom">
+        <div class="micro hero-kicker" id="hero-eyebrow"></div>
+        <h1 class="hero-title" id="hero-name"></h1>
+        <div class="hero-meta">
+          <span id="hero-dates"></span>
+          <span>·</span>
+          <span id="hero-place"></span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-cd" id="hero-cd" hidden>
+      <div class="hero-cd-n" id="hero-cd-n"></div>
+      <div class="hero-cd-l">dias</div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="sec-h">Última <em>memória</em></h2>
+      <span class="sec-count" id="last-count"></span>
+    </div>
+    <div class="last" id="last" hidden>
+      <div class="last-img" id="last-img"></div>
+      <div class="last-meta">
+        <div class="micro last-kicker" id="last-kicker"></div>
+        <h3 class="last-name" id="last-name"></h3>
+        <div class="last-dates" id="last-dates"></div>
+        <p class="last-memory" id="last-memory"></p>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#000;color:white;">
+    <div class="sec">
+      <div class="sec-head">
+        <h2 class="sec-h" style="color:white;">Arquivo de <em>destinos</em></h2>
+        <span class="sec-count" id="arch-count" style="color:rgba(255,255,255,.5);"></span>
+      </div>
+      <div class="list" id="list"></div>
+    </div>
+  </section>
+
+  <footer class="ft">
+    Proposta C — Grand Tour · Inter (800 + 400) · paleta preto, branco &amp; terracota intenso
+  </footer>
+
+  <script type="module">
+    const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const fmtDate = iso => {
+      if (!iso) return '';
+      const [y, m, d] = iso.split('-');
+      return `${parseInt(d)} ${MONTHS[parseInt(m)-1]}, ${y}`;
+    };
+    const fmtRange = (s, e) => s && e ? `${fmtDate(s)} → ${fmtDate(e)}` : (s ? fmtDate(s) : '');
+    const imgFor = (trip, w=1600, h=900) => `https://picsum.photos/seed/${encodeURIComponent(trip.id)}/${w}/${h}`;
+
+    const tripStart = t => t.startDate || (t.year && t.month ? `${t.year}-${String(t.month).padStart(2,'0')}-01` : null);
+    const daysUntil = t => {
+      const s = tripStart(t); if (!s) return null;
+      const today = new Date(); today.setHours(0,0,0,0);
+      const d = new Date(s + 'T00:00:00');
+      return Math.round((d - today) / 86400000);
+    };
+
+    async function boot() {
+      const res = await fetch('../../data/trips.json');
+      const data = await res.json();
+      const trips = data.trips;
+
+      // Hero = próxima viagem
+      const futuras = trips
+        .filter(t => ['planned','em_planejamento'].includes(t.status))
+        .filter(t => daysUntil(t) >= 0)
+        .sort((a,b) => daysUntil(a) - daysUntil(b));
+      if (futuras.length) {
+        const t = futuras[0];
+        document.getElementById('hero').hidden = false;
+        document.getElementById('hero').style.backgroundImage = `url(${imgFor(t, 2400, 1400)})`;
+        document.getElementById('hero-eyebrow').textContent = t.continent ? CONTINENT(t.continent) : '';
+        document.getElementById('hero-name').textContent = t.name;
+        document.getElementById('hero-dates').textContent = fmtRange(t.startDate, t.endDate) || t.label;
+        document.getElementById('hero-place').textContent = t.sub || '';
+        const d = daysUntil(t);
+        if (d != null) {
+          document.getElementById('hero-cd').hidden = false;
+          document.getElementById('hero-cd-n').textContent = d;
+        }
+      }
+
+      // Última realizada
+      const done = trips
+        .filter(t => t.status === 'done')
+        .sort((a,b) => (b.year - a.year) || (b.month - a.month));
+      document.getElementById('last-count').textContent = `${done.length} viagens realizadas`;
+      if (done.length) {
+        const t = done[0];
+        document.getElementById('last').hidden = false;
+        document.getElementById('last-img').style.backgroundImage = `url(${imgFor(t, 1200, 1500)})`;
+        document.getElementById('last-kicker').textContent = t.continent ? CONTINENT(t.continent) : '';
+        document.getElementById('last-name').textContent = t.name;
+        document.getElementById('last-dates').textContent = t.label;
+        document.getElementById('last-memory').textContent = t.memory || '';
+      }
+
+      // Arquivo
+      const recent = done.slice(1, 8);
+      document.getElementById('arch-count').textContent = `${recent.length} de ${done.length - 1} mostrando`;
+      const list = document.getElementById('list');
+      list.innerHTML = recent.map((t, i) => `
+        <article class="list-item" style="background-image:url(${imgFor(t, i % 3 === 2 ? 1800 : 1000, i % 3 === 2 ? 1000 : 1200)})">
+          <div class="list-item-overlay">
+            <div class="micro list-item-kicker">${t.label}</div>
+            <h3 class="list-item-name">${t.name}</h3>
+            <div class="list-item-sub">${t.sub || ''}</div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function CONTINENT(c) {
+      return ({ Asia: 'Ásia', Europe: 'Europa', Americas: 'Américas', Africa: 'África', Oceania: 'Oceania' })[c] || c;
+    }
+
+    boot().catch(e => console.error(e));
+  </script>
+</body>
+</html>
