@@ -1,9 +1,9 @@
 {
   "config": {
     "owner": "Eduardo Campos",
-    "period": "2021–2026",
+    "period": "2021–2027",
     "title": "Minhas Viagens",
-    "tagline": "Memórias e planos pelo mundo"
+    "tagline": "Memórias e planos pelo mundo — atualizado via Google Photos"
   },
   "trips": [
     {
@@ -29,7 +29,8 @@
       "highlights": [
         "Cataratas do Iguaçu",
         "Parque das Aves",
-        "Lado argentino"
+        "Lado argentino",
+        "Usina de Itaipu"
       ],
       "memory": "A imensidão das cataratas deixa qualquer um sem palavras — água por todos os lados.",
       "logistics": {
@@ -46,7 +47,7 @@
     {
       "id": "atacama-2021",
       "name": "Deserto do Atacama",
-      "sub": "Antofagasta · Chile",
+      "sub": "San Pedro de Atacama · Chile",
       "status": "done",
       "continent": "Americas",
       "country": "Chile",
@@ -55,20 +56,21 @@
       "year": 2021,
       "month": 11,
       "label": "Nov 2021",
-      "lat": -23.6529,
-      "lon": -70.4,
+      "lat": -22.9087,
+      "lon": -68.1997,
       "col": "#f97316",
       "pax": "casal",
       "air": "GRU→SCL→CJC",
-      "nts": 6,
-      "km": 3800,
+      "nts": 7,
+      "km": 3600,
       "type": "adventure",
       "highlights": [
+        "Gêiseres del Tatio ao amanhecer",
+        "Laguna Cejar (flutuação)",
         "Valle de la Luna",
-        "Geyser del Tatio",
-        "Laguna Cejar"
+        "Céu estrelado mais límpido do mundo"
       ],
-      "memory": "O silêncio absoluto do deserto ao amanhecer e o céu estrelado mais lindo que já vi.",
+      "memory": "O Atacama é Marte na Terra. A paisagem lunar, o silêncio ensurdecedor e um céu com mais estrelas do que jamais imaginei.",
       "logistics": {
         "hotels": [
           "Alto Atacama Desert Lodge"
@@ -81,9 +83,9 @@
       }
     },
     {
-      "id": "buenosaires-2021",
-      "name": "Buenos Aires",
-      "sub": "Capital Federal · Argentina",
+      "id": "argentina-2021",
+      "name": "Argentina",
+      "sub": "Buenos Aires · El Calafate · Puerto Iguazú",
       "status": "done",
       "continent": "Americas",
       "country": "Argentina",
@@ -94,27 +96,66 @@
       "label": "Dez 2021",
       "lat": -34.6037,
       "lon": -58.3816,
-      "col": "#22c55e",
-      "pax": "casal",
-      "air": "GRU→EZE",
-      "nts": 7,
-      "km": 1800,
+      "col": "#60a5fa",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + Aerolíneas",
+      "nts": 12,
+      "km": 3800,
       "type": "leisure",
       "highlights": [
-        "Palermo",
-        "San Telmo",
-        "La Boca e Caminito"
+        "Glaciar Perito Moreno em El Calafate",
+        "Cataratas del Iguazú",
+        "La Boca em Buenos Aires",
+        "Tango no San Telmo"
       ],
-      "memory": "Parrilla incrível, tango nas ruas, e o calor portenho no verão austral.",
+      "memory": "Argentina é uma montanha-russa emocional — da grandiosidade do Perito Moreno às lágrimas das Cataratas, da nostalgia tangueira de Buenos Aires ao asado perfeito.",
       "logistics": {
         "hotels": [
-          "Palermo Soho Boutique Hotel"
+          "Palermo Soho Boutique Hotel",
+          "Los Sauces (El Calafate)"
         ],
         "restaurants": [
           "Don Julio",
-          "El Preferido de Palermo"
+          "La Tablita"
         ],
         "tips": "Use pesos em dinheiro — o câmbio paralelo ('blue') oferece valor muito melhor."
+      }
+    },
+    {
+      "id": "florida-2022",
+      "name": "Florida",
+      "sub": "Orlando · Tampa · Lake Buena Vista",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Estados Unidos",
+      "flag": "🇺🇸",
+      "emoji": "🎢",
+      "year": 2022,
+      "month": 1,
+      "label": "Jan 2022",
+      "lat": 28.5384,
+      "lon": -81.3789,
+      "col": "#f97316",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + American",
+      "nts": 10,
+      "km": 9200,
+      "type": "leisure",
+      "highlights": [
+        "Walt Disney World",
+        "Universal Studios",
+        "Kennedy Space Center",
+        "Praias de Clearwater"
+      ],
+      "memory": "A Disney é para todos — crianças e adultos se perdem igualmente naquele mundo construído com obsessão pelos detalhes.",
+      "logistics": {
+        "hotels": [
+          "Hard Rock Hotel Universal Orlando"
+        ],
+        "restaurants": [
+          "Bern's Steak House (Tampa)"
+        ],
+        "tips": "Compre ingressos antecipados e use o FastPass."
       }
     },
     {
@@ -157,7 +198,7 @@
     {
       "id": "cartagena-2022",
       "name": "Cartagena",
-      "sub": "Bolívar · Colômbia",
+      "sub": "Cartagena das Índias · Ilhas do Rosário · Colômbia",
       "status": "done",
       "continent": "Americas",
       "country": "Colombia",
@@ -168,18 +209,19 @@
       "label": "Mar 2022",
       "lat": 10.3997,
       "lon": -75.5144,
-      "col": "#22c55e",
-      "pax": "amigos",
-      "air": "GRU→BOG→CTG",
-      "nts": 5,
-      "km": 4200,
+      "col": "#f59e0b",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM",
+      "nts": 6,
+      "km": 5800,
       "type": "leisure",
       "highlights": [
-        "Centro Histórico Amuralhado",
-        "Ilhas do Rosário",
-        "Getsemaní"
+        "Cidade Murada colonial",
+        "Castillo de San Felipe",
+        "Islas del Rosario",
+        "Noite na cidade histórica"
       ],
-      "memory": "Cores vibrantes, música por todos os cantos e a energia única da cidade colonial.",
+      "memory": "Cartagena parece cenário de filme. As ruas de paralelepípedo, flores nas sacadas coloniais e o calor caribenho convidando para uma cerveja gelada ao entardecer.",
       "logistics": {
         "hotels": [
           "Hotel Tcherassi Spa + Hotel"
@@ -188,7 +230,45 @@
           "Carmen",
           "La Cevichería"
         ],
-        "tips": "Agende passeio de barco para as Ilhas do Rosário com antecedência. Evite exposição ao sol entre 11h e 15h."
+        "tips": "Agende passeio às Ilhas do Rosário com antecedência. Evite sol entre 11h e 15h."
+      }
+    },
+    {
+      "id": "ny-2022",
+      "name": "Nova Iorque",
+      "sub": "Manhattan · Brooklyn · Times Square",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Estados Unidos",
+      "flag": "🇺🇸",
+      "emoji": "🗽",
+      "year": 2022,
+      "month": 6,
+      "label": "Jun 2022",
+      "lat": 40.7128,
+      "lon": -74.006,
+      "col": "#6366f1",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + American",
+      "nts": 8,
+      "km": 9400,
+      "type": "leisure",
+      "highlights": [
+        "Central Park de manhã cedo",
+        "Times Square à noite",
+        "Brooklyn Bridge a pé",
+        "Metropolitan Museum of Art"
+      ],
+      "memory": "Nova Iorque é uma energia diferente. A cidade que nunca dorme — a cada esquina uma história, um musical da Broadway, um sabor do mundo inteiro.",
+      "logistics": {
+        "hotels": [
+          "The Knickerbocker"
+        ],
+        "restaurants": [
+          "Carbone",
+          "Le Bernardin"
+        ],
+        "tips": "Use o metrô — é a forma mais rápida de se locomover."
       }
     },
     {
@@ -225,7 +305,44 @@
           "La Fisheria",
           "Axiote"
         ],
-        "tips": "Alugue carro para explorar a Riviera Maya com liberdade. Cenotes ficam fora de Cancún — vale o desvio."
+        "tips": "Alugue carro para explorar a Riviera Maya. Cenotes valem o desvio."
+      }
+    },
+    {
+      "id": "abc-2022",
+      "name": "Ilhas ABC & Puerto Rico",
+      "sub": "Aruba · Bonaire · Curaçao · Rincón (PR)",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Caribe",
+      "flag": "🇦🇼",
+      "emoji": "🐠",
+      "year": 2022,
+      "month": 8,
+      "label": "Ago 2022",
+      "lat": 12.5211,
+      "lon": -69.9683,
+      "col": "#06b6d4",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + Insel Air",
+      "nts": 12,
+      "km": 7200,
+      "type": "leisure",
+      "highlights": [
+        "Eagle Beach em Aruba",
+        "Mergulho em Bonaire",
+        "Centro histórico de Curaçao",
+        "Surf em Rincón Puerto Rico"
+      ],
+      "memory": "As ilhas ABC são o Caribe em sua versão mais autêntica. Bonaire especialmente — visibilidade incrível, vida marinha exuberante.",
+      "logistics": {
+        "hotels": [
+          "Bucuti & Tara Beach Resort (Aruba)"
+        ],
+        "restaurants": [
+          "Papiamento Restaurant"
+        ],
+        "tips": "Bonaire é paraíso de mergulho. Curaçao tem o melhor centro histórico."
       }
     },
     {
@@ -262,13 +379,13 @@
           "Scorpios",
           "Nammos"
         ],
-        "tips": "Alugue quadriciclo para explorar a ilha. Setembro é melhor que julho/agosto: menos gente, mesmo clima."
+        "tips": "Alugue quadriciclo para explorar a ilha. Setembro é melhor que julho/agosto."
       }
     },
     {
       "id": "lisboapo-2022",
       "name": "Lisboa & Porto",
-      "sub": "Portugal",
+      "sub": "Lisboa · Sintra · Porto · Portugal",
       "status": "done",
       "continent": "Europe",
       "country": "Portugal",
@@ -279,18 +396,20 @@
       "label": "Out 2022",
       "lat": 38.7169,
       "lon": -9.1399,
-      "col": "#3b82f6",
-      "pax": "casal",
-      "air": "GRU→LIS",
+      "col": "#14b8a6",
+      "pax": "Jodson Oliveira",
+      "air": "TAP",
       "nts": 10,
       "km": 9300,
       "type": "leisure",
       "highlights": [
-        "Torre de Belém",
+        "Alfama e Castelo São Jorge",
+        "Pastéis de Belém",
+        "Sintra",
         "Livraria Lello no Porto",
         "Douro Valley"
       ],
-      "memory": "A facilidade do idioma e a saudade portuguesa tornam Portugal quase um lar longe do lar.",
+      "memory": "Lisboa é uma cidade que não para de surpreender. Os bondes amarelos subindo as ladeiras, o fado nas ruas de Alfama e a doçura dos pastéis de Belém — Portugal sempre chama de volta.",
       "logistics": {
         "hotels": [
           "Bairro Alto Hotel (Lisboa)",
@@ -300,13 +419,13 @@
           "Belcanto",
           "Cantinho do Avillez"
         ],
-        "tips": "Visite o Museu do Azulejo em Lisboa. No Porto, não perca um cruzeiro pelo Rio Douro ao fim de tarde."
+        "tips": "Visite o Museu do Azulejo em Lisboa. No Porto, cruzeiro pelo Rio Douro ao fim de tarde."
       }
     },
     {
       "id": "tailandia-2023",
       "name": "Tailândia",
-      "sub": "Bangkok · Banguecoque",
+      "sub": "Bangkok · Pattaya",
       "status": "done",
       "continent": "Asia",
       "country": "Thailand",
@@ -326,19 +445,94 @@
       "highlights": [
         "Templo Wat Phra Kaew",
         "Floating Market",
-        "Elefantes em Chiang Mai"
+        "Pattaya Beach Road"
       ],
       "memory": "Bangkok é caos e beleza simultâneos — a culinária de rua é simplesmente extraordinária.",
       "logistics": {
         "hotels": [
-          "Mandarin Oriental Bangkok",
-          "137 Pillars House Chiang Mai"
+          "Mandarin Oriental Bangkok"
         ],
         "restaurants": [
           "Jay Fai",
           "Bo.lan"
         ],
         "tips": "Vá em janeiro — é a estação seca. Sempre descalce ao entrar em templos. Uber/Grab é mais barato que táxi."
+      }
+    },
+    {
+      "id": "houston-2023",
+      "name": "Houston",
+      "sub": "Houston · NASA Space Center",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Estados Unidos",
+      "flag": "🇺🇸",
+      "emoji": "🚀",
+      "year": 2023,
+      "month": 2,
+      "label": "Fev 2023",
+      "lat": 29.7604,
+      "lon": -95.3698,
+      "col": "#64748b",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + United",
+      "nts": 5,
+      "km": 8800,
+      "type": "leisure",
+      "highlights": [
+        "NASA Johnson Space Center",
+        "Houston Galleria",
+        "Hermann Park",
+        "Rodeo de Houston"
+      ],
+      "memory": "Houston é a cidade da NASA — caminhar pelo centro espacial e ver os foguetes de perto mistura ciência e emoção de uma forma que você não espera.",
+      "logistics": {
+        "hotels": [
+          "The Post Oak Hotel"
+        ],
+        "restaurants": [
+          "Pappas Bros. Steakhouse"
+        ],
+        "tips": "Reserve com antecedência o tour de astronauta na NASA."
+      }
+    },
+    {
+      "id": "pragabud-2023",
+      "name": "Praga & Budapeste",
+      "sub": "Praga · Budapeste",
+      "status": "done",
+      "continent": "Europe",
+      "country": "República Tcheca",
+      "flag": "🇨🇿",
+      "emoji": "🏰",
+      "year": 2023,
+      "month": 3,
+      "label": "Mar 2023",
+      "lat": 50.0755,
+      "lon": 14.4378,
+      "col": "#8b5cf6",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + TAP + Wizzair",
+      "nts": 9,
+      "km": 9600,
+      "type": "leisure",
+      "highlights": [
+        "Castelo de Praga",
+        "Ponte Carlos",
+        "Parlamento de Budapeste à noite",
+        "Banhos termais Széchenyi"
+      ],
+      "memory": "Europa Central em toda sua glória. Praga com arquitetura gótica intocada e Budapeste dividida pelo Danúbio — duas cidades diferentes, igualmente encantadoras.",
+      "logistics": {
+        "hotels": [
+          "Four Seasons Hotel Prague",
+          "Four Seasons Gresham Palace Budapest"
+        ],
+        "restaurants": [
+          "Field Restaurant",
+          "Costes"
+        ],
+        "tips": "Pegue um trem direto entre Praga e Budapeste — é cênico e prático."
       }
     },
     {
@@ -376,7 +570,7 @@
           "Locavore",
           "Mozaic"
         ],
-        "tips": "Base em Ubud para cultura, Seminyak para praias. Alugue moto em Ubud para mais liberdade. Evite plástico — leve garrafa reutilizável."
+        "tips": "Base em Ubud para cultura, Seminyak para praias."
       }
     },
     {
@@ -413,51 +607,127 @@
           "Cicciolina (Cusco)",
           "MAP Café"
         ],
-        "tips": "Aclimatize 2 dias em Cusco antes de subir. Compre ingresso para Machu Picchu com 1-2 meses de antecedência. Trem Vistadome é a melhor opção de transporte."
+        "tips": "Aclimatize 2 dias em Cusco antes de subir. Compre ingresso com 1-2 meses de antecedência."
       }
     },
     {
       "id": "italia-2023",
-      "name": "Itália — Roma & Amalfi",
-      "sub": "Roma · Costa Amalfitana · Itália",
+      "name": "Itália — Roma & Vaticano",
+      "sub": "Roma · Vaticano · Coliseu",
       "status": "done",
       "continent": "Europe",
       "country": "Italy",
       "flag": "🇮🇹",
       "emoji": "🍕",
       "year": 2023,
-      "month": 6,
-      "label": "Jun 2023",
+      "month": 5,
+      "label": "Mai 2023",
       "lat": 41.9028,
       "lon": 12.4964,
-      "col": "#3b82f6",
-      "pax": "casal",
-      "air": "GRU→FCO",
-      "nts": 12,
-      "km": 9700,
+      "col": "#dc2626",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + TAP + ITA",
+      "nts": 7,
+      "km": 9800,
       "type": "leisure",
       "highlights": [
-        "Coliseu de Roma",
-        "Positano",
-        "Capri"
+        "Coliseu Romano",
+        "Museu e Capela Sistina",
+        "Fontana di Trevi",
+        "Foro Romano"
       ],
-      "memory": "A Costa Amalfitana em junho é um sonho — limoncellos ao por do sol e pizza napolitana de verdade.",
+      "memory": "Roma te engole — cada pedra tem 2.000 anos de história. Jogar a moeda na Fontana di Trevi com a certeza de que voltaremos foi um dos momentos mais simbólicos.",
       "logistics": {
         "hotels": [
-          "Hotel de Russie (Roma)",
-          "Le Sirenuse (Positano)"
+          "Hotel de Russie"
         ],
         "restaurants": [
-          "La Pergola (Roma)",
-          "Ristorante Max (Positano)"
+          "La Pergola",
+          "Roscioli"
         ],
-        "tips": "Em Roma: entre cedo no Vaticano. Na Costa Amalfitana: evite carro — use barcos e balsas entre as cidades."
+        "tips": "Entre cedo no Vaticano. Reserve Coliseu antecipado."
+      }
+    },
+    {
+      "id": "amsterda-2023",
+      "name": "Amsterdã & Bélgica",
+      "sub": "Amsterdã · Bruxelas · Boom (Tomorrowland)",
+      "status": "done",
+      "continent": "Europe",
+      "country": "Holanda",
+      "flag": "🇳🇱",
+      "emoji": "🎶",
+      "year": 2023,
+      "month": 8,
+      "label": "Ago 2023",
+      "lat": 52.3676,
+      "lon": 4.9041,
+      "col": "#f59e0b",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + KLM",
+      "nts": 9,
+      "km": 9500,
+      "type": "festival",
+      "highlights": [
+        "Canais de Amsterdã de bicicleta",
+        "Museu Van Gogh",
+        "Atomium de Bruxelas",
+        "Festival Tomorrowland em Boom"
+      ],
+      "memory": "Amsterdã de bicicleta pelas ruas históricas, os canais refletindo as casas estreitas... E a cereja do bolo: Tomorrowland em Boom — a maior festa do mundo.",
+      "logistics": {
+        "hotels": [
+          "Pulitzer Amsterdam",
+          "Hotel Amigo (Bruxelas)"
+        ],
+        "restaurants": [
+          "De Kas (Amsterdã)"
+        ],
+        "tips": "Reserve Tomorrowland com 6+ meses. Amsterdã é melhor de bike."
+      }
+    },
+    {
+      "id": "alemanha-2023",
+      "name": "Alemanha",
+      "sub": "Berlim · Frankfurt · Potsdam",
+      "status": "done",
+      "continent": "Europe",
+      "country": "Alemanha",
+      "flag": "🇩🇪",
+      "emoji": "🍺",
+      "year": 2023,
+      "month": 10,
+      "label": "Out 2023",
+      "lat": 52.52,
+      "lon": 13.405,
+      "col": "#6b7280",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + TAP + Lufthansa",
+      "nts": 9,
+      "km": 9800,
+      "type": "leisure",
+      "highlights": [
+        "Portão de Brandemburgo",
+        "Muro de Berlim",
+        "Palácio de Sanssouci em Potsdam",
+        "Römerberg em Frankfurt"
+      ],
+      "memory": "A Alemanha surpreende com sua história exposta sem vergonha. Berlim respira arte, memória e uma cena cultural vibrante — nada é escondido, tudo é ensinado.",
+      "logistics": {
+        "hotels": [
+          "Hotel Adlon Kempinski (Berlim)"
+        ],
+        "restaurants": [
+          "Rutz Restaurant",
+          "Tim Raue"
+        ],
+        "tips": "Use o trem ICE entre cidades — confortável e rápido."
       }
     },
     {
       "id": "japao-2023",
       "name": "Japão",
-      "sub": "Tóquio · Kyoto · Osaka",
+      "sub": "Tóquio · Kyoto · Shibuya · Suzuka",
       "status": "done",
       "continent": "Asia",
       "country": "Japan",
@@ -468,18 +738,19 @@
       "label": "Out 2023",
       "lat": 35.6762,
       "lon": 139.6503,
-      "col": "#06b6d4",
-      "pax": "casal",
-      "air": "GRU→LAX→NRT",
-      "nts": 14,
-      "km": 18600,
+      "col": "#ec4899",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + Japan Airlines",
+      "nts": 12,
+      "km": 22000,
       "type": "leisure",
       "highlights": [
-        "Templos de Kyoto no outono",
-        "Shibuya Crossing",
-        "Mercado Tsukiji"
+        "Cruzamento de Shibuya",
+        "Templos de Kyoto",
+        "Templo Senso-ji",
+        "Circuito de Suzuka (F1)"
       ],
-      "memory": "Outubro no Japão é pura perfeição — folhas vermelhas e alaranjadas emoldurando templos milenares.",
+      "memory": "O Japão é um choque cultural positivo. A perfeição no atendimento, a tecnologia futurística e a tradição milenar coexistindo — uma lição de excelência que todo profissional deveria vivenciar.",
       "logistics": {
         "hotels": [
           "The Peninsula Tokyo",
@@ -489,13 +760,13 @@
           "Sukiyabashi Jiro",
           "Kikunoi (Kyoto)"
         ],
-        "tips": "Compre o JR Pass antes de viajar — economiza muito nos shinkansens. Leve cartão de visita para apresentações formais."
+        "tips": "Compre o JR Pass antes de viajar. Suzuka em outubro tem GP do Japão de F1."
       }
     },
     {
       "id": "patagonia-2024",
       "name": "Patagônia",
-      "sub": "El Calafate · Argentina",
+      "sub": "El Calafate · Torres del Paine · Argentina/Chile",
       "status": "done",
       "continent": "Americas",
       "country": "Argentina",
@@ -506,7 +777,7 @@
       "label": "Jan 2024",
       "lat": -51.63,
       "lon": -72.56,
-      "col": "#22c55e",
+      "col": "#60a5fa",
       "pax": "casal",
       "air": "GRU→EZE→FTE",
       "nts": 9,
@@ -526,7 +797,7 @@
         "restaurants": [
           "La Tablita (El Calafate)"
         ],
-        "tips": "Janeiro é verão austral — ideal para trekking. Reserve o trekking Torres del Paine com 6+ meses de antecedência."
+        "tips": "Janeiro é verão austral. Reserve trekking Torres del Paine com 6+ meses."
       }
     },
     {
@@ -563,7 +834,47 @@
           "Boragó",
           "Ambrosía Bistró"
         ],
-        "tips": "Visite as vinícolas do Vale do Maipo no dia de chegada. Uber funciona muito bem na cidade."
+        "tips": "Visite vinícolas no dia de chegada."
+      }
+    },
+    {
+      "id": "espanha-2024",
+      "name": "Espanha — Ibiza & Cidades",
+      "sub": "Barcelona · Ibiza · Madrid · Segóvia · Toledo",
+      "status": "done",
+      "continent": "Europe",
+      "country": "Espanha",
+      "flag": "🇪🇸",
+      "emoji": "💃",
+      "year": 2024,
+      "month": 5,
+      "label": "Mai 2024",
+      "lat": 40.4168,
+      "lon": -3.7038,
+      "col": "#ef4444",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + TAP + Vueling",
+      "nts": 12,
+      "km": 9500,
+      "type": "leisure",
+      "highlights": [
+        "Sagrada Família de Gaudí",
+        "Festas em Ibiza",
+        "Museu do Prado",
+        "Alcázar de Segóvia",
+        "Sant Jordi de ses Salines"
+      ],
+      "memory": "España em pleno verão — da arte modernista de Gaudí à loucura das festas em Ibiza. Madrid de bônus com a grandiosidade do Prado e história medieval de Toledo.",
+      "logistics": {
+        "hotels": [
+          "Hotel Arts Barcelona",
+          "Six Senses Ibiza"
+        ],
+        "restaurants": [
+          "Disfrutar (Barcelona)",
+          "Sublimotion (Ibiza)"
+        ],
+        "tips": "Compre Sagrada Família antecipado. Em Ibiza, vá de quadriciclo às calas escondidas."
       }
     },
     {
@@ -598,53 +909,94 @@
           "Lapa Rios Lodge (Osa)"
         ],
         "restaurants": [
-          "Restaurante Don Rufino",
+          "Don Rufino",
           "La Luna Restaurant"
         ],
-        "tips": "Alugue 4x4 — estradas nas áreas rurais são difíceis. Junho é início da época chuvosa — manhãs são belas, tarde pode chover."
+        "tips": "Alugue 4x4 — estradas rurais são difíceis."
+      }
+    },
+    {
+      "id": "havai-2024",
+      "name": "Havaí",
+      "sub": "Honolulu · Waimanalo · Pupukea",
+      "status": "done",
+      "continent": "Oceania",
+      "country": "Estados Unidos",
+      "flag": "🇺🇸",
+      "emoji": "🤙",
+      "year": 2024,
+      "month": 7,
+      "label": "Jul 2024",
+      "lat": 21.3069,
+      "lon": -157.8583,
+      "col": "#22c55e",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + American Airlines",
+      "nts": 10,
+      "km": 14000,
+      "type": "leisure",
+      "highlights": [
+        "Praia de Waikiki",
+        "Pipeline em Pupukea",
+        "Diamond Head",
+        "Waimanalo Beach",
+        "Luau tradicional"
+      ],
+      "memory": "O Havaí é diferente de qualquer lugar nos EUA — uma energia única, natureza exuberante e a cultura polinésia que te transporta para outro mundo completamente.",
+      "logistics": {
+        "hotels": [
+          "Halekulani Honolulu"
+        ],
+        "restaurants": [
+          "Roy's Waikiki",
+          "Mama's Fish House"
+        ],
+        "tips": "Acordar cedo para trilha Diamond Head antes do calor. Alugue carro para North Shore."
       }
     },
     {
       "id": "mykonos-2025",
       "name": "Mykonos 2025",
-      "sub": "Egeu Meridional · Grécia",
+      "sub": "Mykonos · Ilhas Gregas",
       "status": "done",
       "continent": "Europe",
       "country": "Grécia",
       "flag": "🇬🇷",
       "emoji": "⛵",
       "year": 2025,
-      "month": 9,
-      "label": "Set 2025",
+      "month": 7,
+      "label": "Jul 2025",
       "lat": 37.4467,
       "lon": 25.3289,
       "col": "#3b82f6",
       "pax": "amigos",
-      "air": "GRU→ATH→JMK",
+      "air": "LATAM + Aegean",
       "nts": 7,
-      "km": 9800,
+      "km": 10500,
       "type": "leisure",
       "highlights": [
         "Iate particular pelas ilhas",
         "Sunset em Little Venice",
-        "Restaurante Spilia"
+        "Praias paradisíacas",
+        "Restaurantes de frutos do mar",
+        "Moinhos de vento"
       ],
-      "memory": "Segunda visita, dessa vez com grupo de amigos — totalmente diferente e igualmente incrível.",
+      "memory": "O Mediterrâneo em sua forma mais pura. Casas brancas com janelas azuis, praias de água cristalina e um ritmo de vida que te faz esquecer tudo. Segunda visita, agora com grupo de amigos.",
       "logistics": {
         "hotels": [
           "Cavo Tagoo Mykonos"
         ],
         "restaurants": [
-          "Spilia Seaside Restaurant",
+          "Spilia Seaside",
           "Scorpios"
         ],
-        "tips": "Contrate um iate por um dia para explorar ilhas próximas como Delos e Rhenia."
+        "tips": "Contrate iate por um dia para Delos e Rhenia."
       }
     },
     {
       "id": "tailandia-2026",
       "name": "Tailândia 2026",
-      "sub": "Phuket · Krabi · Ilhas",
+      "sub": "Bangkok · Phuket · Krabi · Pattaya",
       "status": "done",
       "continent": "Asia",
       "country": "Thailand",
@@ -653,20 +1005,24 @@
       "year": 2026,
       "month": 1,
       "label": "Jan 2026",
-      "lat": 7.8804,
-      "lon": 98.3923,
+      "lat": 13.0,
+      "lon": 101.0,
       "col": "#06b6d4",
-      "pax": "casal",
-      "air": "GRU→DXB→HKT",
-      "nts": 12,
-      "km": 17200,
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + AirAsia",
+      "nts": 14,
+      "km": 18000,
       "type": "leisure",
       "highlights": [
-        "Baía de Phang Nga",
-        "Ilhas Phi Phi",
-        "Mergulho em Ko Lanta"
+        "Praias de Phuket",
+        "Templos de Bangkok",
+        "Ilhas de Krabi",
+        "Pattaya Beach Road",
+        "Mai Khao",
+        "Karon",
+        "Ao Nang"
       ],
-      "memory": "Sul da Tailândia é completamente diferente de Bangkok — praias de cartão postal e água cristalina turquesa.",
+      "memory": "Uma aventura incrível pelo sudeste asiático — dos templos dourados de Bangkok ao azul-turquesa das ilhas de Krabi. Cultura, gastronomia e beleza natural em 14 dias inesquecíveis.",
       "logistics": {
         "hotels": [
           "Amanpuri (Phuket)",
@@ -674,15 +1030,15 @@
         ],
         "restaurants": [
           "Suay Restaurant",
-          "Bampot Kitchen & Bar"
+          "Jay Fai (Bangkok)"
         ],
         "tips": "Janeiro é perfeito para o sul — estação seca. Use barcos para se mover entre as ilhas."
       }
     },
     {
       "id": "africa-2026",
-      "name": "Sul da África — Safari",
-      "sub": "Kruger · Cidade do Cabo · África do Sul",
+      "name": "África do Sul",
+      "sub": "Johannesburg · Sun City · Pilanesberg · Cape Town",
       "status": "done",
       "continent": "Africa",
       "country": "South Africa",
@@ -691,30 +1047,357 @@
       "year": 2026,
       "month": 3,
       "label": "Mar 2026",
-      "lat": -30.5595,
-      "lon": 22.9375,
+      "lat": -29.0,
+      "lon": 25.0,
       "col": "#f97316",
-      "pax": "casal",
-      "air": "GRU→JNB",
-      "nts": 12,
-      "km": 7600,
+      "pax": "Equipe Onix / Yamaha",
+      "air": "Emirates / TAP",
+      "nts": 10,
+      "km": 10000,
       "type": "adventure",
       "highlights": [
-        "Big Five no Kruger",
-        "Cape Point",
-        "Vinícolas de Stellenbosch"
+        "Safari no Pilanesberg",
+        "Sun City Resort",
+        "Table Mountain",
+        "V&A Waterfront Cape Town",
+        "Kempton Park"
       ],
-      "memory": "Ver um leão a 5 metros do jipe ao amanhecer — adrenalina pura. A natureza africana é de tirar o fôlego.",
+      "memory": "Viagem especial Kando Yamaha — fusão de negócios e aventura no continente africano. Da emoção do safari ao topo da Table Mountain, uma experiência transformadora.",
       "logistics": {
         "hotels": [
-          "Singita Lebombo Lodge (Kruger)",
-          "Ellerman House (Cidade do Cabo)"
+          "Sun City Resort",
+          "One&Only Cape Town"
         ],
         "restaurants": [
           "La Colombe",
-          "Test Kitchen (Cidade do Cabo)"
+          "Test Kitchen"
         ],
-        "tips": "Março é ótimo para wildlife — savana seca e animais concentram-se perto da água. Reserve o lodge de safari com 1 ano de antecedência."
+        "tips": "Reserve safari com 1 ano de antecedência. Março: animais concentrados perto da água."
+      }
+    },
+    {
+      "id": "noronha-2024",
+      "name": "Fernando de Noronha",
+      "sub": "Vila dos Remédios · PE",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🐬",
+      "year": 2024,
+      "month": 9,
+      "label": "Set 2024",
+      "lat": -3.8542,
+      "lon": -32.4297,
+      "col": "#22c55e",
+      "pax": "casal",
+      "air": "GRU→REC→FEN",
+      "nts": 5,
+      "km": 3200,
+      "type": "leisure",
+      "highlights": [
+        "Praia do Sancho",
+        "Baía dos Porcos",
+        "Vila dos Remédios",
+        "Mergulho com tartarugas"
+      ],
+      "memory": "Fernando de Noronha é o paraíso brasileiro — águas cristalinas, vida marinha exuberante e paisagens de cinema.",
+      "logistics": {
+        "hotels": [
+          "Pousada Maravilha"
+        ],
+        "restaurants": [
+          "Mergulhão",
+          "Cacimba Bistrô"
+        ],
+        "tips": "Reserve com meses de antecedência. Pegue o passaporte do PARNAMAR no aeroporto."
+      }
+    },
+    {
+      "id": "gramado-2023",
+      "name": "Gramado & Canela",
+      "sub": "Serra Gaúcha · RS",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🍫",
+      "year": 2023,
+      "month": 7,
+      "label": "Jul 2023",
+      "lat": -29.3789,
+      "lon": -50.8767,
+      "col": "#84cc16",
+      "pax": "casal",
+      "air": "FLN→POA",
+      "nts": 4,
+      "km": 700,
+      "type": "leisure",
+      "highlights": [
+        "Mini Mundo",
+        "Cascata do Caracol",
+        "Rua Coberta",
+        "Chocolates artesanais"
+      ],
+      "memory": "Inverno na Serra Gaúcha é mágico — frio europeu, fondue, vinho local e ar bucólico.",
+      "logistics": {
+        "hotels": [
+          "Saint Andrews Hotel"
+        ],
+        "restaurants": [
+          "Garfo & Bombacha",
+          "La Hacienda"
+        ],
+        "tips": "Vá em julho para o frio. Reserve restaurantes principais antecipadamente."
+      }
+    },
+    {
+      "id": "rio-2023",
+      "name": "Rio de Janeiro",
+      "sub": "Rio · Niterói · RJ",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🏖️",
+      "year": 2023,
+      "month": 12,
+      "label": "Dez 2023",
+      "lat": -22.9068,
+      "lon": -43.1729,
+      "col": "#fbbf24",
+      "pax": "amigos",
+      "air": "FLN→GIG",
+      "nts": 5,
+      "km": 1200,
+      "type": "leisure",
+      "highlights": [
+        "Cristo Redentor",
+        "Pão de Açúcar",
+        "Praia de Copacabana",
+        "MAC Niterói"
+      ],
+      "memory": "Cidade maravilhosa — sempre vibrante, sempre acolhedora.",
+      "logistics": {
+        "hotels": [
+          "Belmond Copacabana Palace"
+        ],
+        "restaurants": [
+          "Aprazível",
+          "Olympe"
+        ],
+        "tips": "Reveillon em Copacabana exige reserva com muito tempo de antecedência."
+      }
+    },
+    {
+      "id": "jericoacoara-2025",
+      "name": "Jericoacoara",
+      "sub": "Vila de Jericoacoara · CE",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🌅",
+      "year": 2025,
+      "month": 4,
+      "label": "Abr 2025",
+      "lat": -2.7958,
+      "lon": -40.5128,
+      "col": "#f59e0b",
+      "pax": "amigos",
+      "air": "FLN→FOR",
+      "nts": 5,
+      "km": 2800,
+      "type": "adventure",
+      "highlights": [
+        "Pôr do sol na Duna",
+        "Lagoa do Paraíso",
+        "Pedra Furada",
+        "Buggy pelas dunas"
+      ],
+      "memory": "Jeri tem um charme único — rua de areia, energia descontraída e os melhores entardeceres do Brasil.",
+      "logistics": {
+        "hotels": [
+          "Vila Kalango"
+        ],
+        "restaurants": [
+          "Tamarindo",
+          "Naturalmente"
+        ],
+        "tips": "Use buggy 4x4 — caro mas vale. Não saia sem ver o pôr do sol na Duna."
+      }
+    },
+    {
+      "id": "maragogi-2024",
+      "name": "Maragogi & Maceió",
+      "sub": "Maragogi · Maceió · AL",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🐚",
+      "year": 2024,
+      "month": 11,
+      "label": "Nov 2024",
+      "lat": -9.0122,
+      "lon": -35.2225,
+      "col": "#06b6d4",
+      "pax": "casal",
+      "air": "FLN→MCZ",
+      "nts": 5,
+      "km": 2400,
+      "type": "leisure",
+      "highlights": [
+        "Galés de Maragogi",
+        "Praia de Antunes",
+        "Pajuçara em Maceió",
+        "Piscinas naturais"
+      ],
+      "memory": "Caribe brasileiro — Maragogi tem as piscinas naturais mais lindas do Nordeste.",
+      "logistics": {
+        "hotels": [
+          "Salinas do Maragogi"
+        ],
+        "restaurants": [
+          "Lopana",
+          "Sur"
+        ],
+        "tips": "Para as Galés, vá em maré baixa. Compre ingresso antecipado."
+      }
+    },
+    {
+      "id": "sp-junho-2026",
+      "name": "São Paulo — Só Track Boa + Pride",
+      "sub": "São Paulo · SP",
+      "status": "planned",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🎵",
+      "year": 2026,
+      "month": 6,
+      "label": "Jun 2026",
+      "startDate": "2026-06-13",
+      "endDate": "2026-06-22",
+      "lat": -23.5505,
+      "lon": -46.6333,
+      "col": "#a855f7",
+      "pax": "amigos",
+      "air": "FLN→GRU (TAM)",
+      "nts": 8,
+      "km": 860,
+      "type": "festival",
+      "highlights": [
+        "Só Track Boa 13/06",
+        "Pride SP 22/06",
+        "Vida noturna paulistana"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [],
+        "restaurants": [],
+        "tips": "Passagem já comprada pela TAM. Falta hotel."
+      }
+    },
+    {
+      "id": "europa-tomorrowland-2026",
+      "name": "Europa — Tomorrowland Bélgica",
+      "sub": "Boom · Bruxelas · Bélgica",
+      "status": "planned",
+      "continent": "Europe",
+      "country": "Bélgica",
+      "flag": "🇧🇪",
+      "emoji": "🎶",
+      "year": 2026,
+      "month": 7,
+      "label": "Jul 2026",
+      "startDate": "2026-07-17",
+      "endDate": "2026-07-28",
+      "lat": 51.0875,
+      "lon": 4.3722,
+      "col": "#ec4899",
+      "pax": "amigos",
+      "air": "GRU→BRU",
+      "nts": 11,
+      "km": 18000,
+      "type": "festival",
+      "highlights": [
+        "Tomorrowland 2026 (já contratado)",
+        "Bruxelas",
+        "Antuérpia"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [],
+        "restaurants": [],
+        "tips": "Contrato Tomorrowland assinado. Passagem comprada. Falta hotel em Boom/Bruxelas."
+      }
+    },
+    {
+      "id": "brasilia-2026",
+      "name": "Brasília — Festa da Lili",
+      "sub": "Brasília · DF",
+      "status": "planned",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🎂",
+      "year": 2026,
+      "month": 8,
+      "label": "Ago 2026",
+      "startDate": "2026-08-07",
+      "endDate": "2026-08-10",
+      "lat": -15.7942,
+      "lon": -47.8825,
+      "col": "#22c55e",
+      "pax": "amigos",
+      "air": "FLN→BSB",
+      "nts": 3,
+      "km": 1600,
+      "type": "event",
+      "highlights": [
+        "Aniversário da Lili",
+        "Reencontro com amigos"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [],
+        "restaurants": [],
+        "tips": "Tudo confirmado: passagem, hospedagem, ingresso."
+      }
+    },
+    {
+      "id": "sanisland-2026",
+      "name": "San Island — Maldivas",
+      "sub": "Male · Maldivas",
+      "status": "planned",
+      "continent": "Asia",
+      "country": "Maldivas",
+      "flag": "🇲🇻",
+      "emoji": "🏖️",
+      "year": 2026,
+      "month": 10,
+      "label": "Out 2026",
+      "startDate": "2026-10-09",
+      "endDate": "2026-10-17",
+      "lat": 4.1755,
+      "lon": 73.5093,
+      "col": "#0ea5e9",
+      "pax": "casal",
+      "air": "GRU→DXB→MLE",
+      "nts": 7,
+      "km": 17000,
+      "type": "luxury",
+      "highlights": [
+        "Overwater bungalow",
+        "Mergulho em corais",
+        "San Island Resort"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [],
+        "restaurants": [],
+        "tips": "Viagem completa a planejar. Conexão DXB ou CMB."
       }
     },
     {
@@ -750,7 +1433,7 @@
           "Park Hyatt Niseko Hanazono"
         ],
         "restaurants": [],
-        "tips": "Fevereiro é o melhor mês para neve em Niseko. Reserve o Hotel com antecedência — muito concorrido."
+        "tips": "Fevereiro é o melhor mês para neve em Niseko. Reserve o Hotel com antecedência."
       }
     },
     {
@@ -786,7 +1469,7 @@
           "La Mamounia (Marrakech)"
         ],
         "restaurants": [],
-        "tips": "Abril evita o calor extremo do verão. Contrate guia local para navegar a medina."
+        "tips": "Abril evita o calor extremo do verão."
       }
     },
     {
@@ -822,8 +1505,71 @@
           "Juvet Landscape Hotel"
         ],
         "restaurants": [],
-        "tips": "Setembro oferece folhagem de outono e últimas chances de dias longos. Para aurora boreal, prefira outubro-março."
+        "tips": "Setembro oferece folhagem de outono e últimas chances de dias longos."
+      }
+    },
+    {
+      "id": "patagonia-wishlist",
+      "name": "Patagônia — Torres del Paine",
+      "sub": "Punta Arenas · Chile",
+      "status": "wishlist",
+      "continent": "Americas",
+      "country": "Chile",
+      "flag": "🇨🇱",
+      "emoji": "🏔️",
+      "year": 2028,
+      "month": 1,
+      "label": "Verão Austral",
+      "lat": -53.1638,
+      "lon": -70.9171,
+      "col": "#22c55e",
+      "pax": "casal",
+      "air": "GRU→SCL→PUQ",
+      "nts": 10,
+      "km": 3000,
+      "type": "adventure",
+      "highlights": [
+        "Trekking W ou O",
+        "Torres del Paine"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [],
+        "restaurants": [],
+        "tips": "Temporada ideal: novembro a março."
+      }
+    },
+    {
+      "id": "maldivas-luademel-wishlist",
+      "name": "Maldivas — Lua de Mel",
+      "sub": "Male · Maldivas",
+      "status": "wishlist",
+      "continent": "Asia",
+      "country": "Maldivas",
+      "flag": "🇲🇻",
+      "emoji": "💕",
+      "year": 2028,
+      "month": 6,
+      "label": "2027+",
+      "lat": 4.1755,
+      "lon": 73.5093,
+      "col": "#ec4899",
+      "pax": "casal",
+      "air": "GRU→DXB→MLE",
+      "nts": 10,
+      "km": 17000,
+      "type": "luxury",
+      "highlights": [
+        "Overwater bungalow",
+        "Resort 5 estrelas"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [],
+        "restaurants": [],
+        "tips": "Monitorar promoções de resorts 5 estrelas."
       }
     }
-  ]
-}
+  ],
+  "atualizado_em": "2026-05-16",
+  "fonte": "Mesclagem entre trips.json (GitHub Pages), index.html local e Google Photos Places"}
