@@ -1,0 +1,24 @@
+{
+  "perfil": "Conforto sem extravagância. Valorizo experiências bem planejadas, ritmo equilibrado e gastronomia local. Prefiro ver menos lugares com profundidade a correr atrás de check-list turístico.",
+  "evitar": [
+    "Madrugadas longas em aeroporto",
+    "Voos com mais de uma conexão sem necessidade",
+    "Hotéis muito afastados de centro/transporte",
+    "Roteiros com mais de 3 cidades em menos de 10 dias"
+  ],
+  "preferir": [
+    "Conforto sem extravagância",
+    "Voos diretos quando possível",
+    "Hospedagem em região central, caminhável",
+    "Reserva antecipada de restaurantes referência",
+    "Combinar lazer + experiência cultural"
+  ],
+  "destinos_sonho": [],
+  "epocas_disponiveis": [],
+  "orcamento_referencia": {
+    "moeda": "BRL"
+  },
+  "milhas": {
+    "programas": []
+  }
+}

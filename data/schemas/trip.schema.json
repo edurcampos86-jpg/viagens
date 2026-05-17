@@ -1,0 +1,298 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edurcampos86-jpg.github.io/viagens/schemas/trip.schema.json",
+  "title": "Viagem",
+  "description": "Schema canônico de uma viagem. Campos antigos (inglês) preservados para compatibilidade com app.js e sync.py. Campos novos (português) introduzidos na Fase 1a e preenchidos progressivamente.",
+  "type": "object",
+  "required": ["id", "status", "name"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Identificador único, kebab-case (ex: 'japao-2027')."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["done", "planned", "wishlist", "em_planejamento"],
+      "description": "done=realizada · planned=confirmada · em_planejamento=ainda definindo · wishlist=sonho sem data firme"
+    },
+
+    "name": { "type": "string", "minLength": 1 },
+    "sub": { "type": "string" },
+    "continent": {
+      "type": "string",
+      "enum": ["Asia", "Europe", "Americas", "Africa", "Oceania"]
+    },
+    "country": { "type": "string" },
+    "flag": { "type": "string" },
+    "emoji": { "type": "string" },
+    "year": { "type": "integer", "minimum": 1900, "maximum": 2100 },
+    "month": { "type": "integer", "minimum": 1, "maximum": 12 },
+    "label": { "type": "string" },
+    "startDate": { "type": "string", "format": "date" },
+    "endDate":   { "type": "string", "format": "date" },
+    "lat": { "type": "number", "minimum": -90,  "maximum": 90 },
+    "lon": { "type": "number", "minimum": -180, "maximum": 180 },
+    "col": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+    "pax": { "type": "string" },
+    "air": { "type": "string" },
+    "nts": { "type": "integer", "minimum": 0 },
+    "km":  { "type": "number",  "minimum": 0 },
+    "type": {
+      "type": "string",
+      "enum": ["leisure", "business", "festival", "adventure", "event", "luxury"],
+      "description": "leisure=lazer · business=trabalho · festival=festival · adventure=aventura · event=evento/festa · luxury=resort/luxo"
+    },
+    "highlights": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "memory": { "type": "string" },
+    "logistics": {
+      "type": "object",
+      "properties": {
+        "hotels":      { "type": "array", "items": { "type": "string" } },
+        "restaurants": { "type": "array", "items": { "type": "string" } },
+        "tips":        { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+
+    "titulo": {
+      "type": "string",
+      "description": "Título narrativo (alternativa em pt-BR a 'name'). Opcional; quando ausente usa-se 'name'."
+    },
+    "destinos": {
+      "type": "array",
+      "description": "Lista de destinos da viagem (cidade, país). Para multi-destino. Opcional; quando ausente derivado de 'name'+'country'.",
+      "items": {
+        "type": "object",
+        "required": ["cidade"],
+        "properties": {
+          "cidade":  { "type": "string" },
+          "pais":    { "type": "string" },
+          "lat":     { "type": "number", "minimum": -90,  "maximum": 90 },
+          "lon":     { "type": "number", "minimum": -180, "maximum": 180 },
+          "noites":  { "type": "integer", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "companhia": {
+      "type": "array",
+      "description": "Nomes/relações que viajaram junto. Ex: ['Marido', 'Gustavo']. Lista vazia = sozinho.",
+      "items": { "type": "string" }
+    },
+    "transporte": {
+      "type": "array",
+      "description": "Trechos de transporte (voos, ônibus, carro, trem). Ordem cronológica.",
+      "items": {
+        "type": "object",
+        "required": ["modo", "origem", "destino"],
+        "properties": {
+          "modo":     { "type": "string", "enum": ["voo", "onibus", "trem", "carro", "barco", "outro"] },
+          "origem":   { "type": "string" },
+          "destino":  { "type": "string" },
+          "cia":      { "type": "string", "description": "Companhia aérea/operadora. Ex: 'Latam', 'TAM', 'Lufthansa'." },
+          "data":     { "type": "string", "format": "date" },
+          "horario_partida": { "type": "string", "pattern": "^[0-2][0-9]:[0-5][0-9]$" },
+          "horario_chegada": { "type": "string", "pattern": "^[0-2][0-9]:[0-5][0-9]$" },
+          "conexao_em":      { "type": "array", "items": { "type": "string" }, "description": "Códigos IATA ou cidades de conexão." },
+          "milhas":   { "type": "boolean", "description": "Comprada com milhas." },
+          "observacao": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "hospedagem": {
+      "type": "array",
+      "description": "Hospedagens estruturadas (substitui logistics.hotels[] eventualmente).",
+      "items": {
+        "type": "object",
+        "required": ["nome"],
+        "properties": {
+          "nome":       { "type": "string" },
+          "cidade":     { "type": "string" },
+          "check_in":   { "type": "string", "format": "date" },
+          "check_out":  { "type": "string", "format": "date" },
+          "noites":     { "type": "integer", "minimum": 0 },
+          "preco_estimado": { "$ref": "#/$defs/valor_monetario" },
+          "preco_real":     { "$ref": "#/$defs/valor_monetario" },
+          "confirmada": { "type": "boolean" },
+          "tipo":       { "type": "string", "enum": ["hotel", "airbnb", "pousada", "hostel", "resort", "casa_amigo", "outro"] },
+          "observacao": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "orcamento": {
+      "type": "object",
+      "description": "Orçamento estimado e real, por categoria. Substitui 'budget' antigo eventualmente.",
+      "properties": {
+        "moeda": { "type": "string", "default": "BRL" },
+        "estimado": {
+          "type": "object",
+          "properties": {
+            "voos":        { "type": "number", "minimum": 0 },
+            "hospedagem":  { "type": "number", "minimum": 0 },
+            "alimentacao": { "type": "number", "minimum": 0 },
+            "transporte_local": { "type": "number", "minimum": 0 },
+            "passeios":    { "type": "number", "minimum": 0 },
+            "outros":      { "type": "number", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "real": {
+          "type": "object",
+          "properties": {
+            "voos":        { "type": "number", "minimum": 0 },
+            "hospedagem":  { "type": "number", "minimum": 0 },
+            "alimentacao": { "type": "number", "minimum": 0 },
+            "transporte_local": { "type": "number", "minimum": 0 },
+            "passeios":    { "type": "number", "minimum": 0 },
+            "outros":      { "type": "number", "minimum": 0 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "fotos": {
+      "type": "array",
+      "description": "URLs ou identificadores de fotos. Pode coexistir com 'gallery' (legado do sync).",
+      "items": {
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "url":     { "type": "string", "format": "uri" },
+          "legenda": { "type": "string" },
+          "data":    { "type": "string", "format": "date" },
+          "destaque": { "type": "boolean", "description": "Foto principal/capa da viagem." }
+        },
+        "additionalProperties": false
+      }
+    },
+    "narrativa": {
+      "type": "string",
+      "description": "Relato em Markdown. Substitui 'memory' eventualmente (memory é texto plano)."
+    },
+    "checklist": {
+      "type": "array",
+      "description": "Itens de preparação. Substitui o checklist sintético do app.js eventualmente.",
+      "items": {
+        "type": "object",
+        "required": ["id", "label"],
+        "properties": {
+          "id":         { "type": "string" },
+          "label":      { "type": "string" },
+          "obrigatorio":{ "type": "boolean", "default": false },
+          "feito":      { "type": "boolean", "default": false },
+          "prazo":      { "type": "string", "format": "date" },
+          "observacao": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "decisoes_pendentes": {
+      "type": "array",
+      "description": "Decisões abertas (ex: 'qual hotel?', 'voar pela Latam ou Tap?'). Vão alimentar badges no dashboard.",
+      "items": {
+        "type": "object",
+        "required": ["titulo"],
+        "properties": {
+          "titulo":     { "type": "string" },
+          "opcoes":     { "type": "array", "items": { "type": "string" } },
+          "prazo":      { "type": "string", "format": "date" },
+          "criticidade":{ "type": "string", "enum": ["baixa", "media", "alta"] },
+          "observacao": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags livres. Ex: 'praia', 'montanha', 'prêmio Yamaha Kando', 'aniversário'.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "documentos_necessarios": {
+      "type": "array",
+      "description": "Documentos/exigências para a viagem. Cruzado pelo Auditor com documentos.json.",
+      "items": {
+        "type": "object",
+        "required": ["tipo"],
+        "properties": {
+          "tipo":        { "type": "string", "enum": ["passaporte", "visto", "vacina", "seguro", "outro"] },
+          "detalhe":     { "type": "string", "description": "Ex: 'Visto Schengen', 'Vacina febre amarela'." },
+          "obtido":      { "type": "boolean", "default": false },
+          "valido_ate":  { "type": "string", "format": "date" },
+          "observacao":  { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "inspiracao_fonte": {
+      "type": "string",
+      "description": "O que originou a vontade dessa viagem (link, post, conversa). Texto livre."
+    },
+
+    "gallery": {
+      "type": "array",
+      "description": "Legado do sync.py — galeria importada do Google Photos. Será substituído por 'fotos' progressivamente.",
+      "items": { "type": "object" }
+    },
+    "budget": {
+      "type": "object",
+      "description": "Legado do sync.py — orçamento auto-detectado por email. Será substituído por 'orcamento' progressivamente.",
+      "additionalProperties": true
+    },
+    "checklistAuto": {
+      "type": "object",
+      "description": "Legado do sync.py — itens de checklist auto-marcados via parsing de e-mail.",
+      "additionalProperties": true
+    },
+    "weather": {
+      "type": "object",
+      "description": "Cache opcional de dados climáticos por mês.",
+      "additionalProperties": true
+    },
+    "reservations": {
+      "type": "array",
+      "description": "Legado: lista de confirmações brutas extraídas do Gmail.",
+      "items": { "type": "object" }
+    },
+    "packing": {
+      "type": "array",
+      "description": "Lista de bagagem. Hoje sintetizada por defaultPacking() no app.js.",
+      "items": { "type": "object" }
+    }
+  },
+
+  "not": {
+    "anyOf": [
+      { "required": ["cpf"] },
+      { "required": ["passaporte_numero"] },
+      { "required": ["passaporte_num"] },
+      { "required": ["passport_number"] },
+      { "required": ["cartao"] },
+      { "required": ["cartao_numero"] },
+      { "required": ["cvv"] },
+      { "required": ["codigo_reserva"] },
+      { "required": ["reserva_numero"] },
+      { "required": ["booking_code"] }
+    ]
+  },
+
+  "additionalProperties": true,
+
+  "$defs": {
+    "valor_monetario": {
+      "type": "object",
+      "required": ["valor"],
+      "properties": {
+        "valor": { "type": "number", "minimum": 0 },
+        "moeda": { "type": "string", "default": "BRL" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

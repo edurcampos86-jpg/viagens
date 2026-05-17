@@ -1,0 +1,39 @@
+name: validate-schemas
+
+on:
+  pull_request:
+    paths:
+      - "data/**.json"
+      - "data/schemas/**.schema.json"
+      - "scripts/validate_schemas.py"
+      - "scripts/requirements-validate.txt"
+      - ".github/workflows/validate-schemas.yml"
+  push:
+    branches: [main]
+    paths:
+      - "data/**.json"
+      - "data/schemas/**.schema.json"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: scripts/requirements-validate.txt
+
+      - name: Install deps
+        run: pip install -r scripts/requirements-validate.txt
+
+      - name: Validate schemas
+        run: python scripts/validate_schemas.py
