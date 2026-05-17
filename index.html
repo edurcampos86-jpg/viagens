@@ -58,6 +58,81 @@
 
 <main id="main" tabindex="-1">
 
+  <!-- DEDICATED PLAN PAGE (mostrada quando rota #plan/<id>) -->
+  <section class="plan-page" id="planPage" hidden aria-labelledby="planPageTitle">
+    <header class="plan-head">
+      <button class="plan-back" id="planBack" aria-label="Voltar para a linha do tempo">
+        <span aria-hidden="true">←</span> Linha do Tempo
+      </button>
+      <div class="plan-head-actions">
+        <button class="plan-action" data-pp-action="ics">📆 Agenda (.ics)</button>
+        <button class="plan-action" data-pp-action="share">📤 Compartilhar</button>
+        <button class="plan-action" data-pp-action="link">🔗 Copiar link</button>
+        <button class="plan-action plan-action-primary" data-pp-action="promote" id="ppPromote" hidden></button>
+      </div>
+    </header>
+    <div class="plan-hero" id="planHero">
+      <div class="plan-hero-bg" id="planHeroBg"></div>
+      <div class="plan-hero-overlay"></div>
+      <div class="plan-hero-inner">
+        <div class="plan-hero-flag" id="planHeroFlag" aria-hidden="true"></div>
+        <h1 class="plan-hero-name" id="planPageTitle"></h1>
+        <div class="plan-hero-sub" id="planHeroSub"></div>
+        <div class="plan-hero-dates" id="planHeroDates"></div>
+      </div>
+      <div class="plan-hero-countdown" id="planHeroCD">
+        <div class="plan-cd-n" id="planCdN"></div>
+        <div class="plan-cd-l" id="planCdL"></div>
+      </div>
+    </div>
+    <div class="plan-quickstats" id="planQuickstats" role="list"></div>
+    <div class="plan-grid">
+      <section class="plan-col plan-col-left">
+        <article class="plan-card" data-pp-section="map">
+          <h3>🗺 Localização</h3>
+          <div class="mini-map" id="planMiniMap"></div>
+          <ol class="route-list" id="planRouteList"></ol>
+        </article>
+        <article class="plan-card" data-pp-section="context">
+          <h3>🌦 Clima & Câmbio</h3>
+          <div id="planContext"></div>
+        </article>
+      </section>
+      <section class="plan-col plan-col-mid">
+        <article class="plan-card" data-pp-section="checklist">
+          <h3>✅ Checklist de Preparação</h3>
+          <div id="planChecklist"></div>
+        </article>
+        <article class="plan-card" data-pp-section="reservations">
+          <h3>🎫 Reservas</h3>
+          <div id="planReservations"></div>
+        </article>
+      </section>
+      <section class="plan-col plan-col-right">
+        <article class="plan-card" data-pp-section="budget">
+          <h3>💰 Orçamento</h3>
+          <div id="planBudget"></div>
+        </article>
+        <article class="plan-card" data-pp-section="planning">
+          <h3>📝 Notas & Plano</h3>
+          <div id="planPlanning"></div>
+        </article>
+      </section>
+    </div>
+    <section class="plan-tabs-section">
+      <div class="tabs" role="tablist" aria-label="Mais detalhes" id="planExtraTabs">
+        <button class="tab active" role="tab" data-pp-tab="packing">🧳 Bagagem</button>
+        <button class="tab" role="tab" data-pp-tab="inspire">💡 Inspiração</button>
+      </div>
+      <div class="tab-panels">
+        <div class="tab-panel active" role="tabpanel" data-pp-panel="packing" id="planPacking"></div>
+        <div class="tab-panel" role="tabpanel" data-pp-panel="inspire" id="planInspire" hidden></div>
+      </div>
+    </section>
+  </section>
+
+  <div id="timelineView">
+
   <!-- STATS -->
   <section class="stats-section" aria-labelledby="stats-title">
     <h2 id="stats-title" class="sr-only">Estatísticas</h2>
@@ -206,6 +281,8 @@
 
   </div>
 
+  </div><!-- /#timelineView -->
+
 </main>
 
 <!-- TRIP TEMPLATE (used by JS to clone) -->
@@ -258,6 +335,7 @@
             <span aria-hidden="true">📤</span> Compartilhar
           </button>
           <button class="link-btn" data-permalink>🔗 Copiar link</button>
+          <button class="link-btn" data-open-plan hidden>🖼 Abrir página inteira</button>
           <button class="link-btn" data-ics hidden>📆 Adicionar à agenda</button>
           <button class="link-btn" data-promote hidden>
             <span data-promote-label>📅 Mover para Planejadas</span>

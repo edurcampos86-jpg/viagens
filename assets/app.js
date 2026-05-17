@@ -180,6 +180,8 @@ const state = {
   isDark: null,
   compareMode: false,
   compareIds: new Set(),
+  activePlanId: null,
+  planActionsBound: false,
 };
 
 // ── DOM cache ────────────────────────────────────────────────────
@@ -956,6 +958,16 @@ function hydrateCard(node, trip) {
     });
   }
 
+  // "Open dedicated page" for planned/wishlist
+  const planBtn = node.querySelector('[data-open-plan]');
+  if (isPlanned) {
+    planBtn.hidden = false;
+    planBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      location.hash = `plan/${trip.id}`;
+    });
+  }
+
   // Status promotion button
   const promoBtn = node.querySelector('[data-promote]');
   const promoLbl = node.querySelector('[data-promote-label]');
@@ -1128,7 +1140,11 @@ function populateChecklist(node, trip) {
   if (!panel) return;
   const saved = loadTripState(trip.id);
   const items = trip.checklist || defaultChecklist(trip);
-  const checks = saved.checklist || {};
+  // Merge: manual checks (saved.checklist) OR auto-detected (trip.checklistAuto)
+  const autoChecks = trip.checklistAuto || {};
+  const manualChecks = saved.checklist || {};
+  const checks = { ...autoChecks, ...manualChecks };
+  // explicit override: if user un-checks manually, manualChecks wins
   const total = items.length;
   const doneN = items.filter(i => checks[i.id]).length;
   const pct = Math.round((doneN / total) * 100);
@@ -1141,12 +1157,18 @@ function populateChecklist(node, trip) {
     <ul class="cl-list">
       ${items.map(it => {
         const checked = !!checks[it.id];
+        const isAuto = !!autoChecks[it.id] && manualChecks[it.id] !== false;
+        const autoMeta = isAuto && typeof autoChecks[it.id] === 'object' ? autoChecks[it.id] : null;
         const due = it.due ? formatPtDate(it.due) : '';
         const overdue = it.due && new Date(it.due) < new Date() && !checked;
-        return `<li class="cl-item${checked ? ' done' : ''}${overdue ? ' overdue' : ''}">
+        const autoBadge = autoMeta
+          ? `<span class="cl-auto" title="Detectado automaticamente via ${escapeHtml(autoMeta.provider || 'email')} ${autoMeta.ref ? '(' + escapeHtml(autoMeta.ref) + ')' : ''}">🔗 ${escapeHtml(autoMeta.provider || 'auto')}</span>`
+          : '';
+        return `<li class="cl-item${checked ? ' done' : ''}${overdue ? ' overdue' : ''}${isAuto ? ' auto' : ''}">
           <label>
             <input type="checkbox" data-id="${escapeHtml(it.id)}" ${checked ? 'checked' : ''}/>
             <span class="cl-label">${escapeHtml(it.label)}</span>
+            ${autoBadge}
             ${due ? `<span class="cl-due">⏰ ${due}</span>` : ''}
           </label>
         </li>`;
@@ -1797,6 +1819,17 @@ function toast(msg) {
 function initRouting() { applyHash(); }
 function applyHash() {
   const h = location.hash.replace(/^#/, '');
+  if (h.startsWith('plan/')) {
+    const id = h.slice(5);
+    const trip = state.trips.find(t => t.id === id);
+    if (trip) {
+      openPlanPage(trip);
+      return;
+    }
+  }
+  // Leaving plan page if hash no longer points there
+  if (state.activePlanId && !h.startsWith('plan/')) closePlanPage();
+
   if (h.startsWith('trip/')) {
     const id = h.slice(5);
     if (state.trips.find(t => t.id === id)) {
@@ -1817,6 +1850,349 @@ function applyHash() {
     });
     render();
   }
+}
+
+// ── Dedicated full-screen plan page ──────────────────────────────
+function openPlanPage(trip) {
+  state.activePlanId = trip.id;
+  const tl = document.getElementById('timelineView');
+  const pp = document.getElementById('planPage');
+  if (!tl || !pp) return;
+  tl.hidden = true;
+  pp.hidden = false;
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  document.body.classList.add('plan-page-open');
+  hydratePlanPage(trip);
+}
+
+function closePlanPage() {
+  state.activePlanId = null;
+  const tl = document.getElementById('timelineView');
+  const pp = document.getElementById('planPage');
+  if (!tl || !pp) return;
+  pp.hidden = true;
+  tl.hidden = false;
+  document.body.classList.remove('plan-page-open');
+}
+
+function hydratePlanPage(trip) {
+  const isWish = trip.status === 'wishlist';
+  // Header
+  document.getElementById('planPageTitle').textContent = trip.name;
+  document.getElementById('planHeroFlag').textContent = trip.emoji || trip.flag || '📍';
+  document.getElementById('planHeroSub').textContent = trip.sub || '';
+
+  const start = trip.startDate, end = trip.endDate;
+  document.getElementById('planHeroDates').textContent = start
+    ? `${formatPtDate(start)}${end ? ' → ' + formatPtDate(end) : ''}` + ` · ${trip.nts || '?'} noites`
+    : `${trip.label || ''} · ${trip.nts || '?'} noites`;
+
+  const heroBg = document.getElementById('planHeroBg');
+  if (trip.photo) heroBg.style.backgroundImage = `url(${trip.photo})`;
+  else heroBg.style.background = `linear-gradient(135deg, ${trip.color || '#0ea5e9'}, ${trip.color2 || '#0369a1'})`;
+
+  // Countdown
+  const d = daysUntil(trip);
+  const cdN = document.getElementById('planCdN');
+  const cdL = document.getElementById('planCdL');
+  if (d == null) {
+    cdN.textContent = '—'; cdL.textContent = isWish ? 'sem data definida' : '';
+  } else if (d < 0) {
+    cdN.textContent = Math.abs(d); cdL.textContent = `dias atrás`;
+  } else if (d === 0) {
+    cdN.textContent = '🎉'; cdL.textContent = 'hoje!';
+  } else {
+    cdN.textContent = d; cdL.textContent = d === 1 ? 'dia até embarcar' : 'dias até embarcar';
+  }
+
+  // Quick stats
+  renderPlanQuickstats(trip);
+
+  // Sections
+  renderPlanMap(trip);
+  renderPlanContext(trip);
+  renderPlanChecklist(trip);
+  renderPlanReservations(trip);
+  renderPlanBudget(trip);
+  renderPlanPlanning(trip);
+  renderPlanPacking(trip);
+  renderPlanInspire(trip);
+
+  // Header actions
+  const promo = document.getElementById('ppPromote');
+  if (trip.status === 'wishlist') {
+    promo.hidden = false; promo.textContent = '📅 Mover para Planejadas';
+    promo.onclick = () => { promoteTrip(trip, 'planned'); hydratePlanPage(trip); };
+  } else if (trip.status === 'planned') {
+    promo.hidden = false; promo.textContent = '✓ Marcar como realizada';
+    promo.onclick = () => { promoteTrip(trip, 'done'); closePlanPage(); location.hash = ''; };
+  } else {
+    promo.hidden = true;
+  }
+
+  // Wire generic header actions once
+  if (!state.planActionsBound) {
+    document.querySelectorAll('[data-pp-action]').forEach(b => {
+      b.addEventListener('click', () => {
+        const t = state.trips.find(x => x.id === state.activePlanId);
+        if (!t) return;
+        const action = b.dataset.ppAction;
+        if (action === 'ics') downloadIcs(t);
+        else if (action === 'share') openShare(t);
+        else if (action === 'link') {
+          const url = `${location.origin}${location.pathname}#plan/${t.id}`;
+          copyText(url); toast('🔗 Link da página copiado!');
+        }
+      });
+    });
+    document.getElementById('planBack').addEventListener('click', () => {
+      location.hash = '';
+    });
+    // Extra tabs
+    document.querySelectorAll('#planExtraTabs .tab').forEach(t => {
+      t.addEventListener('click', () => {
+        const target = t.dataset.ppTab;
+        document.querySelectorAll('#planExtraTabs .tab').forEach(x => {
+          const a = x === t; x.classList.toggle('active', a); x.setAttribute('aria-selected', String(a));
+        });
+        document.querySelectorAll('[data-pp-panel]').forEach(p => {
+          p.hidden = p.dataset.ppPanel !== target;
+          p.classList.toggle('active', p.dataset.ppPanel === target);
+        });
+      });
+    });
+    state.planActionsBound = true;
+  }
+}
+
+function renderPlanQuickstats(trip) {
+  const host = document.getElementById('planQuickstats');
+  const saved = loadTripState(trip.id);
+
+  // Checklist progress
+  const items = trip.checklist || defaultChecklist(trip);
+  const checks = { ...(saved.checklist || {}), ...(trip.checklistAuto || {}) };
+  const doneN = items.filter(i => checks[i.id]).length;
+  const total = items.length;
+  const pct = total ? Math.round((doneN / total) * 100) : 0;
+
+  // Budget progress
+  const nts = trip.nts || 1;
+  const totalEst = trip.budget?.total ?? trip.cost?.total ?? nts * 1000;
+  const committed = { ...(trip.budget?.committed || {}), ...(saved.committed || {}) };
+  const totC = Object.values(committed).reduce((a,b) => a+(+b||0), 0);
+  const budgetPct = totalEst ? Math.round((totC / totalEst) * 100) : 0;
+  const curr = trip.budget?.currency || trip.cost?.currency || 'BRL';
+
+  // Next pending action
+  let pending = items.find(i => !checks[i.id]);
+
+  const stats = [
+    { icon:'✅', lbl:'Checklist', v:`${doneN}/${total}`, sub:`${pct}% concluído` },
+    { icon:'💰', lbl:'Comprometido', v:formatMoney(totC, curr), sub:`${budgetPct}% de ${formatMoney(totalEst, curr)}` },
+    { icon:'🎯', lbl:'Próxima ação', v: pending ? pending.label : '✓ Tudo pronto', sub: pending?.due ? `prazo ${formatPtDate(pending.due)}` : '' },
+    { icon:'📍', lbl:'Destino', v:`${trip.flag || ''} ${(trip.country || '').trim()}`, sub:`${CONTINENT_NAMES[trip.continent] || ''}` }
+  ];
+  host.innerHTML = stats.map(s => `
+    <div class="qs" role="listitem">
+      <div class="qs-icon" aria-hidden="true">${s.icon}</div>
+      <div class="qs-body">
+        <div class="qs-lbl">${s.lbl}</div>
+        <div class="qs-v">${escapeHtml(String(s.v))}</div>
+        <div class="qs-sub">${escapeHtml(s.sub || '')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderPlanMap(trip) {
+  const host = document.getElementById('planMiniMap');
+  const list = document.getElementById('planRouteList');
+  host.innerHTML = ''; host.dataset.ready = '';
+  list.innerHTML = '';
+  if (trip.lat == null || trip.lon == null) {
+    host.innerHTML = '<p class="cost-note" style="padding:14px">Sem coordenadas para esta viagem.</p>';
+    return;
+  }
+  // Defer leaflet init (offsetParent may be 0 if hidden)
+  setTimeout(() => renderMiniMap(host, trip), 50);
+  const stops = trip.route && trip.route.length
+    ? trip.route
+    : [{ name: trip.name, lat: trip.lat, lon: trip.lon }];
+  list.innerHTML = stops.map(stop =>
+    `<li><span>${escapeHtml(stop.name)}</span><span class="route-coord">${stop.lat.toFixed(2)}, ${stop.lon.toFixed(2)}</span></li>`
+  ).join('');
+}
+
+function renderPlanContext(trip) {
+  // Reuse same logic as the card tab — temporary node + extract innerHTML
+  const tmp = document.createElement('div');
+  tmp.innerHTML = '<div data-panel="context"></div>';
+  populateContext(tmp, trip);
+  document.getElementById('planContext').innerHTML = tmp.firstChild.innerHTML;
+  // Re-bind fx input
+  const inp = document.querySelector('#planContext .fx-input');
+  if (inp) {
+    const fx = FX_HINT[trip.country];
+    if (fx) {
+      const out = document.querySelector('#planContext [data-fx-out]');
+      const conv = document.querySelector('#planContext .fx-converted');
+      inp.addEventListener('input', () => {
+        const v = +inp.value || 0;
+        out.textContent = Math.round(v * fx.perBRL).toLocaleString('pt-BR');
+        conv.firstChild.textContent = `R$ ${v.toLocaleString('pt-BR')} ≈ `;
+      });
+    }
+  }
+}
+
+function renderPlanChecklist(trip) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = '<div data-panel="checklist"></div>';
+  populateChecklist(tmp, trip);
+  document.getElementById('planChecklist').innerHTML = tmp.firstChild.innerHTML;
+  // Rewire checkboxes
+  document.querySelectorAll('#planChecklist input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const c = (loadTripState(trip.id).checklist) || {};
+      c[cb.dataset.id] = cb.checked;
+      saveTripState(trip.id, { checklist: c });
+      renderPlanChecklist(trip);
+      renderPlanQuickstats(trip);
+    });
+  });
+}
+
+function renderPlanReservations(trip) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = '<div data-panel="reservations"></div>';
+  populateReservations(tmp, trip);
+  document.getElementById('planReservations').innerHTML = tmp.firstChild.innerHTML;
+  document.querySelectorAll('#planReservations .rs-status').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const idx = +sel.dataset.idx;
+      const list = (loadTripState(trip.id).reservations) || trip.reservations || [];
+      list[idx] = { ...list[idx], status: sel.value };
+      saveTripState(trip.id, { reservations: list });
+      renderPlanReservations(trip);
+    });
+  });
+}
+
+function renderPlanBudget(trip) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = '<div data-panel="budget"></div>';
+  populateBudget(tmp, trip);
+  document.getElementById('planBudget').innerHTML = tmp.firstChild.innerHTML;
+  document.querySelectorAll('#planBudget .bd-row-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const com = loadTripState(trip.id).committed || {};
+      com[inp.dataset.key] = +inp.value || 0;
+      saveTripState(trip.id, { committed: com });
+      renderPlanQuickstats(trip);
+    });
+  });
+}
+
+function renderPlanPlanning(trip) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = '<div data-panel="planning"></div>';
+  populatePlanning(tmp, trip);
+  document.getElementById('planPlanning').innerHTML = tmp.firstChild.innerHTML;
+  const ta = document.querySelector('#planPlanning textarea');
+  if (ta) ta.addEventListener('input', () => saveTripState(trip.id, { notes: ta.value }));
+  // rewire comments
+  const form = document.querySelector('#planPlanning [data-comment-form]');
+  if (form) {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const input = e.target.querySelector('input');
+      const txt = input.value.trim();
+      if (!txt) return;
+      const list = loadTripState(trip.id).comments || [];
+      list.push({ t: Date.now(), text: txt });
+      saveTripState(trip.id, { comments: list });
+      input.value = '';
+      renderPlanPlanning(trip);
+    });
+  }
+  document.querySelectorAll('#planPlanning .cm-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = +btn.dataset.idx;
+      const all = loadTripState(trip.id).comments || [];
+      all.splice(idx, 1);
+      saveTripState(trip.id, { comments: all });
+      renderPlanPlanning(trip);
+    });
+  });
+}
+
+function renderPlanPacking(trip) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = '<div data-panel="packing"></div>';
+  populatePacking(tmp, trip);
+  document.getElementById('planPacking').innerHTML = tmp.firstChild.innerHTML;
+  document.querySelectorAll('#planPacking input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const c = loadTripState(trip.id).packing || {};
+      c[cb.dataset.id] = cb.checked;
+      saveTripState(trip.id, { packing: c });
+      renderPlanPacking(trip);
+    });
+  });
+  const form = document.querySelector('#planPacking [data-pk-add]');
+  if (form) {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const inp = e.target.querySelector('input');
+      const txt = inp.value.trim();
+      if (!txt) return;
+      const custom = loadTripState(trip.id).packingCustom || [];
+      const id = `c${Date.now()}`;
+      custom.push({ id, label: txt });
+      saveTripState(trip.id, { packingCustom: custom });
+      if (!trip.packing) trip.packing = defaultPacking(trip);
+      trip.packing.push({ id, label: txt });
+      inp.value = '';
+      renderPlanPacking(trip);
+    });
+  }
+}
+
+function renderPlanInspire(trip) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = '<div data-panel="inspire"></div>';
+  populateInspiration(tmp, trip);
+  document.getElementById('planInspire').innerHTML = tmp.firstChild.innerHTML;
+  // Rewire forms/buttons inside
+  document.querySelectorAll('#planInspire .ins-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const k = btn.dataset.kind, idx = +btn.dataset.idx;
+      const key = k === 'links' ? 'inspirationLinks' : 'inspirationImages';
+      const arr = (loadTripState(trip.id)[key] || []).slice();
+      arr.splice(idx, 1);
+      saveTripState(trip.id, { [key]: arr });
+      renderPlanInspire(trip);
+    });
+  });
+  const fL = document.querySelector('#planInspire [data-ins-add-link]');
+  if (fL) fL.addEventListener('submit', e => {
+    e.preventDefault();
+    const [u, t] = e.target.querySelectorAll('input');
+    const arr = (loadTripState(trip.id).inspirationLinks || []).slice();
+    arr.push({ url: u.value, title: t.value });
+    saveTripState(trip.id, { inspirationLinks: arr });
+    renderPlanInspire(trip);
+  });
+  const fI = document.querySelector('#planInspire [data-ins-add-img]');
+  if (fI) fI.addEventListener('submit', e => {
+    e.preventDefault();
+    const u = e.target.querySelector('input');
+    const arr = (loadTripState(trip.id).inspirationImages || []).slice();
+    arr.push(u.value);
+    saveTripState(trip.id, { inspirationImages: arr });
+    renderPlanInspire(trip);
+  });
 }
 
 // ── PWA ──────────────────────────────────────────────────────────
