@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposta A — Editorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #fafaf7;
+    --fg:        #1a1a1a;
+    --muted:     #8a8a85;
+    --line:      #e3e1d9;
+    --accent:    #c04a2a;
+    --paper:     #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--fg); -webkit-font-smoothing: antialiased; }
+  body { font-family: 'Inter', -apple-system, sans-serif; font-size: 16px; line-height: 1.65; }
+  .serif { font-family: 'Fraunces', Georgia, serif; }
+  .micro { font-family: 'Inter', sans-serif; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+
+  .back { position: fixed; top: 16px; left: 16px; z-index: 100; background: var(--paper); padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; color: var(--fg); font-size: 13px; transition: background .15s; }
+  .back:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* Header */
+  .hdr { padding: 80px 24px 32px; text-align: center; border-bottom: 1px solid var(--line); }
+  .hdr-mark { display: inline-block; }
+  .hdr-rule { display: inline-block; width: 32px; height: 1px; background: var(--accent); margin: 0 16px; vertical-align: middle; }
+  .hdr-mark .micro { color: var(--accent); }
+  .hdr-title { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(36px, 7vw, 64px); letter-spacing: -0.02em; line-height: 1.05; margin-top: 16px; font-variation-settings: "opsz" 144; }
+  .hdr-tag { color: var(--muted); margin-top: 12px; font-size: 14px; }
+
+  /* Main grid */
+  .main { max-width: 1080px; margin: 0 auto; padding: 64px 24px; }
+  .section-label { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .section-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  /* Hero próxima */
+  .next { display: grid; grid-template-columns: 1fr; gap: 32px; padding-bottom: 64px; border-bottom: 1px solid var(--line); margin-bottom: 64px; }
+  @media (min-width: 760px) { .next { grid-template-columns: 1.2fr 1fr; gap: 56px; align-items: center; } }
+  .next-img { width: 100%; aspect-ratio: 4/3; background: #ddd center/cover no-repeat; border-radius: 0; }
+  .next-meta { display: flex; flex-direction: column; gap: 14px; }
+  .next-kicker { color: var(--accent); }
+  .next-name { font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(32px, 5vw, 48px); letter-spacing: -0.02em; line-height: 1.1; font-variation-settings: "opsz" 144; }
+  .next-dates { color: var(--muted); font-size: 15px; }
+  .next-cd { display: flex; align-items: baseline; gap: 14px; padding-top: 8px; }
+  .next-cd-n { font-family: 'Fraunces', serif; font-weight: 500; font-size: 64px; color: var(--accent); line-height: 1; font-variation-settings: "opsz" 144; }
+  .next-cd-l { color: var(--muted); font-size: 13px; max-width: 160px; }
+
+  /* Última */
+  .last { display: grid; grid-template-columns: 1fr; gap: 32px; padding-bottom: 64px; border-bottom: 1px solid var(--line); margin-bottom: 64px; }
+  @media (min-width: 760px) { .last { grid-template-columns: 1fr 1.2fr; gap: 56px; align-items: center; } }
+  .last-img { width: 100%; aspect-ratio: 4/3; background: #ccc center/cover no-repeat; }
+  .last-kicker { color: var(--muted); }
+  .last-name { font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(28px, 4.5vw, 40px); letter-spacing: -0.015em; line-height: 1.15; margin: 12px 0; }
+  .last-memory { font-family: 'Fraunces', serif; font-style: italic; font-weight: 400; font-size: 17px; line-height: 1.55; color: var(--fg); border-left: 2px solid var(--accent); padding-left: 16px; margin-top: 16px; }
+
+  /* Lista cards */
+  .list { display: grid; grid-template-columns: 1fr; gap: 36px; }
+  @media (min-width: 600px) { .list { grid-template-columns: 1fr 1fr; gap: 40px 32px; } }
+  @media (min-width: 920px) { .list { grid-template-columns: 1fr 1fr 1fr; } }
+  .item { }
+  .item-img { width: 100%; aspect-ratio: 3/4; background: #ccc center/cover no-repeat; margin-bottom: 14px; }
+  .item-kicker { color: var(--muted); margin-bottom: 6px; }
+  .item-name { font-family: 'Fraunces', serif; font-weight: 400; font-size: 21px; letter-spacing: -0.01em; line-height: 1.25; }
+  .item-sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+  /* Footer mostra fonte */
+  .ft { margin-top: 80px; padding: 32px 24px; text-align: center; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+  .ft .serif { font-style: italic; }
+</style>
+</head>
+<body>
+  <a class="back" href="index.html">← Voltar</a>
+
+  <header class="hdr">
+    <div class="hdr-mark">
+      <span class="hdr-rule"></span>
+      <span class="micro">Eduardo Campos · 2021–2027</span>
+      <span class="hdr-rule"></span>
+    </div>
+    <h1 class="hdr-title">Minhas Viagens</h1>
+    <div class="hdr-tag">Memórias e planos pelo mundo</div>
+  </header>
+
+  <main class="main">
+    <section class="next" id="next" hidden>
+      <div class="next-img" id="next-img"></div>
+      <div class="next-meta">
+        <div class="micro next-kicker">Próxima viagem</div>
+        <h2 class="next-name" id="next-name"></h2>
+        <div class="next-dates" id="next-dates"></div>
+        <div class="next-cd">
+          <div class="next-cd-n" id="next-cd-n"></div>
+          <div class="next-cd-l" id="next-cd-l">dias até embarcar</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="last" id="last" hidden>
+      <div class="last-img" id="last-img"></div>
+      <div>
+        <div class="micro last-kicker">Última viagem realizada</div>
+        <h2 class="last-name serif" id="last-name"></h2>
+        <div class="last-dates" id="last-dates" style="color:var(--muted);font-size:14px;"></div>
+        <p class="last-memory" id="last-memory"></p>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">
+        <span class="micro">Arquivo · Viagens realizadas</span>
+      </div>
+      <div class="list" id="list"></div>
+    </section>
+  </main>
+
+  <footer class="ft">
+    Proposta A — Editorial · tipografia <span class="serif">Fraunces</span> + Inter · paleta off-white &amp; terracota
+  </footer>
+
+  <script type="module">
+    const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const fmtDate = iso => {
+      if (!iso) return '';
+      const [y, m, d] = iso.split('-');
+      return `${parseInt(d)} ${MONTHS[parseInt(m)-1]} ${y}`;
+    };
+    const fmtRange = (s, e) => s && e ? `${fmtDate(s)} → ${fmtDate(e)}` : (s ? fmtDate(s) : '');
+    const imgFor = trip => `https://picsum.photos/seed/${encodeURIComponent(trip.id)}/1200/900`;
+
+    const tripStart = t => t.startDate || (t.year && t.month ? `${t.year}-${String(t.month).padStart(2,'0')}-01` : null);
+    const daysUntil = t => {
+      const s = tripStart(t); if (!s) return null;
+      const today = new Date(); today.setHours(0,0,0,0);
+      const d = new Date(s + 'T00:00:00');
+      return Math.round((d - today) / 86400000);
+    };
+
+    async function boot() {
+      const res = await fetch('../../data/trips.json');
+      const data = await res.json();
+      const trips = data.trips;
+
+      // Próxima viagem (planned ou em_planejamento, mais próxima futura)
+      const futuras = trips
+        .filter(t => ['planned','em_planejamento'].includes(t.status))
+        .filter(t => daysUntil(t) >= 0)
+        .sort((a,b) => daysUntil(a) - daysUntil(b));
+      if (futuras.length) {
+        const t = futuras[0];
+        document.getElementById('next').hidden = false;
+        document.getElementById('next-img').style.backgroundImage = `url(${imgFor(t)})`;
+        document.getElementById('next-name').textContent = t.name;
+        document.getElementById('next-dates').textContent = fmtRange(t.startDate, t.endDate) || t.label;
+        document.getElementById('next-cd-n').textContent = daysUntil(t);
+      }
+
+      // Última realizada
+      const done = trips
+        .filter(t => t.status === 'done')
+        .sort((a,b) => (b.year - a.year) || (b.month - a.month));
+      if (done.length) {
+        const t = done[0];
+        document.getElementById('last').hidden = false;
+        document.getElementById('last-img').style.backgroundImage = `url(${imgFor(t)})`;
+        document.getElementById('last-name').textContent = t.name;
+        document.getElementById('last-dates').textContent = t.label;
+        document.getElementById('last-memory').textContent = t.memory || '';
+      }
+
+      // Lista de 6 viagens recentes
+      const recent = done.slice(1, 7);
+      const list = document.getElementById('list');
+      list.innerHTML = recent.map(t => `
+        <article class="item">
+          <div class="item-img" style="background-image:url(${imgFor(t)})"></div>
+          <div class="micro item-kicker">${t.label}</div>
+          <h3 class="item-name">${t.name}</h3>
+          <div class="item-sub">${t.sub || ''}</div>
+        </article>
+      `).join('');
+    }
+    boot().catch(e => console.error(e));
+  </script>
+</body>
+</html>

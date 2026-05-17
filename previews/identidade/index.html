@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Propostas de identidade visual — Fase 2a</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafafa;
+    --fg: #1a1a1a;
+    --muted: #707070;
+    --line: #e5e5e5;
+    --accent: #c04a2a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 48px 24px; }
+  h1 { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; }
+  .sub { color: var(--muted); margin-bottom: 32px; font-size: 16px; }
+  .intro { background: white; border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin-bottom: 40px; font-size: 14px; line-height: 1.7; }
+  .intro strong { color: var(--accent); }
+  .grid { display: grid; gap: 24px; grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr 1fr; } }
+  .card {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 28px 24px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform .15s, box-shadow .15s;
+    display: block;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.06); }
+  .card-letter { font-weight: 700; font-size: 12px; letter-spacing: .15em; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+  .card-name { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 12px; }
+  .card-vibe { font-size: 13px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+  .swatches { display: flex; gap: 6px; margin-bottom: 12px; }
+  .sw { width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgba(0,0,0,.08); }
+  .meta { display: flex; gap: 12px; font-size: 12px; color: var(--muted); }
+  .meta-item strong { color: var(--fg); font-weight: 500; }
+  .footer { margin-top: 48px; font-size: 13px; color: var(--muted); text-align: center; }
+  .footer code { background: white; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--line); font-size: 12px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Identidade visual — 3 propostas</h1>
+    <p class="sub">Fase 2a · clique numa proposta para abrir o preview com seus dados reais</p>
+
+    <div class="intro">
+      Cada preview carrega <strong>data/trips.json</strong> de verdade e renderiza
+      o mesmo conteúdo (próxima viagem, última realizada, cards) em 3 linguagens
+      visuais distintas. Avalie cada uma no celular também — a referência é
+      mobile-first. Quando você escolher, eu implemento como tema do site
+      principal e aposento o sketchy atual (Fase 2b).
+    </div>
+
+    <div class="grid">
+      <a class="card" href="a-editorial.html">
+        <div class="card-letter">Proposta A</div>
+        <div class="card-name">Editorial</div>
+        <div class="card-vibe">Revista impressa moderna. Tipografia serif elegante, muito espaço em branco, fotos generosas. Vibe Cereal/Kinfolk.</div>
+        <div class="swatches">
+          <span class="sw" style="background:#fafaf7"></span>
+          <span class="sw" style="background:#1a1a1a"></span>
+          <span class="sw" style="background:#8a8a85"></span>
+          <span class="sw" style="background:#c04a2a"></span>
+        </div>
+        <div class="meta">
+          <div class="meta-item"><strong>Fonts:</strong> Fraunces + Inter</div>
+        </div>
+      </a>
+
+      <a class="card" href="b-postcard.html">
+        <div class="card-letter">Proposta B</div>
+        <div class="card-name">Cartão postal</div>
+        <div class="card-vibe">Caderno de viagem refinado. Serif display marcante, fundo creme, accent dourado de selo. Sem ser sketchy.</div>
+        <div class="swatches">
+          <span class="sw" style="background:#f4f1e8"></span>
+          <span class="sw" style="background:#1b2845"></span>
+          <span class="sw" style="background:#7a746b"></span>
+          <span class="sw" style="background:#c9a961"></span>
+        </div>
+        <div class="meta">
+          <div class="meta-item"><strong>Fonts:</strong> Playfair + DM Sans</div>
+        </div>
+      </a>
+
+      <a class="card" href="c-grand-tour.html">
+        <div class="card-letter">Proposta C</div>
+        <div class="card-name">Grand Tour</div>
+        <div class="card-vibe">Cinematográfico. Fotografia em primeiro plano, type sobre imagem, contraste preto e branco com accent intenso. Vibe Condé Nast Traveller.</div>
+        <div class="swatches">
+          <span class="sw" style="background:#ffffff"></span>
+          <span class="sw" style="background:#000000"></span>
+          <span class="sw" style="background:#707070"></span>
+          <span class="sw" style="background:#e85d20"></span>
+        </div>
+        <div class="meta">
+          <div class="meta-item"><strong>Fonts:</strong> Inter (display + body)</div>
+        </div>
+      </a>
+    </div>
+
+    <p class="footer">
+      Previews servidos por GitHub Pages após merge deste PR. Para ver localmente:
+      <code>python -m http.server 8000</code> e abrir
+      <code>http://localhost:8000/previews/identidade/</code>.
+    </p>
+  </div>
+</body>
+</html>
