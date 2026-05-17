@@ -1242,7 +1242,9 @@ function populateBudget(node, trip) {
     passeios: Math.round(totalEst * 0.15),
     comida: Math.round(totalEst * 0.20)
   };
-  const committed = loadTripState(trip.id).committed || trip.budget?.committed || {};
+  // Merge: trip.budget.committed (auto-detected from email sync) as base,
+  // user adjustments from localStorage on top.
+  const committed = { ...(trip.budget?.committed || {}), ...(loadTripState(trip.id).committed || {}) };
   const totalCommitted = Object.values(committed).reduce((a,b) => a+(+b||0), 0);
   const curr = trip.budget?.currency || trip.cost?.currency || 'BRL';
   const labels = { voos:'✈ Voos', hospedagem:'🏨 Hospedagem', passeios:'🎟 Passeios', comida:'🍴 Comida' };
