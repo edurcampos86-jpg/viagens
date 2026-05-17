@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposta C3 — Grand Tour completo (Kanban + Agentes + Mapa+ + Timeline+)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+  :root {
+    --bg:     #ffffff;
+    --fg:     #000000;
+    --muted:  #707070;
+    --line:   #ebebeb;
+    --line-d: #2a2a2a;
+    --accent: #e85d20;
+    --accent-soft: rgba(232,93,32,.12);
+    --night:  #0a0a0a;
+    --night2: #161616;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--fg); -webkit-font-smoothing: antialiased; }
+  body { font-family: 'Inter', -apple-system, sans-serif; font-size: 16px; line-height: 1.5; }
+  .micro { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600; }
+
+  .back { position: fixed; top: 20px; left: 20px; z-index: 1000; background: rgba(255,255,255,.9); backdrop-filter: blur(8px); padding: 8px 14px; border: 1px solid rgba(0,0,0,.1); border-radius: 999px; text-decoration: none; color: var(--fg); font-size: 13px; font-weight: 500; transition: all .15s; }
+  .back:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* === HERO === */
+  .hero { position: relative; height: 92vh; min-height: 560px; background: #111 center/cover no-repeat; overflow: hidden; }
+  .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.15) 30%, rgba(0,0,0,.1) 60%, rgba(0,0,0,.9) 100%); }
+  .hero-content { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 32px 24px 56px; color: white; z-index: 2; }
+  @media (min-width: 720px) { .hero-content { padding: 40px 56px 64px; } }
+  .hero-top { display: flex; align-items: center; gap: 12px; }
+  .hero-top .micro { color: var(--accent); }
+  .hero-top .sep { width: 32px; height: 1px; background: var(--accent); }
+  .hero-bottom { max-width: 920px; }
+  .hero-kicker { color: var(--accent); margin-bottom: 16px; }
+  .hero-title { font-weight: 800; font-size: clamp(48px, 10vw, 128px); letter-spacing: -0.04em; line-height: 0.92; color: white; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 28px; color: rgba(255,255,255,.85); font-size: 14px; }
+  .hero-cd { position: absolute; bottom: 56px; right: 24px; text-align: right; color: white; z-index: 3; }
+  @media (min-width: 720px) { .hero-cd { right: 56px; } }
+  .hero-cd-n { font-weight: 800; font-size: clamp(72px, 12vw, 144px); letter-spacing: -0.05em; line-height: 0.85; color: var(--accent); }
+  .hero-cd-l { font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; margin-top: 4px; color: rgba(255,255,255,.7); }
+
+  /* === STATS === */
+  .stats { background: var(--night); color: white; padding: 28px 24px; }
+  .stats-grid { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  @media (min-width: 720px) { .stats-grid { grid-template-columns: repeat(4, 1fr); padding: 0 32px; gap: 32px; } }
+  .stat { border-left: 2px solid var(--accent); padding-left: 16px; }
+  .stat-n { font-weight: 800; font-size: clamp(28px, 4.5vw, 44px); letter-spacing: -0.03em; line-height: 1; color: white; }
+  .stat-l { color: rgba(255,255,255,.55); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; margin-top: 6px; font-weight: 600; }
+
+  /* === AGENTES — strip de alertas === */
+  .agents { background: var(--night); padding: 48px 0 24px; border-top: 1px solid var(--line-d); }
+  .agents-head { max-width: 1240px; margin: 0 auto 20px; padding: 0 24px; display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  @media (min-width: 720px) { .agents-head { padding: 0 56px; } }
+  .agents-h { color: white; font-weight: 700; font-size: 22px; letter-spacing: -0.02em; }
+  .agents-sub { color: rgba(255,255,255,.5); font-size: 12px; }
+  .agents-track { max-width: 1240px; margin: 0 auto; padding: 0 24px 8px; overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--line-d) transparent; }
+  @media (min-width: 720px) { .agents-track { padding: 0 56px 8px; } }
+  .agents-row { display: flex; gap: 12px; padding-bottom: 12px; min-width: max-content; }
+  .agent-card { background: var(--night2); border: 1px solid var(--line-d); border-radius: 6px; padding: 16px 18px; min-width: 280px; max-width: 320px; color: white; display: flex; flex-direction: column; gap: 6px; }
+  .agent-card.audit { border-left: 3px solid var(--accent); }
+  .agent-card.curate { border-left: 3px solid #66c0ff; }
+  .agent-card.sync { border-left: 3px solid #6ee787; }
+  .agent-card.mock { opacity: 0.85; border-style: dashed; }
+  .agent-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; color: rgba(255,255,255,.5); }
+  .agent-badge.audit { color: var(--accent); }
+  .agent-badge.curate { color: #66c0ff; }
+  .agent-badge.sync { color: #6ee787; }
+  .agent-msg { font-size: 14px; line-height: 1.45; }
+  .agent-meta { font-size: 11px; color: rgba(255,255,255,.45); margin-top: 2px; }
+
+  /* === SECTIONS gerais === */
+  .sec { padding: 80px 24px 56px; max-width: 1240px; margin: 0 auto; }
+  @media (min-width: 720px) { .sec { padding: 100px 56px 72px; } }
+  .sec-head { margin-bottom: 40px; display: flex; align-items: baseline; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  .sec-h { font-weight: 700; font-size: clamp(32px, 5vw, 56px); letter-spacing: -0.03em; line-height: 1; }
+  .sec-h em { font-style: normal; color: var(--accent); }
+  .sec-count { color: var(--muted); font-weight: 500; font-size: 14px; }
+  .sec-sub { color: var(--muted); font-size: 14px; max-width: 560px; }
+
+  /* === KANBAN PRÓXIMAS === */
+  .kanban-sec { background: var(--night); color: white; padding: 80px 0; border-top: 1px solid var(--line-d); }
+  .kanban-head { max-width: 1240px; margin: 0 auto 36px; padding: 0 24px; display: flex; align-items: baseline; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  @media (min-width: 720px) { .kanban-head { padding: 0 56px; } }
+  .kanban-head .sec-h { color: white; }
+  .kanban-head .sec-sub { color: rgba(255,255,255,.55); }
+  .kanban { max-width: 1240px; margin: 0 auto; padding: 0 24px; display: grid; gap: 20px; grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .kanban { padding: 0 56px; grid-template-columns: 1fr 1fr 1fr; gap: 24px; } }
+  .col { background: var(--night2); border: 1px solid var(--line-d); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 12px; min-height: 200px; }
+  .col-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--line-d); }
+  .col-h { font-weight: 700; font-size: 16px; }
+  .col-h .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .col-h .dot.confirmed { background: var(--accent); }
+  .col-h .dot.planning { background: transparent; border: 2px solid var(--accent); width: 6px; height: 6px; }
+  .col-h .dot.wish { background: white; }
+  .col-count { font-size: 11px; color: rgba(255,255,255,.4); font-weight: 600; letter-spacing: 0.1em; }
+  .col-empty { color: rgba(255,255,255,.4); font-size: 13px; font-style: italic; padding: 16px 0; text-align: center; }
+
+  .next-card { background: rgba(255,255,255,.03); border: 1px solid var(--line-d); border-radius: 6px; padding: 14px 16px; transition: background .15s; cursor: pointer; }
+  .next-card:hover { background: rgba(255,255,255,.06); }
+  .next-card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .next-card-flag { font-size: 16px; }
+  .next-card-cd { font-weight: 700; font-size: 12px; color: var(--accent); }
+  .next-card-cd.distant { color: rgba(255,255,255,.4); }
+  .next-card-name { font-weight: 600; font-size: 15px; line-height: 1.25; margin-bottom: 6px; }
+  .next-card-meta { font-size: 11px; color: rgba(255,255,255,.5); letter-spacing: 0.04em; }
+  .next-card-bar { height: 2px; background: var(--line-d); border-radius: 1px; margin-top: 10px; overflow: hidden; }
+  .next-card-bar > div { height: 100%; background: var(--accent); transition: width .3s; }
+  .next-card-status { font-size: 10px; color: rgba(255,255,255,.45); margin-top: 6px; letter-spacing: 0.05em; }
+  .next-card-decision { font-size: 12px; color: rgba(255,255,255,.7); margin-top: 8px; padding: 6px 8px; background: rgba(232,93,32,.08); border-left: 2px solid var(--accent); border-radius: 0 3px 3px 0; }
+
+  /* === MAPA === */
+  .map-section { background: var(--night); padding: 0 0 80px; }
+  .map-head { max-width: 1240px; margin: 0 auto 24px; padding: 80px 24px 0; display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 1px solid var(--line-d); }
+  @media (min-width: 720px) { .map-head { padding: 80px 56px 0; } }
+  .map-h { font-weight: 700; font-size: clamp(32px, 5vw, 56px); letter-spacing: -0.03em; line-height: 1; color: white; }
+  .map-h em { font-style: normal; color: var(--accent); }
+  .map-controls { display: flex; gap: 6px; flex-wrap: wrap; }
+  .map-btn { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600; background: var(--night2); color: rgba(255,255,255,.65); border: 1px solid var(--line-d); padding: 8px 14px; border-radius: 999px; cursor: pointer; transition: all .15s; }
+  .map-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .map-btn:hover { color: white; }
+  #map { width: 100%; height: 70vh; min-height: 480px; background: #000; }
+  .pin-done { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px rgba(255,255,255,.25), 0 0 16px rgba(232,93,32,.6); cursor: pointer; }
+  .pin-planned { width: 14px; height: 14px; border-radius: 50%; background: transparent; border: 2px solid var(--accent); box-shadow: 0 0 12px rgba(232,93,32,.4); cursor: pointer; }
+  .pin-wishlist { width: 10px; height: 10px; border-radius: 50%; background: white; box-shadow: 0 0 0 1.5px var(--accent), 0 0 10px rgba(255,255,255,.4); cursor: pointer; }
+  .leaflet-popup-content-wrapper { background: var(--night2); color: white; border-radius: 6px; padding: 4px 6px; box-shadow: 0 8px 24px rgba(0,0,0,.7); }
+  .leaflet-popup-tip { background: var(--night2); }
+  .leaflet-popup-content { margin: 10px 14px; font-family: 'Inter', sans-serif; font-size: 13px; }
+  .leaflet-popup-content .pop-name { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+  .leaflet-popup-content .pop-meta { color: rgba(255,255,255,.6); font-size: 11px; letter-spacing: 0.05em; }
+
+  /* === ÚLTIMA + TIMELINE === */
+  .last { display: grid; grid-template-columns: 1fr; gap: 32px; margin-bottom: 0; }
+  @media (min-width: 760px) { .last { grid-template-columns: 1.2fr 1fr; gap: 64px; align-items: center; } }
+  .last-img { aspect-ratio: 4/5; background: #ddd center/cover no-repeat; }
+  .last-meta { display: flex; flex-direction: column; gap: 16px; }
+  .last-name { font-weight: 700; font-size: clamp(36px, 6vw, 56px); letter-spacing: -0.03em; line-height: 1; }
+  .last-dates { color: var(--muted); font-size: 15px; }
+  .last-memory { font-size: 18px; line-height: 1.55; color: #222; max-width: 500px; border-left: 3px solid var(--accent); padding-left: 20px; margin-top: 12px; }
+
+  .timeline-section { background: var(--bg); padding: 0 0 96px; border-top: 1px solid var(--line); }
+  .timeline-head { max-width: 1240px; margin: 0 auto 56px; padding: 80px 24px 0; display: flex; align-items: baseline; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  @media (min-width: 720px) { .timeline-head { padding: 80px 56px 0; } }
+  .timeline { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; }
+  @media (min-width: 760px) { .timeline { padding: 0 56px; } }
+  @media (min-width: 760px) {
+    .timeline::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--line); transform: translateX(-0.5px); }
+  }
+  .year-block { position: relative; }
+  .year-marker { position: relative; margin: 48px 0 24px; text-align: center; z-index: 2; }
+  @media (max-width: 759px) { .year-marker { text-align: left; } }
+  .year-marker .year-n { display: inline-block; font-weight: 800; font-size: 56px; letter-spacing: -0.03em; color: var(--accent); padding: 0 16px; background: var(--bg); position: relative; z-index: 1; line-height: 1; }
+  .year-marker .year-narrative { font-size: 13px; color: var(--muted); margin-top: 6px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+  @media (max-width: 759px) { .year-marker .year-narrative { margin-left: 0; } }
+
+  .tl-entry { display: grid; grid-template-columns: 1fr; gap: 16px; margin: 24px 0 56px; position: relative; }
+  @media (min-width: 760px) {
+    .tl-entry { grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+    .tl-entry.right > .tl-meta { order: 2; padding-left: 24px; }
+    .tl-entry.right > .tl-photo { order: 1; padding-right: 24px; }
+    .tl-entry.left > .tl-meta { padding-right: 24px; text-align: right; }
+    .tl-entry.left > .tl-photo { padding-left: 24px; }
+    .tl-entry::before { content: ""; position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); transform: translate(-50%, -50%); z-index: 2; box-shadow: 0 0 0 4px var(--bg); }
+  }
+  .tl-photo { aspect-ratio: 4/3; background: #ddd center/cover no-repeat; }
+  .tl-meta { display: flex; flex-direction: column; gap: 10px; }
+  .tl-kicker { color: var(--accent); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600; }
+  .tl-name { font-weight: 700; font-size: clamp(22px, 3vw, 30px); letter-spacing: -0.02em; line-height: 1.1; }
+  .tl-sub { color: var(--muted); font-size: 13px; }
+  .tl-memory { color: #333; font-size: 15px; line-height: 1.55; margin-top: 4px; }
+  .tl-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  @media (min-width: 760px) { .tl-entry.left .tl-tags { justify-content: flex-end; } }
+  .tl-tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; color: var(--muted); padding: 3px 8px; border: 1px solid var(--line); border-radius: 999px; }
+
+  .ft { padding: 64px 24px 48px; text-align: center; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+  <a class="back" href="index.html">← Voltar</a>
+
+  <!-- HERO -->
+  <section class="hero" id="hero" hidden>
+    <div class="hero-content">
+      <div class="hero-top">
+        <span class="micro">Eduardo Campos</span>
+        <span class="sep"></span>
+        <span class="micro">Próxima viagem</span>
+      </div>
+      <div class="hero-bottom">
+        <div class="micro hero-kicker" id="hero-eyebrow"></div>
+        <h1 class="hero-title" id="hero-name"></h1>
+        <div class="hero-meta">
+          <span id="hero-dates"></span>
+          <span>·</span>
+          <span id="hero-place"></span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-cd" id="hero-cd" hidden>
+      <div class="hero-cd-n" id="hero-cd-n"></div>
+      <div class="hero-cd-l">dias</div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats">
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-n" id="stat-trips">—</div><div class="stat-l">viagens realizadas</div></div>
+      <div class="stat"><div class="stat-n" id="stat-countries">—</div><div class="stat-l">países visitados</div></div>
+      <div class="stat"><div class="stat-n" id="stat-continents">—</div><div class="stat-l">continentes</div></div>
+      <div class="stat"><div class="stat-n" id="stat-km">—</div><div class="stat-l">mil km voados</div></div>
+    </div>
+  </section>
+
+  <!-- AGENTES -->
+  <section class="agents">
+    <div class="agents-head">
+      <div class="agents-h">Agentes <span style="color:var(--accent);">·</span> alertas recentes</div>
+      <div class="agents-sub">Auditor, Curador e Sync rodando em background · mockups</div>
+    </div>
+    <div class="agents-track">
+      <div class="agents-row" id="agents-row"></div>
+    </div>
+  </section>
+
+  <!-- KANBAN PRÓXIMAS -->
+  <section class="kanban-sec">
+    <div class="kanban-head">
+      <div>
+        <h2 class="sec-h">Próximas <em>viagens</em></h2>
+        <p class="sec-sub">Confirmadas, em planejamento e wishlist — visão compacta. O Modo Planejamento (Fase 4) vai expandir isto para Kanban completo.</p>
+      </div>
+    </div>
+    <div class="kanban" id="kanban"></div>
+  </section>
+
+  <!-- MAPA -->
+  <section class="map-section">
+    <div class="map-head">
+      <h2 class="map-h">A geografia <em>de tudo isto</em></h2>
+      <div class="map-controls" id="map-controls">
+        <button class="map-btn active" data-filter="all">Tudo</button>
+        <button class="map-btn" data-filter="done">Realizadas</button>
+        <button class="map-btn" data-filter="planned">Próximas</button>
+        <button class="map-btn" data-filter="wishlist">Wishlist</button>
+      </div>
+    </div>
+    <div id="map"></div>
+  </section>
+
+  <!-- ÚLTIMA -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="sec-h">A última <em>memória</em></h2>
+      <span class="sec-count" id="last-count"></span>
+    </div>
+    <div class="last" id="last" hidden>
+      <div class="last-img" id="last-img"></div>
+      <div class="last-meta">
+        <div class="micro" id="last-kicker" style="color:var(--muted);"></div>
+        <h3 class="last-name" id="last-name"></h3>
+        <div class="last-dates" id="last-dates"></div>
+        <p class="last-memory" id="last-memory"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section class="timeline-section">
+    <div class="timeline-head">
+      <div>
+        <h2 class="sec-h">A linha <em>do tempo</em></h2>
+        <p class="sec-sub" style="margin-top:8px;">A história das viagens, ano por ano. Marcadores narrativos resumem cada período.</p>
+      </div>
+      <span class="sec-count">do mais recente ao mais antigo</span>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <footer class="ft">
+    Proposta C3 — Grand Tour completo · acrescentou Agentes, Kanban de Próximas, controles no Mapa, narrativa nos anos da Timeline
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script type="module">
+    const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const fmtDate = iso => { if (!iso) return ''; const [y,m,d] = iso.split('-'); return `${parseInt(d)} ${MONTHS[parseInt(m)-1]}, ${y}`; };
+    const fmtRange = (s,e) => s && e ? `${fmtDate(s)} → ${fmtDate(e)}` : (s ? fmtDate(s) : '');
+    const imgFor = (trip, w=1600, h=900) => `https://picsum.photos/seed/${encodeURIComponent(trip.id)}/${w}/${h}`;
+    const CONTINENT = c => ({Asia:'Ásia',Europe:'Europa',Americas:'Américas',Africa:'África',Oceania:'Oceania'})[c] || c;
+    const fmtNum = n => new Intl.NumberFormat('pt-BR').format(n);
+
+    const tripStart = t => t.startDate || (t.year && t.month ? `${t.year}-${String(t.month).padStart(2,'0')}-01` : null);
+    const daysUntil = t => { const s = tripStart(t); if (!s) return null; const today = new Date(); today.setHours(0,0,0,0); return Math.round((new Date(s+'T00:00:00') - today) / 86400000); };
+
+    const SP = [-23.5505, -46.6333];
+    let map, allMarkers = [], routeLines = [];
+
+    function pinHtml(status) {
+      return `<div class="pin-${status}"></div>`;
+    }
+
+    function iconFor(status) {
+      return L.divIcon({ className: '', html: pinHtml(status), iconSize: [16, 16], iconAnchor: [8, 8] });
+    }
+
+    function tripStatusForMap(t) {
+      if (t.status === 'done') return 'done';
+      if (t.status === 'wishlist') return 'wishlist';
+      return 'planned';
+    }
+
+    function applyMapFilter(filter) {
+      allMarkers.forEach(({ marker, status }) => {
+        const visible = filter === 'all' || filter === status;
+        if (visible) marker.addTo(map);
+        else map.removeLayer(marker);
+      });
+      routeLines.forEach(line => {
+        const visible = filter === 'all' || filter === 'planned';
+        if (visible) line.addTo(map);
+        else map.removeLayer(line);
+      });
+    }
+
+    function buildAgentsMockup(trips) {
+      const planned = trips.filter(t => t.status === 'planned' || t.status === 'em_planejamento');
+      const wishlist = trips.filter(t => t.status === 'wishlist');
+      const proxima = planned.sort((a,b) => daysUntil(a) - daysUntil(b))[0];
+      const semHotel = planned.filter(t => !t.hospedagem || t.hospedagem.length === 0)[0];
+
+      const cards = [];
+      cards.push({
+        type: 'audit',
+        msg: `Passaporte com validade desconhecida — preencha <strong>documentos.json</strong> para o Auditor cruzar com suas datas.`,
+        meta: 'Auditor · hoje',
+      });
+      if (semHotel) {
+        cards.push({
+          type: 'audit',
+          msg: `<strong>${semHotel.name}</strong> está em <em>em_planejamento</em> sem hospedagem confirmada — restam ${daysUntil(semHotel)} dias.`,
+          meta: `Auditor · ${daysUntil(semHotel)}d`,
+        });
+      }
+      cards.push({
+        type: 'curate',
+        msg: wishlist[0]
+          ? `<strong>${wishlist[0].name}</strong>: o Curador vai monitorar oportunidades aqui (voo direto, promoção, alta temporada).`
+          : 'Sem wishlist ativa para o Curador acompanhar.',
+        meta: 'Curador · em breve',
+      });
+      cards.push({
+        type: 'sync',
+        msg: `Última sincronização Gmail/Photos: <strong>3h atrás</strong>. Nenhuma reserva nova importada.`,
+        meta: 'Sync · há 3h',
+      });
+      if (proxima) {
+        cards.push({
+          type: 'audit',
+          msg: `<strong>${proxima.name}</strong> em ${daysUntil(proxima)} dias — checklist ainda em montagem.`,
+          meta: 'Auditor · diário',
+        });
+      }
+
+      const row = document.getElementById('agents-row');
+      row.innerHTML = cards.map(c => `
+        <div class="agent-card ${c.type} mock">
+          <span class="agent-badge ${c.type}">
+            ${c.type === 'audit' ? '⚙ Auditor' : c.type === 'curate' ? '✦ Curador' : '↻ Sync'}
+          </span>
+          <div class="agent-msg">${c.msg}</div>
+          <div class="agent-meta">${c.meta}</div>
+        </div>
+      `).join('');
+    }
+
+    function buildKanban(trips) {
+      const confirmadas = trips.filter(t => t.status === 'planned').sort((a,b) => daysUntil(a) - daysUntil(b));
+      const planejando = trips.filter(t => t.status === 'em_planejamento').sort((a,b) => daysUntil(a) - daysUntil(b));
+      const wish = trips.filter(t => t.status === 'wishlist');
+
+      const card = t => {
+        const d = daysUntil(t);
+        const cd = d == null ? '' : d < 90 ? `${d}d` : d < 365 ? `${Math.round(d/30)}m` : `${(d/365).toFixed(1)}a`;
+        const cdClass = d != null && d < 90 ? '' : 'distant';
+        const pct = t.checklistAuto ? Math.min(100, Object.keys(t.checklistAuto).length * 12) : Math.floor(Math.random()*40);
+        const decisao = t.decisoes_pendentes && t.decisoes_pendentes[0] && t.decisoes_pendentes[0].titulo;
+        return `
+          <div class="next-card">
+            <div class="next-card-top">
+              <span class="next-card-flag">${t.flag || '📍'} ${CONTINENT(t.continent || '')}</span>
+              <span class="next-card-cd ${cdClass}">${cd}</span>
+            </div>
+            <div class="next-card-name">${t.name}</div>
+            <div class="next-card-meta">${t.label || ''}${t.sub ? ' · ' + t.sub : ''}</div>
+            ${t.status !== 'wishlist' ? `
+              <div class="next-card-bar"><div style="width:${pct}%"></div></div>
+              <div class="next-card-status">checklist ${pct}%</div>
+            ` : ''}
+            ${decisao ? `<div class="next-card-decision">⚠ ${decisao}</div>` : ''}
+          </div>
+        `;
+      };
+
+      const col = (title, dotClass, items) => `
+        <div class="col">
+          <div class="col-head">
+            <div class="col-h"><span class="dot ${dotClass}"></span>${title}</div>
+            <div class="col-count">${items.length}</div>
+          </div>
+          ${items.length ? items.map(card).join('') : '<div class="col-empty">vazio</div>'}
+        </div>
+      `;
+
+      document.getElementById('kanban').innerHTML =
+        col('Confirmadas', 'confirmed', confirmadas) +
+        col('Em planejamento', 'planning', planejando) +
+        col('Wishlist', 'wish', wish);
+    }
+
+    function yearNarrative(year, ents) {
+      const continentes = new Set(ents.map(t => CONTINENT(t.continent)).filter(Boolean));
+      const km = ents.reduce((s,t) => s + (Number(t.km) || 0), 0);
+      const tipos = new Set(ents.map(t => t.type).filter(Boolean));
+      const parts = [];
+      parts.push(`${ents.length} ${ents.length === 1 ? 'viagem' : 'viagens'}`);
+      if (continentes.size) parts.push(`${continentes.size} ${continentes.size === 1 ? 'continente' : 'continentes'}`);
+      if (km >= 1000) parts.push(`${fmtNum(Math.round(km/1000))} mil km`);
+      if (tipos.has('adventure')) parts.push('aventura');
+      if (tipos.has('festival')) parts.push('festivais');
+      if (tipos.has('luxury')) parts.push('refúgio');
+      return parts.join(' · ');
+    }
+
+    async function boot() {
+      const data = await (await fetch('../../data/trips.json')).json();
+      const trips = data.trips;
+      const done = trips.filter(t => t.status === 'done').sort((a,b) => (b.year - a.year) || (b.month - a.month));
+
+      // Hero — próxima viagem
+      const futuras = trips.filter(t => ['planned','em_planejamento'].includes(t.status)).filter(t => daysUntil(t) >= 0).sort((a,b) => daysUntil(a) - daysUntil(b));
+      if (futuras.length) {
+        const t = futuras[0];
+        document.getElementById('hero').hidden = false;
+        document.getElementById('hero').style.backgroundImage = `url(${imgFor(t, 2400, 1400)})`;
+        document.getElementById('hero-eyebrow').textContent = CONTINENT(t.continent || '');
+        document.getElementById('hero-name').textContent = t.name;
+        document.getElementById('hero-dates').textContent = fmtRange(t.startDate, t.endDate) || t.label;
+        document.getElementById('hero-place').textContent = t.sub || '';
+        const d = daysUntil(t);
+        if (d != null) { document.getElementById('hero-cd').hidden = false; document.getElementById('hero-cd-n').textContent = d; }
+      }
+
+      // Stats
+      const countries = new Set(done.map(t => t.country).filter(Boolean));
+      const continents = new Set(done.map(t => t.continent).filter(Boolean));
+      const totalKm = done.reduce((s,t) => s + (Number(t.km) || 0), 0);
+      document.getElementById('stat-trips').textContent = done.length;
+      document.getElementById('stat-countries').textContent = countries.size;
+      document.getElementById('stat-continents').textContent = continents.size;
+      document.getElementById('stat-km').textContent = Math.round(totalKm / 1000);
+
+      // Agentes
+      buildAgentsMockup(trips);
+
+      // Kanban próximas
+      buildKanban(trips);
+
+      // Mapa
+      map = L.map('map', { zoomControl: true, scrollWheelZoom: false, worldCopyJump: true }).setView([15, 0], 2);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap © CARTO',
+        subdomains: 'abcd',
+        maxZoom: 18,
+      }).addTo(map);
+
+      trips.forEach(t => {
+        if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
+        const status = tripStatusForMap(t);
+        const m = L.marker([t.lat, t.lon], { icon: iconFor(status) })
+          .bindPopup(`<div class="pop-name">${t.flag || ''} ${t.name}</div><div class="pop-meta">${t.label || ''}</div>`);
+        m.addTo(map);
+        allMarkers.push({ marker: m, status });
+        // Linhas tracejadas SP → destinos futuros
+        if (status === 'planned' && !(Math.abs(t.lat - SP[0]) < 2 && Math.abs(t.lon - SP[1]) < 2)) {
+          const line = L.polyline([SP, [t.lat, t.lon]], {
+            color: '#e85d20', weight: 1, opacity: 0.55, dashArray: '4,6', interactive: false,
+          });
+          line.addTo(map);
+          routeLines.push(line);
+        }
+      });
+
+      document.querySelectorAll('.map-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.map-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          applyMapFilter(btn.dataset.filter);
+        });
+      });
+
+      // Última memória
+      document.getElementById('last-count').textContent = `${done.length} realizadas até agora`;
+      if (done.length) {
+        const t = done[0];
+        document.getElementById('last').hidden = false;
+        document.getElementById('last-img').style.backgroundImage = `url(${imgFor(t, 1200, 1500)})`;
+        document.getElementById('last-kicker').textContent = CONTINENT(t.continent || '');
+        document.getElementById('last-name').textContent = t.name;
+        document.getElementById('last-dates').textContent = t.label;
+        document.getElementById('last-memory').textContent = t.memory || '';
+      }
+
+      // Timeline com narrativa por ano
+      const restantes = done.slice(1);
+      const porAno = {};
+      for (const t of restantes) { (porAno[t.year] ||= []).push(t); }
+      const anos = Object.keys(porAno).map(Number).sort((a,b) => b - a);
+      let altCount = 0;
+      document.getElementById('timeline').innerHTML = anos.map(ano => {
+        const ents = porAno[ano];
+        const entriesHtml = ents.map(t => {
+          const side = altCount++ % 2 === 0 ? 'right' : 'left';
+          return `
+            <div class="tl-entry ${side}">
+              <div class="tl-photo" style="background-image:url(${imgFor(t, 800, 600)})"></div>
+              <div class="tl-meta">
+                <div class="tl-kicker">${t.label} · ${CONTINENT(t.continent || '')}</div>
+                <h3 class="tl-name">${t.name}</h3>
+                <div class="tl-sub">${t.sub || ''}</div>
+                ${t.memory ? `<p class="tl-memory">${t.memory}</p>` : ''}
+                <div class="tl-tags">
+                  ${t.nts ? `<span class="tl-tag">${t.nts} noites</span>` : ''}
+                  ${t.pax ? `<span class="tl-tag">${t.pax}</span>` : ''}
+                  ${t.km ? `<span class="tl-tag">${fmtNum(t.km)} km</span>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+        return `
+          <div class="year-block">
+            <div class="year-marker">
+              <span class="year-n">${ano}</span>
+              <div class="year-narrative">${yearNarrative(ano, ents)}</div>
+            </div>
+            ${entriesHtml}
+          </div>
+        `;
+      }).join('');
+    }
+    boot().catch(e => console.error(e));
+  </script>
+</body>
+</html>
