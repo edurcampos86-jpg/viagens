@@ -14,7 +14,7 @@ from parsers import TripFragment
 
 
 # Maps email fragment.kind → checklist item id.
-# Keys align with the user-visible checklist in assets/sketchy.js (CHECKLIST array):
+# Keys align with the checklist sintetizado em assets/app.js (defaultChecklist):
 # passagem, hotel, shows, transporte, doc, seguro, roteiro, cambio, mala.
 KIND_TO_CHECKLIST: dict[str, str] = {
     "flight": "passagem",

@@ -277,9 +277,9 @@ function initTheme() {
   });
 }
 function applyTheme() {
-  document.documentElement.setAttribute('data-dark', String(state.isDark));
+  document.documentElement.setAttribute('data-theme', state.isDark ? 'dark' : 'light');
   el.darkBtn.setAttribute('aria-pressed', String(state.isDark));
-  el.darkIcon.textContent = state.isDark ? '☀' : '🌙';
+  el.darkIcon.textContent = state.isDark ? '☀' : '☾';
   el.darkLbl.textContent = state.isDark ? 'Claro' : 'Escuro';
 }
 function toggleTheme() {

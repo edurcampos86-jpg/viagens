@@ -1,91 +1,128 @@
-/* ── DESIGN TOKENS ─────────────────────────────────────── */
+/* ── DESIGN TOKENS — paleta C4 "Solar" ───────────────────
+   Aprovada na Fase 2a (PR #26). Light = warm cream / deep
+   ocean blue + 4 accents (coral, ocean, sun, leaf).
+   Dark = "noite tropical" deep navy, mesmos accents.
+   ──────────────────────────────────────────────────────── */
 :root {
   color-scheme: light dark;
-  --bg: #f0f9ff;
-  --bg2: #e0f2fe;
+
+  /* Estrutura */
+  --bg: #fff8ee;
+  --bg2: #fdedd0;
   --surface: #ffffff;
-  --surface2: #f8fafc;
-  --surface3: #f1f5f9;
-  --border: #e2e8f0;
-  --border2: #cbd5e1;
-  --text: #0f172a;
-  --text2: #475569;
-  --text3: #64748b;
-  --accent: #0ea5e9;
-  --accent2: #0369a1;
-  --accent3: #7dd3fc;
-  --header-grad: linear-gradient(135deg,#0369a1 0%,#0284c7 60%,#0ea5e9 100%);
-  --stats-bg: linear-gradient(135deg,#0369a1,#0284c7);
-  --tag-bg: #eff6ff;
-  --tag-c: #1d4ed8;
-  --ok-bg: #dcfce7;
-  --ok-c: #15803d;
-  --planned-bg: #fef3c7;
-  --planned-c: #b45309;
-  --wish-bg: #fce7f3;
-  --wish-c: #be185d;
-  --card-shadow: 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
-  --card-shadow-hover: 0 10px 30px rgba(15,23,42,.10), 0 4px 8px rgba(15,23,42,.04);
-  --focus-ring: 0 0 0 3px rgba(14,165,233,.35);
+  --surface2: #fff8ee;
+  --surface3: #fdedd0;
+  --border: #f0e3d0;
+  --border2: #e3d4ba;
+  --text: #0d3858;
+  --text2: #2a5673;
+  --text3: #6e8294;
+
+  /* Accents */
+  --coral:     #ff5c3d;
+  --coral-d:   #e84221;
+  --coral-soft:#ffe9e1;
+  --ocean:     #1e88a8;
+  --ocean-d:   #186e89;
+  --ocean-soft:#dbeff5;
+  --sun:       #f4a024;
+  --sun-d:     #d68610;
+  --sun-soft:  #fff0d1;
+  --leaf:      #4a9b5e;
+  --leaf-d:    #3a7d4b;
+  --leaf-soft: #e0f0e2;
+
+  /* Compatibilidade com componentes existentes */
+  --accent:  var(--coral);
+  --accent2: var(--coral-d);
+  --accent3: var(--sun);
+  --header-grad: linear-gradient(135deg, var(--coral) 0%, var(--sun) 60%, var(--sun-d) 100%);
+  --stats-bg:    linear-gradient(135deg, var(--coral) 0%, var(--sun) 100%);
+  --tag-bg:     var(--ocean-soft);
+  --tag-c:      var(--ocean-d);
+  --ok-bg:      var(--leaf-soft);
+  --ok-c:       var(--leaf-d);
+  --planned-bg: var(--sun-soft);
+  --planned-c:  var(--sun-d);
+  --wish-bg:    var(--ocean-soft);
+  --wish-c:     var(--ocean-d);
+
+  --card-shadow:       0 1px 2px rgba(13,56,88,.05), 0 4px 12px rgba(13,56,88,.06);
+  --card-shadow-hover: 0 8px 24px rgba(13,56,88,.10), 0 2px 6px rgba(13,56,88,.06);
+  --focus-ring: 0 0 0 3px rgba(255,92,61,.35);
   --radius: 14px;
   --radius-sm: 8px;
   --t-fast: .15s ease;
   --t: .25s cubic-bezier(.4,0,.2,1);
 }
-html[data-dark="true"], :root[data-dark="true"] {
+
+html[data-theme="dark"], :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0b1220;
-  --bg2: #0f172a;
-  --surface: #131c2e;
-  --surface2: #0f172a;
-  --surface3: #1a2540;
-  --border: #1e2a44;
-  --border2: #334155;
-  --text: #f1f5f9;
-  --text2: #cbd5e1;
-  --text3: #94a3b8;
-  --accent: #38bdf8;
-  --accent2: #0ea5e9;
-  --accent3: #7dd3fc;
-  --header-grad: linear-gradient(135deg,#0c1e36 0%,#0f2747 60%,#0b3358 100%);
-  --stats-bg: linear-gradient(135deg,#0c2342,#0e3055);
-  --tag-bg: #1e3a5f;
-  --tag-c: #7dd3fc;
-  --ok-bg: #0f2d1a;
-  --ok-c: #4ade80;
-  --planned-bg: #2d2410;
-  --planned-c: #fbbf24;
-  --wish-bg: #2d1228;
-  --wish-c: #f472b6;
-  --card-shadow: 0 1px 3px rgba(0,0,0,.4);
+  --bg: #0e1a26;
+  --bg2: #162534;
+  --surface: #1d2e3f;
+  --surface2: #0e1a26;
+  --surface3: #162534;
+  --border: #2a3d51;
+  --border2: #3a5066;
+  --text: #fff8ee;
+  --text2: #d4dde5;
+  --text3: #7a8e9e;
+
+  --coral-soft: rgba(255,92,61,.18);
+  --ocean-soft: rgba(30,136,168,.18);
+  --sun-soft:   rgba(244,160,36,.18);
+  --leaf-soft:  rgba(74,155,94,.18);
+
+  --header-grad: linear-gradient(135deg, #1a2e44 0%, #122843 60%, #0e1a26 100%);
+  --stats-bg:    linear-gradient(135deg, var(--coral) 0%, var(--coral-d) 100%);
+
+  --tag-bg:     var(--ocean-soft);
+  --tag-c:      #66c0d8;
+  --ok-bg:      var(--leaf-soft);
+  --ok-c:       #7dd494;
+  --planned-bg: var(--sun-soft);
+  --planned-c:  #f4c771;
+  --wish-bg:    var(--ocean-soft);
+  --wish-c:     #66c0d8;
+
+  --card-shadow:       0 1px 3px rgba(0,0,0,.3), 0 4px 12px rgba(0,0,0,.35);
   --card-shadow-hover: 0 12px 40px rgba(0,0,0,.55);
-  --focus-ring: 0 0 0 3px rgba(56,189,248,.45);
+  --focus-ring: 0 0 0 3px rgba(255,92,61,.5);
 }
+
 @media (prefers-color-scheme: dark) {
-  :root:not([data-dark="false"]) {
+  :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #0b1220;
-    --bg2: #0f172a;
-    --surface: #131c2e;
-    --surface2: #0f172a;
-    --surface3: #1a2540;
-    --border: #1e2a44;
-    --border2: #334155;
-    --text: #f1f5f9;
-    --text2: #cbd5e1;
-    --text3: #94a3b8;
-    --accent: #38bdf8;
-    --header-grad: linear-gradient(135deg,#0c1e36 0%,#0f2747 60%,#0b3358 100%);
-    --stats-bg: linear-gradient(135deg,#0c2342,#0e3055);
-    --tag-bg: #1e3a5f;
-    --tag-c: #7dd3fc;
-    --ok-bg: #0f2d1a;
-    --ok-c: #4ade80;
-    --planned-bg: #2d2410;
-    --planned-c: #fbbf24;
-    --wish-bg: #2d1228;
-    --wish-c: #f472b6;
-    --card-shadow: 0 1px 3px rgba(0,0,0,.4);
+    --bg: #0e1a26;
+    --bg2: #162534;
+    --surface: #1d2e3f;
+    --surface2: #0e1a26;
+    --surface3: #162534;
+    --border: #2a3d51;
+    --border2: #3a5066;
+    --text: #fff8ee;
+    --text2: #d4dde5;
+    --text3: #7a8e9e;
+
+    --coral-soft: rgba(255,92,61,.18);
+    --ocean-soft: rgba(30,136,168,.18);
+    --sun-soft:   rgba(244,160,36,.18);
+    --leaf-soft:  rgba(74,155,94,.18);
+
+    --header-grad: linear-gradient(135deg, #1a2e44 0%, #122843 60%, #0e1a26 100%);
+    --stats-bg:    linear-gradient(135deg, var(--coral) 0%, var(--coral-d) 100%);
+
+    --tag-bg:     var(--ocean-soft);
+    --tag-c:      #66c0d8;
+    --ok-bg:      var(--leaf-soft);
+    --ok-c:       #7dd494;
+    --planned-bg: var(--sun-soft);
+    --planned-c:  #f4c771;
+    --wish-bg:    var(--ocean-soft);
+    --wish-c:     #66c0d8;
+
+    --card-shadow:       0 1px 3px rgba(0,0,0,.3), 0 4px 12px rgba(0,0,0,.35);
     --card-shadow-hover: 0 12px 40px rgba(0,0,0,.55);
   }
 }
