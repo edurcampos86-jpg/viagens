@@ -152,6 +152,47 @@ def test_apply_aggregates_multiple_to_same_budget_key():
     assert jp["budget"]["committed"]["voos"] == 7500.0
 
 
+def test_apply_populates_hospedagem_from_hotel_fragment():
+    """Fragment kind=hotel should add an entry to hospedagem[] with
+    nome=provider, check_in, check_out e preco_real estruturado."""
+    trips = [dict(t) for t in TRIPS]
+    frags = [
+        TripFragment(
+            kind="hotel", provider="Park Hyatt Tokyo", raw_subject="reserva",
+            city="Tóquio", country="Japan",
+            checkin="2027-02-10", checkout="2027-02-15",
+            amount=4500.0, currency="BRL", ref="HYATT-1",
+        ),
+    ]
+    matched, _, _ = apply_matched_fragments(frags, trips)
+    assert matched == 1
+    jp = next(t for t in trips if t["id"] == "japao-2027")
+    hosp = jp.get("hospedagem", [])
+    assert len(hosp) == 1
+    entry = hosp[0]
+    assert entry["nome"] == "Park Hyatt Tokyo"
+    assert entry["check_in"] == "2027-02-10"
+    assert entry["check_out"] == "2027-02-15"
+    assert entry["confirmada"] is True
+    assert entry["preco_real"] == {"valor": 4500.0, "moeda": "BRL"}
+
+
+def test_apply_hospedagem_deduplicates_same_nome_checkin():
+    """Mesma reserva enviada duas vezes (ex: confirmação + lembrete) não
+    deve criar entrada duplicada em hospedagem[]."""
+    trips = [dict(t) for t in TRIPS]
+    frag = TripFragment(
+        kind="hotel", provider="Park Hyatt Tokyo", raw_subject="conf",
+        city="Tóquio", country="Japan",
+        checkin="2027-02-10", checkout="2027-02-15",
+        amount=4500.0, currency="BRL",
+    )
+    apply_matched_fragments([frag], trips)
+    apply_matched_fragments([frag], trips)
+    jp = next(t for t in trips if t["id"] == "japao-2027")
+    assert len(jp.get("hospedagem", [])) == 1
+
+
 def test_unmatched_falls_through():
     """Fragment with no plausible target should end up in unmatched."""
     trips = [dict(t) for t in TRIPS]
