@@ -1,0 +1,52 @@
+name: audit-trip-dates
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Install deps
+        run: pip install -r scripts/requirements.txt
+
+      - name: Run audit
+        env:
+          GOOGLE_CLIENT_ID:     ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/audit_dates.py
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-report
+          path: data/audit-report.md
+
+      - name: Open PR with report
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/date-audit
+          delete-branch: true
+          title: "chore: trip-date audit report"
+          commit-message: "chore: trip-date audit report"
+          body-path: data/audit-report.md
+          labels: audit
+          add-paths: |
+            data/audit-report.md
