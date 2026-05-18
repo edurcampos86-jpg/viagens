@@ -221,6 +221,7 @@ async function boot() {
   populatePaxFilter();
   initMap();
   render();
+  refreshEditsIndicator();
   initRouting();
 }
 
@@ -265,6 +266,13 @@ function cacheDom() {
   el.timelineView = $('#timelineView');
   el.memoriaView = $('#memoriaView');
   el.planejamentoView = $('#planejamentoView');
+  el.editsBtn = $('#editsBtn');
+  el.editsBadgeN = $('#editsBadgeN');
+  el.exportDialog = $('#exportDialog');
+  el.exportList = $('#exportList');
+  el.exportCount = $('#exportCount');
+  el.exportDownload = $('#exportDownload');
+  el.exportClear = $('#exportClear');
 }
 
 // ── Theme ────────────────────────────────────────────────────────
@@ -297,6 +305,44 @@ function toggleTheme() {
 // ── Events ───────────────────────────────────────────────────────
 function bindEvents() {
   el.darkBtn.addEventListener('click', toggleTheme);
+
+  // Indicator de edições + dialog de export
+  if (el.editsBtn) el.editsBtn.addEventListener('click', openExportDialog);
+  if (el.exportDownload) el.exportDownload.addEventListener('click', downloadTripsJson);
+  if (el.exportClear) el.exportClear.addEventListener('click', clearAllEdits);
+
+  // Event delegation: menu de ações nos cards do kanban (Modo Planejamento e Dashboard)
+  document.body.addEventListener('click', e => {
+    const trigger = e.target.closest('[data-action="toggle-menu"]');
+    if (trigger) {
+      e.preventDefault();
+      e.stopPropagation();
+      const menu = trigger.closest('.planj-card-menu');
+      // Fecha outros menus abertos
+      document.querySelectorAll('.planj-card-menu.is-open').forEach(m => {
+        if (m !== menu) m.classList.remove('is-open');
+      });
+      if (menu) menu.classList.toggle('is-open');
+      return;
+    }
+    const actionBtn = e.target.closest('[data-action="move"]');
+    if (actionBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const tripId = actionBtn.dataset.tripId;
+      const target = actionBtn.dataset.target;
+      const trip = state.trips.find(t => t.id === tripId);
+      if (trip && target) promoteTrip(trip, target);
+      // Fecha o menu
+      const menu = actionBtn.closest('.planj-card-menu');
+      if (menu) menu.classList.remove('is-open');
+      return;
+    }
+    // Click fora de qualquer menu de card: fecha todos
+    if (!e.target.closest('.planj-card-menu')) {
+      document.querySelectorAll('.planj-card-menu.is-open').forEach(m => m.classList.remove('is-open'));
+    }
+  });
 
   // Status tabs
   $$('.status-btn').forEach(b => b.addEventListener('click', () => {
@@ -989,8 +1035,115 @@ function hydrateCard(node, trip) {
 function promoteTrip(trip, toStatus) {
   trip.status = toStatus;
   saveTripState(trip.id, { statusOverride: toStatus });
-  toast(toStatus === 'planned' ? '📅 Movida para planejadas' : '✓ Marcada como realizada');
-  render();
+  toast(`Movida para ${statusLabel(toStatus)}`);
+  refreshEditsIndicator();
+  // Re-render da view ativa
+  const hash = location.hash.replace(/^#/, '');
+  if (hash === '' || hash === 'dashboard') renderDashboard();
+  else if (hash === 'memoria') renderMemoria();
+  else if (hash === 'planejamento') renderPlanejamento();
+  else render();
+}
+
+function statusLabel(status) {
+  return ({
+    done: 'Realizada',
+    planned: 'Confirmada',
+    em_planejamento: 'Em planejamento',
+    wishlist: 'Wishlist',
+  })[status] || status;
+}
+
+// ── Edições locais + exportar (Fase 7a) ────────────────────────────
+function countPendingEdits() {
+  try {
+    const all = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    let n = 0;
+    for (const st of Object.values(all)) {
+      if (st && st.statusOverride) n++;
+    }
+    return n;
+  } catch { return 0; }
+}
+
+function refreshEditsIndicator() {
+  if (!el.editsBtn) return;
+  const n = countPendingEdits();
+  el.editsBtn.hidden = n === 0;
+  if (n > 0) el.editsBadgeN.textContent = String(n);
+}
+
+function buildExportList() {
+  const all = (() => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; } })();
+  const items = [];
+  for (const [tripId, st] of Object.entries(all)) {
+    if (!st || !st.statusOverride) continue;
+    const trip = state.trips.find(t => t.id === tripId);
+    items.push(`
+      <div class="export-list-item">
+        <span class="ic" aria-hidden="true">✎</span>
+        <div>
+          <div class="trip-name">${(trip && trip.name) || tripId}</div>
+          <div class="change">status → <strong>${statusLabel(st.statusOverride)}</strong></div>
+        </div>
+      </div>
+    `);
+  }
+  if (el.exportCount) el.exportCount.textContent = String(items.length);
+  if (el.exportList) {
+    el.exportList.innerHTML = items.length
+      ? items.join('')
+      : '<div class="export-list-empty">Sem edições pendentes</div>';
+  }
+}
+
+function openExportDialog() {
+  buildExportList();
+  el.exportDialog.showModal();
+}
+
+async function downloadTripsJson() {
+  try {
+    const res = await fetch('data/trips.json', { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const all = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    for (const trip of data.trips) {
+      const st = all[trip.id];
+      if (st && st.statusOverride) trip.status = st.statusOverride;
+    }
+    data.atualizado_em = new Date().toISOString().slice(0, 10);
+    const content = JSON.stringify(data, null, 2) + '\n';
+    const blob = new Blob([content], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'trips.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('📥 Baixado!');
+  } catch (e) {
+    console.error('Export falhou', e);
+    toast('⚠ Falha no export');
+  }
+}
+
+function clearAllEdits() {
+  const n = countPendingEdits();
+  if (n === 0) return;
+  if (!confirm(`Descartar ${n} edição(ões) local(is)?\n\nFaça isso APENAS após exportar e aplicar no GitHub. Senão você perde as mudanças.`)) return;
+  try {
+    const all = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    for (const id of Object.keys(all)) {
+      if (all[id]) delete all[id].statusOverride;
+    }
+    localStorage.setItem(LS_KEY, JSON.stringify(all));
+    location.reload();
+  } catch (e) {
+    console.error('Clear edits falhou', e);
+  }
 }
 
 function isFlagEmoji(s) {
@@ -2213,8 +2366,18 @@ function planjCard(t) {
     ? `${formatIsoBR(t.startDate)} → ${formatIsoBR(t.endDate)}`
     : (t.label || '');
 
+  const targets = ['planned', 'em_planejamento', 'wishlist'].filter(s => s !== t.status);
+  const menuItems = targets.map(s => {
+    const ic = s === 'planned' ? '✓' : s === 'em_planejamento' ? '◐' : '★';
+    return `<button class="planj-action-btn" data-action="move" data-target="${s}" data-trip-id="${t.id}">${ic} Mover para ${statusLabel(s)}</button>`;
+  }).join('');
+
   return `
     <a class="planj-card" href="#plan/${t.id}">
+      <div class="planj-card-menu">
+        <button class="planj-card-menu-trigger" aria-label="Mais ações" data-action="toggle-menu">⋯</button>
+        <div class="planj-card-menu-panel">${menuItems}</div>
+      </div>
       <div class="planj-card-photo" style="background-image:url(${imgUrl})">
         ${cd ? `<span class="planj-card-cd-badge ${cdClass}">${cd}</span>` : ''}
       </div>

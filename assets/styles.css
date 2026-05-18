@@ -2665,3 +2665,270 @@ body.plan-page-open { background: var(--surface2); }
 [data-theme="dark"] .planj-badge.warn  { color: #f4c771; }
 [data-theme="dark"] .planj-badge.info  { color: #66c0d8; }
 [data-theme="dark"] .planj-badge.ok    { color: #7dd494; }
+
+/* ════════════════════════════════════════════════════════════════
+   FASE 7a — EDIÇÕES LOCAIS + EXPORTAR
+   ════════════════════════════════════════════════════════════════ */
+
+/* Indicator de edições no header */
+.edits-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+}
+.edits-btn .edits-badge {
+  background: var(--coral);
+  color: white;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  min-width: 22px;
+  text-align: center;
+}
+.edits-btn:hover .edits-badge {
+  background: var(--coral-d);
+}
+
+/* Menu de ações no card do Modo Planejamento */
+.planj-card { position: relative; }
+.planj-card-menu {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 3;
+}
+.planj-card-menu-trigger {
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--line);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text2);
+  transition: all var(--t-fast);
+  padding: 0;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.planj-card-menu-trigger:hover {
+  background: var(--coral);
+  color: white;
+  border-color: var(--coral);
+}
+[data-theme="dark"] .planj-card-menu-trigger {
+  background: rgba(29,46,63,.92);
+  color: var(--text2);
+}
+
+.planj-card-menu-panel {
+  position: absolute;
+  top: 36px;
+  left: 0;
+  background: var(--bg-card);
+  border-radius: 8px;
+  box-shadow: var(--card-shadow-hover);
+  border: 1px solid var(--border);
+  padding: 6px;
+  min-width: 200px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+}
+.planj-card-menu.is-open .planj-card-menu-panel {
+  display: flex;
+}
+.planj-action-btn {
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text);
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  transition: background var(--t-fast);
+}
+.planj-action-btn:hover {
+  background: var(--coral-soft);
+  color: var(--coral-d);
+}
+[data-theme="dark"] .planj-action-btn:hover { color: #ff8a72; }
+
+/* Dialog de export */
+.export-dialog {
+  border: 0;
+  border-radius: 16px;
+  padding: 0;
+  background: transparent;
+  max-width: 560px;
+  width: calc(100vw - 32px);
+  margin: auto;
+}
+.export-dialog::backdrop {
+  background: rgba(13,56,88,.45);
+  backdrop-filter: blur(4px);
+}
+.export-sheet {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 0;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(13,56,88,.25);
+}
+.export-head {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.export-head h3 {
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.export-close {
+  background: transparent;
+  border: 0;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 0 8px;
+  font-weight: 700;
+  line-height: 1;
+}
+.export-close:hover { color: var(--coral); }
+.export-body {
+  padding: 18px 22px 22px;
+  overflow-y: auto;
+}
+.export-intro {
+  color: var(--text2);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+.export-intro strong {
+  background: linear-gradient(135deg, var(--coral) 0%, var(--sun) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  font-weight: 800;
+  font-size: 18px;
+}
+.export-list {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.export-list-empty {
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+  padding: 16px;
+}
+.export-list-item {
+  padding: 8px 0;
+  font-size: 13px;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  border-bottom: 1px dashed var(--border);
+}
+.export-list-item:last-child { border-bottom: 0; }
+.export-list-item .ic { color: var(--coral); font-weight: 700; }
+.export-list-item .trip-name { font-weight: 700; color: var(--text); }
+.export-list-item .change {
+  color: var(--text2);
+  font-size: 12px;
+}
+.export-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.export-btn {
+  flex: 1 1 200px;
+  padding: 11px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 0;
+  font-family: inherit;
+  transition: all var(--t-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.export-btn-primary {
+  background: linear-gradient(135deg, var(--coral) 0%, var(--coral-d) 100%);
+  color: white;
+}
+.export-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,92,61,.4); }
+.export-btn-danger {
+  background: var(--bg);
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+.export-btn-danger:hover {
+  background: var(--coral-soft);
+  color: var(--coral-d);
+  border-color: var(--coral);
+}
+.export-howto {
+  background: var(--ocean-soft);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text2);
+}
+.export-howto summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--ocean-d);
+  list-style: none;
+}
+.export-howto summary::before { content: "▸ "; }
+.export-howto[open] summary::before { content: "▾ "; }
+.export-howto[open] summary { margin-bottom: 10px; }
+.export-howto ol { padding-left: 22px; line-height: 1.6; }
+.export-howto code {
+  background: var(--bg-card);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: ui-monospace, SF Mono, Menlo, monospace;
+}
+.export-howto a { color: var(--coral-d); font-weight: 600; }
+.export-warn {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--sun-soft);
+  color: var(--sun-d);
+  border-radius: 6px;
+  font-weight: 600;
+}
+[data-theme="dark"] .export-howto summary { color: #66c0d8; }
+[data-theme="dark"] .export-howto a { color: #ff8a72; }
+[data-theme="dark"] .export-warn { color: #f4c771; }
