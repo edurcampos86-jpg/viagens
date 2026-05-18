@@ -23,5 +23,13 @@ Thumbs.db
 *.log
 .cache/
 
+# Node / Cloudinary toolkit
+node_modules/
+.env
+.env.local
+
+# Fotos originais (alta resolução) — só sobem para o Cloudinary, nunca para o git
+photos-to-upload/
+
 # Claude Code (preferências pessoais locais — settings compartilhadas vão em .claude/settings.json)
 .claude/settings.local.json
