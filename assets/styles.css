@@ -2421,3 +2421,247 @@ body.plan-page-open { background: var(--surface2); }
   border-radius: 999px;
 }
 [data-theme="dark"] .mem-entry-tag { color: #66c0d8; }
+
+/* ════════════════════════════════════════════════════════════════
+   FASE 4b — MODO PLANEJAMENTO (rota #planejamento)
+   ════════════════════════════════════════════════════════════════ */
+.planejamento-view {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 16px 16px 64px;
+}
+@media (min-width: 760px) { .planejamento-view { padding: 24px 32px 96px; } }
+
+/* ── Summary strip ──────────────────────────────────────────────── */
+.planj-summary {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+  margin-bottom: 32px;
+}
+@media (min-width: 720px) { .planj-summary { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; } }
+.planj-summary-card {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: var(--card-shadow);
+  border-left: 4px solid var(--coral);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.planj-summary-card.warn { border-left-color: var(--sun); }
+.planj-summary-card.info { border-left-color: var(--ocean); }
+.planj-summary-ic { font-size: 26px; flex-shrink: 0; }
+.planj-summary-text { font-size: 13px; color: var(--text2); line-height: 1.4; }
+.planj-summary-text strong { color: var(--text); font-weight: 700; }
+.planj-summary-text .big {
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--coral) 0%, var(--sun) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* ── Kanban ──────────────────────────────────────────────────── */
+.planj-kanban-section {}
+.planj-kanban {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 720px) {
+  .planj-kanban { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+}
+@media (min-width: 1100px) {
+  .planj-kanban { grid-template-columns: repeat(4, 1fr); gap: 20px; }
+}
+
+.planj-col {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 20px 18px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 280px;
+  position: relative;
+  overflow: hidden;
+}
+.planj-col::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 4px;
+}
+.planj-col.wish::before      { background: linear-gradient(90deg, var(--ocean), #66c0d8); }
+.planj-col.planning::before  { background: linear-gradient(90deg, var(--sun), var(--coral)); }
+.planj-col.confirmed::before { background: linear-gradient(90deg, var(--coral), var(--coral-d)); }
+.planj-col.imminent::before  { background: linear-gradient(90deg, var(--coral-d), #b32a0d); }
+
+.planj-col-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  margin-top: 6px;
+}
+.planj-col-h {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.01em;
+}
+.planj-col-h .ic {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  color: white;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.planj-col-h .ic.wish      { background: var(--ocean); }
+.planj-col-h .ic.planning  { background: var(--sun); }
+.planj-col-h .ic.confirmed { background: var(--coral); }
+.planj-col-h .ic.imminent  { background: var(--coral-d); animation: pulse-soft 2s ease-in-out infinite; }
+@keyframes pulse-soft {
+  0%, 100% { box-shadow: 0 0 0 0 var(--coral-d); }
+  50%      { box-shadow: 0 0 0 6px transparent; }
+}
+.planj-col-count {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: var(--text3);
+  padding: 3px 9px;
+  background: var(--bg2);
+  border-radius: 999px;
+}
+.planj-col-empty {
+  color: var(--text3);
+  font-size: 13px;
+  font-style: italic;
+  text-align: center;
+  padding: 24px 12px;
+}
+
+.planj-card {
+  background: var(--bg);
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: all var(--t);
+}
+.planj-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
+  border-color: var(--coral);
+}
+.planj-card-photo {
+  aspect-ratio: 16/9;
+  background: var(--bg2) center/cover no-repeat;
+  position: relative;
+}
+.planj-card-photo::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(13,56,88,.5) 100%);
+}
+.planj-card-cd-badge {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: rgba(255,255,255,.95);
+  backdrop-filter: blur(6px);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-weight: 800;
+  font-size: 12px;
+  z-index: 1;
+  background-image: linear-gradient(135deg, var(--coral) 0%, var(--sun) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.planj-card-cd-badge.distant {
+  background-image: none;
+  background-color: rgba(255,255,255,.95);
+  -webkit-text-fill-color: var(--text3);
+  color: var(--text3);
+}
+.planj-card-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px; }
+.planj-card-flag {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.planj-card-flag .flag { font-size: 13px; margin-right: 4px; }
+.planj-card-name {
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.planj-card-sub { font-size: 11.5px; color: var(--text3); }
+.planj-card-dates { font-size: 11.5px; color: var(--text2); font-weight: 600; }
+
+.planj-card-progress {
+  margin-top: 4px;
+}
+.planj-card-progress-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.planj-card-progress-bar > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ocean), var(--leaf));
+  transition: width 1s cubic-bezier(.2,.7,.2,1);
+}
+.planj-card-progress-l {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text3);
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+.planj-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.planj-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--bg2);
+  color: var(--text2);
+}
+.planj-badge.alert { background: var(--coral-soft); color: var(--coral-d); }
+.planj-badge.warn  { background: var(--sun-soft); color: var(--sun-d); }
+.planj-badge.info  { background: var(--ocean-soft); color: var(--ocean-d); }
+.planj-badge.ok    { background: var(--leaf-soft); color: var(--leaf-d); }
+[data-theme="dark"] .planj-badge.alert { color: #ff8a72; }
+[data-theme="dark"] .planj-badge.warn  { color: #f4c771; }
+[data-theme="dark"] .planj-badge.info  { color: #66c0d8; }
+[data-theme="dark"] .planj-badge.ok    { color: #7dd494; }

@@ -172,6 +172,26 @@
     </section>
   </section>
 
+  <!-- MODO PLANEJAMENTO (rota #planejamento) -->
+  <section class="planejamento-view" id="planejamentoView" hidden aria-labelledby="planjTitle">
+    <header class="route-head">
+      <a href="#" class="route-back" aria-label="Voltar ao Dashboard">← Dashboard</a>
+      <div class="route-head-main">
+        <h2 class="route-title" id="planjTitle">Modo <em>Planejamento</em></h2>
+        <div class="route-meta" id="planjMeta"></div>
+      </div>
+      <a href="#linha-do-tempo" class="route-action">Ver tudo com filtros →</a>
+    </header>
+
+    <!-- Resumo: próximo deadline + alertas críticos -->
+    <section class="planj-summary" id="planjSummary" hidden></section>
+
+    <!-- Kanban: 4 colunas -->
+    <section class="planj-kanban-section">
+      <div class="planj-kanban" id="planjKanban"></div>
+    </section>
+  </section>
+
   <!-- DEDICATED PLAN PAGE (mostrada quando rota #plan/<id>) -->
   <section class="plan-page" id="planPage" hidden aria-labelledby="planPageTitle">
     <header class="plan-head">
