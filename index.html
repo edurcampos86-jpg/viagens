@@ -48,7 +48,13 @@
         <span class="edits-badge" id="editsBadgeN">0</span>
         <span class="btn-label">edições</span>
       </button>
-      <button class="icon-btn" id="darkBtn" aria-pressed="false" aria-label="Alternar tema claro/escuro">
+      <button class="icon-btn" id="helpBtn" aria-label="Abrir guia: como usar este site" data-tooltip="Manual rápido do site: glossário, fluxo e FAQ">
+        <span aria-hidden="true">❓</span> <span class="btn-label">Ajuda</span>
+      </button>
+      <button class="icon-btn" id="tourBtn" aria-label="Iniciar tour guiado do site" data-tooltip="Apresentação rápida das áreas do site (30s)">
+        <span aria-hidden="true">🎬</span> <span class="btn-label">Tour</span>
+      </button>
+      <button class="icon-btn" id="darkBtn" aria-pressed="false" aria-label="Alternar tema claro/escuro" data-tooltip="Alterna entre modo claro e escuro">
         <span class="dark-icon" aria-hidden="true">☾</span>
         <span class="btn-label" id="darkLbl">Escuro</span>
       </button>
@@ -60,6 +66,13 @@
 
   <!-- DASHBOARD (default; rota # ou #dashboard) -->
   <section class="dashboard" id="dashboardView" aria-labelledby="dashTitle">
+
+    <!-- Hero: proposta de valor do site -->
+    <p class="hero-mission" role="doc-subtitle">
+      Aqui vivem minhas memórias e meus próximos sonhos de viagem. Explore os destinos
+      pelo mapa, navegue pela linha do tempo, ou use os agentes 🧳 Bagagem e 💡 Inspiração
+      para planejar a próxima aventura.
+    </p>
 
     <!-- Hero: próxima viagem -->
     <div class="dash-hero" id="dashHero" hidden>
@@ -259,8 +272,8 @@
     </div>
     <section class="plan-tabs-section">
       <div class="tabs" role="tablist" aria-label="Mais detalhes" id="planExtraTabs">
-        <button class="tab active" role="tab" data-pp-tab="packing">🧳 Bagagem</button>
-        <button class="tab" role="tab" data-pp-tab="inspire">💡 Inspiração</button>
+        <button class="tab active" role="tab" data-pp-tab="packing" aria-label="Agente de Bagagem" data-tooltip="Monta lista personalizada de bagagem para a viagem">🧳 Bagagem</button>
+        <button class="tab" role="tab" data-pp-tab="inspire" aria-label="Agente de Inspiração" data-tooltip="Sugere destinos baseado em humor, orçamento e tempo disponível">💡 Inspiração</button>
       </div>
       <div class="tab-panels">
         <div class="tab-panel active" role="tabpanel" data-pp-panel="packing" id="planPacking"></div>
@@ -297,11 +310,11 @@
 
       <!-- SEARCH + FILTER -->
       <div class="controls">
-        <div class="search-wrap">
+        <div class="search-wrap" data-tooltip="Busca viagens por nome, cidade ou palavra-chave">
           <span aria-hidden="true">🔍</span>
           <input type="search" id="search" placeholder="Buscar destino, país, cidade…" aria-label="Buscar viagem" autocomplete="off"/>
         </div>
-        <button class="advanced-toggle" id="advToggle" aria-expanded="false" aria-controls="advPanel">
+        <button class="advanced-toggle" id="advToggle" aria-expanded="false" aria-controls="advPanel" aria-label="Filtros avançados" data-tooltip="Filtra viagens por continente, duração, tipo e companhia">
           <span aria-hidden="true">⚙</span> Filtros
           <span class="adv-count" id="advCount" hidden>0</span>
         </button>
@@ -390,7 +403,7 @@
       <h2 id="trip-list-title" class="sec-title">
         <span id="secTitleText">📅 Linha do Tempo das Viagens</span>
         <div class="sec-actions">
-          <button class="sec-action" id="compareBtn" hidden aria-pressed="false">
+          <button class="sec-action" id="compareBtn" hidden aria-pressed="false" data-tooltip="Compare duas ou mais viagens lado a lado">
             <span aria-hidden="true">⚖</span> Comparar
           </button>
           <span class="sec-count" id="secCount" aria-live="polite"></span>
@@ -403,7 +416,7 @@
       <div class="grid" id="grid"></div>
       <div class="no-results" id="noResults" role="status">
         <div data-empty-default>
-          <p>😕 Nenhuma viagem encontrada com esses filtros.</p>
+          <p>😕 Nenhuma viagem aqui ainda com esses filtros. Que tal limpar os filtros ou pedir uma sugestão ao 💡 Agente de Inspiração?</p>
           <button class="link-btn" id="clearAll">Limpar todos os filtros</button>
         </div>
         <div data-empty-planned hidden>
@@ -500,19 +513,19 @@
   <form method="dialog" class="share-sheet">
     <h3 id="shareTitle">Compartilhar viagem</h3>
     <div class="share-options">
-      <button type="button" class="sh-opt" data-share-action="copy">
+      <button type="button" class="sh-opt" data-share-action="copy" data-tooltip="Copia o resumo da viagem para colar onde quiser">
         <span class="sh-icon" style="background:#f1f5f9" aria-hidden="true">📋</span>
         <span class="sh-lbl">Copiar texto</span>
       </button>
-      <button type="button" class="sh-opt" data-share-action="whatsapp">
+      <button type="button" class="sh-opt" data-share-action="whatsapp" data-tooltip="Compartilha o resumo da viagem no WhatsApp">
         <span class="sh-icon" style="background:#dcfce7" aria-hidden="true">💬</span>
         <span class="sh-lbl">WhatsApp</span>
       </button>
-      <button type="button" class="sh-opt" data-share-action="x">
+      <button type="button" class="sh-opt" data-share-action="x" data-tooltip="Compartilha o resumo da viagem no X">
         <span class="sh-icon" style="background:#e0f2fe" aria-hidden="true">𝕏</span>
         <span class="sh-lbl">X / Twitter</span>
       </button>
-      <button type="button" class="sh-opt" data-share-action="native">
+      <button type="button" class="sh-opt" data-share-action="native" data-tooltip="Usa o menu de compartilhamento nativo do sistema">
         <span class="sh-icon" style="background:#eff6ff" aria-hidden="true">🔗</span>
         <span class="sh-lbl">Sistema</span>
       </button>
@@ -556,6 +569,77 @@
         </ol>
         <p class="export-warn">⚠ Não esqueça do passo 5. Senão as edições locais e do repo vão divergir.</p>
       </details>
+    </div>
+  </form>
+</dialog>
+
+<!-- HELP DIALOG (Fase 5 — Como usar este site) -->
+<dialog id="helpDialog" class="help-dialog" aria-labelledby="helpTitle">
+  <form method="dialog" class="help-sheet">
+    <header class="help-head">
+      <h3 id="helpTitle">❓ Como usar este site</h3>
+      <button type="submit" class="help-close" aria-label="Fechar">×</button>
+    </header>
+    <div class="help-body">
+
+      <section class="help-section">
+        <h4>🌍 O que é este site</h4>
+        <p>
+          Este é o portfólio pessoal de viagens do Eduardo Campos. Aqui ficam registradas
+          todas as viagens realizadas desde 2021, as que estão planejadas, e as que ainda
+          são sonhos na wishlist. O site funciona como diário visual e ferramenta de
+          planejamento das próximas aventuras.
+        </p>
+      </section>
+
+      <section class="help-section">
+        <h4>📖 Glossário de termos e ícones</h4>
+        <table class="help-table">
+          <thead><tr><th>Termo/Ícone</th><th>Significado</th></tr></thead>
+          <tbody>
+            <tr><td><span class="help-tag help-tag-ok">✓ Realizadas</span></td><td>Viagens já concluídas</td></tr>
+            <tr><td><span class="help-tag help-tag-planned">📅 Planejadas</span></td><td>Viagens com data e reservas confirmadas</td></tr>
+            <tr><td><span class="help-tag help-tag-wish">⭐ Wishlist</span></td><td>Destinos desejados, ainda sem data</td></tr>
+            <tr><td>Pin colorido (mapa)</td><td>Viagem realizada</td></tr>
+            <tr><td>Pin tracejado (mapa)</td><td>Viagem planejada ou wishlist</td></tr>
+            <tr><td>🧳 Bagagem</td><td>Agente que monta lista de bagagem</td></tr>
+            <tr><td>💡 Inspiração</td><td>Agente que sugere destinos</td></tr>
+            <tr><td>⚖ Comparar</td><td>Comparador de viagens lado a lado</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="help-section">
+        <h4>🧭 Fluxo recomendado de uso</h4>
+        <ul class="help-flow">
+          <li><strong>Antes da viagem</strong> → use 💡 Inspiração para escolher destino e ⚖ Comparar para decidir entre opções.</li>
+          <li><strong>Durante o planejamento</strong> → preencha Checklist, Reservas, Orçamento e Notas na aba do destino.</li>
+          <li><strong>1-2 semanas antes</strong> → ative 🧳 Bagagem para montar a mala sem esquecer nada.</li>
+          <li><strong>Depois da viagem</strong> → atualize Notas &amp; Plano para virar memória permanente.</li>
+        </ul>
+      </section>
+
+      <section class="help-section">
+        <h4>👤 Quem é Eduardo</h4>
+        <p>
+          Eduardo Campos viaja desde 2021 documentando cada destino aqui. Este site
+          funciona como diário público e ferramenta de planejamento das próximas
+          aventuras, das memórias mais antigas aos sonhos ainda na wishlist.
+        </p>
+      </section>
+
+      <section class="help-section">
+        <h4>💬 Perguntas frequentes</h4>
+        <dl class="help-faq">
+          <dt>Posso editar as viagens?</dt>
+          <dd>Não, o site é público mas só o Eduardo edita o conteúdo.</dd>
+          <dt>Como sugerir um destino?</dt>
+          <dd>Mande mensagem para o Eduardo pelos canais habituais de contato.</dd>
+          <dt>Funciona offline?</dt>
+          <dd>Sim — depois da primeira visita, o conteúdo fica em cache e o site continua acessível sem internet.</dd>
+        </dl>
+      </section>
+
     </div>
   </form>
 </dialog>
