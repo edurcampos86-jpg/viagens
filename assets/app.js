@@ -3057,6 +3057,248 @@ function trackMapInteraction() {
 }
 setTimeout(trackMapInteraction, 100);
 
+// ── Tour guiado (Fase 4) ─────────────────────────────────────────
+const TOUR_STEPS = [
+  {
+    type: 'welcome',
+    title: 'Olá!',
+    body: 'Esse é o portfólio de viagens do Eduardo. Quer um tour rápido de 30 segundos pelo site?',
+    primary: 'Sim, me mostre',
+    secondary: 'Já conheço, obrigado',
+  },
+  {
+    selector: '.dash-stats',
+    title: '📊 Visão geral',
+    body: 'Aqui você vê quantas viagens já aconteceram, quantos países foram visitados e quantos quilômetros voei.',
+    position: 'bottom',
+  },
+  {
+    selector: '.dash-mode-memoria',
+    title: '📖 Modo Memória',
+    body: 'O modo Memória reúne tudo o que já aconteceu: mapa interativo (pins coloridos = realizadas, tracejados = planejadas/wishlist) e a linha do tempo cronológica das viagens.',
+    position: 'top',
+  },
+  {
+    selector: '.dash-mode-plano',
+    title: '🗺 Modo Planejamento',
+    body: 'O modo Planejamento mostra as próximas viagens em formato kanban, com filtros por continente, duração, tipo e companhia. Útil quando o portfólio cresce.',
+    position: 'top',
+  },
+  {
+    type: 'desc',
+    title: '🧳 Bagagem e 💡 Inspiração',
+    body: 'Ao abrir qualquer viagem (clique num card ou pin do mapa), você encontra os agentes Bagagem (monta lista de mala personalizada) e Inspiração (sugere destinos com base em humor, orçamento e tempo).',
+  },
+  {
+    type: 'desc',
+    title: '⚖ Comparar destinos',
+    body: 'Em qualquer lista de viagens, o botão ⚖ Comparar coloca duas ou mais viagens lado a lado. Ótimo para decidir o próximo destino.',
+  },
+  {
+    selector: '#tourBtn',
+    title: 'Pronto! 🎉',
+    body: 'Agora é explorar. Esse botão 🎬 Tour no menu superior fica sempre disponível se quiser rever a apresentação.',
+    position: 'bottom',
+    final: true,
+  },
+];
+
+const TourState = { idx: 0, els: null, active: false };
+
+function tourBuildEls() {
+  const spotlight = document.createElement('div');
+  spotlight.className = 'tour-spotlight';
+  spotlight.hidden = true;
+  const overlay = document.createElement('div');
+  overlay.className = 'tour-overlay-only';
+  overlay.hidden = true;
+  overlay.addEventListener('click', (e) => { e.stopPropagation(); });
+  const balloon = document.createElement('div');
+  balloon.className = 'tour-balloon';
+  balloon.setAttribute('role', 'dialog');
+  balloon.setAttribute('aria-live', 'polite');
+  balloon.setAttribute('aria-modal', 'true');
+  document.body.append(overlay, spotlight, balloon);
+  TourState.els = { overlay, spotlight, balloon };
+}
+
+function tourTearDown() {
+  document.removeEventListener('keydown', tourOnKey);
+  window.removeEventListener('resize', tourReposition);
+  window.removeEventListener('scroll', tourReposition);
+  if (TourState.els) {
+    TourState.els.overlay.remove();
+    TourState.els.spotlight.remove();
+    TourState.els.balloon.remove();
+    TourState.els = null;
+  }
+  TourState.active = false;
+}
+
+function tourEnd({ completed = false } = {}) {
+  try {
+    localStorage.setItem(completed ? 'tour-completed' : 'tour-skipped', 'true');
+  } catch {}
+  tourTearDown();
+}
+
+function tourPositionBalloon(targetRect, position) {
+  const b = TourState.els.balloon;
+  b.style.left = ''; b.style.top = ''; b.style.right = ''; b.style.bottom = '';
+  b.removeAttribute('data-tour-modal');
+  if (!targetRect) {
+    b.setAttribute('data-tour-modal', 'true');
+    return;
+  }
+  const margin = 14;
+  const bw = b.offsetWidth || 320;
+  const bh = b.offsetHeight || 180;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  let top, left;
+  const placeBelow = position === 'bottom' || (position !== 'top' && targetRect.top < vh / 2);
+  if (placeBelow && targetRect.bottom + margin + bh < vh) {
+    top = targetRect.bottom + margin;
+  } else if (targetRect.top - margin - bh > 0) {
+    top = targetRect.top - margin - bh;
+  } else {
+    top = Math.max(margin, vh - bh - margin);
+  }
+  left = targetRect.left + (targetRect.width / 2) - (bw / 2);
+  left = Math.max(margin, Math.min(left, vw - bw - margin));
+  b.style.top = `${Math.round(top)}px`;
+  b.style.left = `${Math.round(left)}px`;
+}
+
+function tourPositionSpotlight(rect) {
+  const s = TourState.els.spotlight;
+  if (!rect) { s.hidden = true; return; }
+  s.hidden = false;
+  const pad = 6;
+  s.style.top = `${rect.top - pad}px`;
+  s.style.left = `${rect.left - pad}px`;
+  s.style.width = `${rect.width + pad * 2}px`;
+  s.style.height = `${rect.height + pad * 2}px`;
+}
+
+function tourReposition() {
+  if (!TourState.active || !TourState.els) return;
+  const step = TOUR_STEPS[TourState.idx];
+  if (!step) return;
+  if (step.type === 'welcome' || step.type === 'desc') {
+    TourState.els.spotlight.hidden = true;
+    TourState.els.overlay.hidden = false;
+    tourPositionBalloon(null);
+    return;
+  }
+  const target = step.selector && document.querySelector(step.selector);
+  if (!target || target.offsetParent === null) {
+    TourState.els.spotlight.hidden = true;
+    TourState.els.overlay.hidden = false;
+    tourPositionBalloon(null);
+    return;
+  }
+  const rect = target.getBoundingClientRect();
+  if (rect.bottom < 0 || rect.top > window.innerHeight) {
+    target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    requestAnimationFrame(() => requestAnimationFrame(tourReposition));
+    return;
+  }
+  TourState.els.overlay.hidden = true;
+  tourPositionSpotlight(rect);
+  tourPositionBalloon(rect, step.position);
+}
+
+function tourRender() {
+  const step = TOUR_STEPS[TourState.idx];
+  if (!step) return;
+  const b = TourState.els.balloon;
+  const total = TOUR_STEPS.length;
+  const isFirst = TourState.idx === 0;
+  const isLast = !!step.final;
+  const primaryLabel = step.primary || (isLast ? 'Concluir' : 'Próximo');
+  const secondaryLabel = step.secondary || 'Anterior';
+  b.innerHTML = `
+    ${isFirst ? '' : '<button type="button" class="tour-skip" data-tour-act="skip">Sair do tour ✕</button>'}
+    <h4>${step.title}</h4>
+    <p>${step.body}</p>
+    <div class="tour-meta">
+      <span class="tour-counter">${TourState.idx + 1} de ${total}</span>
+      <div class="tour-btns">
+        ${isFirst
+          ? `<button type="button" class="tour-btn" data-tour-act="end">${secondaryLabel}</button>`
+          : (TourState.idx > 0
+              ? `<button type="button" class="tour-btn" data-tour-act="prev">${secondaryLabel}</button>`
+              : '')}
+        <button type="button" class="tour-btn tour-btn-primary" data-tour-act="next">${primaryLabel}</button>
+      </div>
+    </div>
+  `;
+  b.querySelectorAll('[data-tour-act]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const act = btn.dataset.tourAct;
+      if (act === 'next') return tourNext();
+      if (act === 'prev') return tourPrev();
+      if (act === 'skip') return tourEnd({ completed: false });
+      if (act === 'end') return tourEnd({ completed: false });
+    });
+  });
+  tourReposition();
+  setTimeout(() => b.querySelector('.tour-btn-primary')?.focus(), 50);
+}
+
+function tourNext() {
+  const step = TOUR_STEPS[TourState.idx];
+  if (step?.final) return tourEnd({ completed: true });
+  if (TourState.idx < TOUR_STEPS.length - 1) {
+    TourState.idx++;
+    tourRender();
+  } else {
+    tourEnd({ completed: true });
+  }
+}
+function tourPrev() {
+  if (TourState.idx > 0) {
+    TourState.idx--;
+    tourRender();
+  }
+}
+function tourOnKey(e) {
+  if (e.key === 'Escape') { e.preventDefault(); tourEnd({ completed: false }); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); tourNext(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); tourPrev(); }
+}
+function startTour({ force = false } = {}) {
+  if (TourState.active) return;
+  if (location.hash && location.hash !== '#dashboard' && location.hash !== '#') {
+    location.hash = '#dashboard';
+  }
+  setTimeout(() => {
+    TourState.idx = 0;
+    TourState.active = true;
+    tourBuildEls();
+    tourRender();
+    document.addEventListener('keydown', tourOnKey);
+    window.addEventListener('resize', tourReposition);
+    window.addEventListener('scroll', tourReposition, { passive: true });
+  }, force ? 50 : 200);
+}
+function maybeStartTourFirstVisit() {
+  try {
+    if (localStorage.getItem('tour-completed') === 'true') return;
+    if (localStorage.getItem('tour-skipped') === 'true') return;
+  } catch { return; }
+  if (location.hash && location.hash !== '#dashboard' && location.hash !== '#') return;
+  setTimeout(() => {
+    const dash = document.getElementById('dashboardView');
+    if (dash && !dash.hidden) startTour({ force: true });
+  }, 900);
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('tourBtn');
+  if (btn) btn.addEventListener('click', () => startTour({ force: true }));
+});
+
 // ── Tooltips em mobile (Fase 2) ──────────────────────────────────
 // Touch dispara tooltip por ~2s via classe .tt-show; em desktop o
 // :hover/:focus-visible do CSS já cuida sozinho.
@@ -3081,4 +3323,4 @@ setTimeout(trackMapInteraction, 100);
 })();
 
 // ── Go! ──────────────────────────────────────────────────────────
-boot();
+boot().then(() => maybeStartTourFirstVisit()).catch(() => maybeStartTourFirstVisit());
