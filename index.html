@@ -48,6 +48,9 @@
         <span class="edits-badge" id="editsBadgeN">0</span>
         <span class="btn-label">edições</span>
       </button>
+      <button class="icon-btn" id="helpBtn" aria-label="Abrir guia: como usar este site" data-tooltip="Manual rápido do site: glossário, fluxo e FAQ">
+        <span aria-hidden="true">❓</span> <span class="btn-label">Ajuda</span>
+      </button>
       <button class="icon-btn" id="tourBtn" aria-label="Iniciar tour guiado do site" data-tooltip="Apresentação rápida das áreas do site (30s)">
         <span aria-hidden="true">🎬</span> <span class="btn-label">Tour</span>
       </button>
@@ -566,6 +569,77 @@
         </ol>
         <p class="export-warn">⚠ Não esqueça do passo 5. Senão as edições locais e do repo vão divergir.</p>
       </details>
+    </div>
+  </form>
+</dialog>
+
+<!-- HELP DIALOG (Fase 5 — Como usar este site) -->
+<dialog id="helpDialog" class="help-dialog" aria-labelledby="helpTitle">
+  <form method="dialog" class="help-sheet">
+    <header class="help-head">
+      <h3 id="helpTitle">❓ Como usar este site</h3>
+      <button type="submit" class="help-close" aria-label="Fechar">×</button>
+    </header>
+    <div class="help-body">
+
+      <section class="help-section">
+        <h4>🌍 O que é este site</h4>
+        <p>
+          Este é o portfólio pessoal de viagens do Eduardo Campos. Aqui ficam registradas
+          todas as viagens realizadas desde 2021, as que estão planejadas, e as que ainda
+          são sonhos na wishlist. O site funciona como diário visual e ferramenta de
+          planejamento das próximas aventuras.
+        </p>
+      </section>
+
+      <section class="help-section">
+        <h4>📖 Glossário de termos e ícones</h4>
+        <table class="help-table">
+          <thead><tr><th>Termo/Ícone</th><th>Significado</th></tr></thead>
+          <tbody>
+            <tr><td><span class="help-tag help-tag-ok">✓ Realizadas</span></td><td>Viagens já concluídas</td></tr>
+            <tr><td><span class="help-tag help-tag-planned">📅 Planejadas</span></td><td>Viagens com data e reservas confirmadas</td></tr>
+            <tr><td><span class="help-tag help-tag-wish">⭐ Wishlist</span></td><td>Destinos desejados, ainda sem data</td></tr>
+            <tr><td>Pin colorido (mapa)</td><td>Viagem realizada</td></tr>
+            <tr><td>Pin tracejado (mapa)</td><td>Viagem planejada ou wishlist</td></tr>
+            <tr><td>🧳 Bagagem</td><td>Agente que monta lista de bagagem</td></tr>
+            <tr><td>💡 Inspiração</td><td>Agente que sugere destinos</td></tr>
+            <tr><td>⚖ Comparar</td><td>Comparador de viagens lado a lado</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="help-section">
+        <h4>🧭 Fluxo recomendado de uso</h4>
+        <ul class="help-flow">
+          <li><strong>Antes da viagem</strong> → use 💡 Inspiração para escolher destino e ⚖ Comparar para decidir entre opções.</li>
+          <li><strong>Durante o planejamento</strong> → preencha Checklist, Reservas, Orçamento e Notas na aba do destino.</li>
+          <li><strong>1-2 semanas antes</strong> → ative 🧳 Bagagem para montar a mala sem esquecer nada.</li>
+          <li><strong>Depois da viagem</strong> → atualize Notas &amp; Plano para virar memória permanente.</li>
+        </ul>
+      </section>
+
+      <section class="help-section">
+        <h4>👤 Quem é Eduardo</h4>
+        <p>
+          Eduardo Campos viaja desde 2021 documentando cada destino aqui. Este site
+          funciona como diário público e ferramenta de planejamento das próximas
+          aventuras, das memórias mais antigas aos sonhos ainda na wishlist.
+        </p>
+      </section>
+
+      <section class="help-section">
+        <h4>💬 Perguntas frequentes</h4>
+        <dl class="help-faq">
+          <dt>Posso editar as viagens?</dt>
+          <dd>Não, o site é público mas só o Eduardo edita o conteúdo.</dd>
+          <dt>Como sugerir um destino?</dt>
+          <dd>Mande mensagem para o Eduardo pelos canais habituais de contato.</dd>
+          <dt>Funciona offline?</dt>
+          <dd>Sim — depois da primeira visita, o conteúdo fica em cache e o site continua acessível sem internet.</dd>
+        </dl>
+      </section>
+
     </div>
   </form>
 </dialog>

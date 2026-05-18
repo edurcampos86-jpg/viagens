@@ -3299,6 +3299,26 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btn) btn.addEventListener('click', () => startTour({ force: true }));
 });
 
+// ── Help dialog (Fase 5) ─────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('helpBtn');
+  const dlg = document.getElementById('helpDialog');
+  if (!btn || !dlg) return;
+  btn.addEventListener('click', () => {
+    if (typeof dlg.showModal === 'function') dlg.showModal();
+    else dlg.setAttribute('open', '');
+  });
+  // Fechar ao clicar no backdrop (fora do .help-sheet)
+  dlg.addEventListener('click', (e) => {
+    const sheet = dlg.querySelector('.help-sheet');
+    if (!sheet) return;
+    const r = sheet.getBoundingClientRect();
+    const inside = e.clientX >= r.left && e.clientX <= r.right
+                && e.clientY >= r.top  && e.clientY <= r.bottom;
+    if (!inside) dlg.close();
+  });
+});
+
 // ── Tooltips em mobile (Fase 2) ──────────────────────────────────
 // Touch dispara tooltip por ~2s via classe .tt-show; em desktop o
 // :hover/:focus-visible do CSS já cuida sozinho.
