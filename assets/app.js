@@ -2847,11 +2847,94 @@ function renderPlanPlanning(trip) {
   });
 }
 
+// Cards de introdução dos agentes (Fase 3) — injetados a cada render
+// porque os panels reescrevem innerHTML completo.
+const AGENT_INTRO = {
+  bagagem: {
+    storageKey: 'agent-bagagem-intro-dismissed',
+    icon: '🧳',
+    title: 'Bagagem',
+    what: 'Monta uma lista de bagagem personalizada para sua viagem.',
+    when: '1 a 2 semanas antes do embarque.',
+    why: 'Evita esquecer itens críticos como passaporte, adaptador e remédios.',
+  },
+  inspiracao: {
+    storageKey: 'agent-inspiracao-intro-dismissed',
+    icon: '💡',
+    title: 'Inspiração',
+    what: 'Sugere destinos com base no seu humor, orçamento e tempo disponível.',
+    when: 'Quando bater aquela vontade de viajar mas sem saber para onde.',
+    why: 'Transforma vontade vaga em opções concretas de destino.',
+  },
+};
+const agentIntroOpen = { bagagem: false, inspiracao: false };
+
+function mountAgentIntro(panelEl, agentKey) {
+  if (!panelEl) return;
+  const cfg = AGENT_INTRO[agentKey];
+  if (!cfg) return;
+  let dismissed = false;
+  try { dismissed = localStorage.getItem(cfg.storageKey) === 'true'; } catch {}
+  const showCard = !dismissed || agentIntroOpen[agentKey];
+
+  const wrap = document.createElement('div');
+  wrap.className = 'agent-intro-wrap';
+  wrap.innerHTML = `
+    <button type="button" class="agent-intro-help" data-agent-help="${agentKey}"
+      aria-label="Reabrir explicação sobre o agente ${cfg.title}"
+      data-tooltip="O que faz este agente?"
+      ${showCard ? 'hidden' : ''}>?</button>
+    <section class="agent-intro-card" role="note"
+      aria-label="Introdução ao agente ${cfg.title}"
+      ${showCard ? '' : 'hidden'}>
+      <header class="agent-intro-head">
+        <h4 class="agent-intro-title"><span aria-hidden="true">${cfg.icon}</span> Agente ${cfg.title}</h4>
+        <button type="button" class="agent-intro-close" data-agent-close="${agentKey}"
+          aria-label="Fechar introdução">×</button>
+      </header>
+      <dl class="agent-intro-list">
+        <div><dt>O que faz</dt><dd>${cfg.what}</dd></div>
+        <div><dt>Quando usar</dt><dd>${cfg.when}</dd></div>
+        <div><dt>Por que existe</dt><dd>${cfg.why}</dd></div>
+      </dl>
+      <button type="button" class="agent-intro-dismiss" data-agent-dismiss="${agentKey}">
+        Entendi, não mostrar mais
+      </button>
+    </section>
+  `;
+  panelEl.prepend(wrap);
+
+  wrap.querySelector(`[data-agent-help="${agentKey}"]`)?.addEventListener('click', () => {
+    agentIntroOpen[agentKey] = true;
+    const card = wrap.querySelector('.agent-intro-card');
+    const help = wrap.querySelector('.agent-intro-help');
+    card.hidden = false; help.hidden = true;
+    card.querySelector('.agent-intro-close')?.focus();
+  });
+  wrap.querySelector(`[data-agent-close="${agentKey}"]`)?.addEventListener('click', () => {
+    agentIntroOpen[agentKey] = false;
+    const card = wrap.querySelector('.agent-intro-card');
+    const help = wrap.querySelector('.agent-intro-help');
+    card.hidden = true;
+    help.hidden = !(localStorage.getItem(cfg.storageKey) === 'true');
+    if (!help.hidden) help.focus();
+  });
+  wrap.querySelector(`[data-agent-dismiss="${agentKey}"]`)?.addEventListener('click', () => {
+    try { localStorage.setItem(cfg.storageKey, 'true'); } catch {}
+    agentIntroOpen[agentKey] = false;
+    const card = wrap.querySelector('.agent-intro-card');
+    const help = wrap.querySelector('.agent-intro-help');
+    card.hidden = true; help.hidden = false;
+    help.focus();
+  });
+}
+
 function renderPlanPacking(trip) {
   const tmp = document.createElement('div');
   tmp.innerHTML = '<div data-panel="packing"></div>';
   populatePacking(tmp, trip);
   document.getElementById('planPacking').innerHTML = tmp.firstChild.innerHTML;
+  mountAgentIntro(document.getElementById('planPacking'), 'bagagem');
   document.querySelectorAll('#planPacking input[type=checkbox]').forEach(cb => {
     cb.addEventListener('change', () => {
       const c = loadTripState(trip.id).packing || {};
@@ -2884,6 +2967,7 @@ function renderPlanInspire(trip) {
   tmp.innerHTML = '<div data-panel="inspire"></div>';
   populateInspiration(tmp, trip);
   document.getElementById('planInspire').innerHTML = tmp.firstChild.innerHTML;
+  mountAgentIntro(document.getElementById('planInspire'), 'inspiracao');
   // Rewire forms/buttons inside
   document.querySelectorAll('#planInspire .ins-del').forEach(btn => {
     btn.addEventListener('click', () => {
