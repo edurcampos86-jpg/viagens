@@ -142,6 +142,36 @@
 
   </section>
 
+  <!-- MODO MEMÓRIA (rota #memoria) -->
+  <section class="memoria-view" id="memoriaView" hidden aria-labelledby="memTitle">
+    <header class="route-head">
+      <a href="#" class="route-back" aria-label="Voltar ao Dashboard">← Dashboard</a>
+      <div class="route-head-main">
+        <h2 class="route-title" id="memTitle">Modo <em>Memória</em></h2>
+        <div class="route-meta" id="memMeta"></div>
+      </div>
+      <a href="#linha-do-tempo" class="route-action">Ver tudo com filtros →</a>
+    </header>
+
+    <section class="mem-map-section">
+      <div class="mem-map-head">
+        <h3 class="mem-sec-h">A geografia <em>das viagens</em></h3>
+        <div class="mem-map-legend">
+          <span class="leg"><span class="dot" style="background:var(--coral);box-shadow:0 0 0 2px rgba(255,255,255,.4);"></span>Realizada</span>
+        </div>
+      </div>
+      <div id="memMap" class="mem-map"></div>
+    </section>
+
+    <section class="mem-timeline-section">
+      <div class="mem-tl-head">
+        <h3 class="mem-sec-h">A linha <em>do tempo</em></h3>
+        <span class="mem-sec-sub">do mais recente ao mais antigo</span>
+      </div>
+      <div class="mem-timeline" id="memTimeline"></div>
+    </section>
+  </section>
+
   <!-- DEDICATED PLAN PAGE (mostrada quando rota #plan/<id>) -->
   <section class="plan-page" id="planPage" hidden aria-labelledby="planPageTitle">
     <header class="plan-head">
