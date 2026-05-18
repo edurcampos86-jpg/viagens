@@ -261,6 +261,8 @@ function cacheDom() {
   el.emptyDefault = el.noResults.querySelector('[data-empty-default]');
   el.emptyPlanned = el.noResults.querySelector('[data-empty-planned]');
   el.emptyWishlist = el.noResults.querySelector('[data-empty-wishlist]');
+  el.dashboardView = $('#dashboardView');
+  el.timelineView = $('#timelineView');
 }
 
 // ── Theme ────────────────────────────────────────────────────────
@@ -1817,24 +1819,227 @@ function toast(msg) {
   toast._t = setTimeout(() => el.shareToast.classList.remove('show'), 2200);
 }
 
+// ── Dashboard (Fase 3) ───────────────────────────────────────────
+function renderDashboard() {
+  const trips = state.trips || [];
+  if (!trips.length) return;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tripStart = t => t.startDate
+    ? new Date(t.startDate + 'T00:00:00')
+    : (t.year && t.month ? new Date(t.year, t.month - 1, 1) : null);
+  const daysTo = t => { const s = tripStart(t); return s ? Math.round((s - today) / 86400000) : null; };
+
+  const done = trips.filter(t => t.status === 'done')
+    .sort((a,b) => (b.year - a.year) || (b.month - a.month));
+  const futuras = trips
+    .filter(t => ['planned', 'em_planejamento'].includes(t.status))
+    .filter(t => { const d = daysTo(t); return d != null && d >= 0; })
+    .sort((a,b) => daysTo(a) - daysTo(b));
+
+  // Hero — próxima viagem
+  const heroEl = $('#dashHero');
+  if (futuras.length) {
+    const t = futuras[0];
+    heroEl.hidden = false;
+    const imgUrl = (t.gallery && t.gallery[0]) || `https://picsum.photos/seed/${encodeURIComponent(t.id)}/1800/1000`;
+    $('#dashHeroBg').style.backgroundImage = `url(${imgUrl})`;
+    $('#dashHeroEyebrow').textContent = CONTINENT_NAMES[t.continent] || '';
+    $('#dashHeroName').textContent = t.name;
+    $('#dashHeroDates').textContent = fmtTripDates(t);
+    $('#dashHeroPlace').textContent = t.sub || '';
+    const d = daysTo(t);
+    if (d != null && d >= 0) {
+      $('#dashHeroCd').hidden = false;
+      $('#dashHeroCdN').textContent = d;
+    } else {
+      $('#dashHeroCd').hidden = true;
+    }
+  } else {
+    heroEl.hidden = true;
+  }
+
+  // Stats
+  const countries = new Set(done.map(t => t.country).filter(Boolean));
+  const continents = new Set(done.map(t => t.continent).filter(Boolean));
+  const totalKm = done.reduce((s,t) => s + (Number(t.km) || 0), 0);
+  $('#dashStatTrips').textContent = done.length;
+  $('#dashStatCountries').textContent = countries.size;
+  $('#dashStatContinents').textContent = continents.size;
+  $('#dashStatKm').textContent = Math.round(totalKm / 1000);
+
+  // Alertas
+  renderDashAlerts(trips, futuras);
+
+  // Próximas viagens (kanban compacto)
+  renderDashKanban(trips);
+
+  // Última memória
+  const lastSec = $('#dashLastSection');
+  if (done.length) {
+    lastSec.hidden = false;
+    const t = done[0];
+    const imgUrl = (t.gallery && t.gallery[0]) || `https://picsum.photos/seed/${encodeURIComponent(t.id)}/1000/1200`;
+    $('#dashLastImg').style.backgroundImage = `url(${imgUrl})`;
+    $('#dashLastKicker').textContent = CONTINENT_NAMES[t.continent] || '';
+    $('#dashLastName').textContent = t.name;
+    $('#dashLastDates').textContent = t.label || '';
+    $('#dashLastMemory').textContent = t.memory || '';
+  } else {
+    lastSec.hidden = true;
+  }
+}
+
+function fmtTripDates(t) {
+  if (t.startDate && t.endDate) {
+    return `${formatIsoBR(t.startDate)} → ${formatIsoBR(t.endDate)}`;
+  }
+  return t.label || '';
+}
+function formatIsoBR(iso) {
+  const [y, m, d] = iso.split('-');
+  return `${parseInt(d)} ${MONTH_NAMES[parseInt(m) - 1]} ${y}`;
+}
+
+function renderDashAlerts(trips, futuras) {
+  const alerts = [];
+
+  // Decisões pendentes em viagens futuras
+  for (const t of futuras) {
+    const dp = t.decisoes_pendentes || [];
+    if (dp.length) {
+      const critica = dp.find(d => d.criticidade === 'alta') || dp[0];
+      alerts.push({
+        type: 'warn', ic: '⚠',
+        html: `<strong>${t.name}</strong>: ${critica.titulo}`,
+        link: { href: `#plan/${t.id}`, label: 'Abrir viagem →' }
+      });
+    }
+  }
+
+  // Viagens em_planejamento sem hospedagem
+  const semHotel = futuras.filter(t => t.status === 'em_planejamento'
+    && (!t.hospedagem || t.hospedagem.length === 0));
+  for (const t of semHotel) {
+    const d = daysToTrip(t);
+    alerts.push({
+      type: 'warn', ic: '🏨',
+      html: `<strong>${t.name}</strong> sem hospedagem confirmada (faltam ${d != null ? d + ' dias' : '?'})`,
+      link: { href: `#plan/${t.id}`, label: 'Definir →' }
+    });
+  }
+
+  // Passaporte sem validade conhecida
+  if (futuras.some(t => t.country && t.country !== 'Brasil')) {
+    alerts.push({
+      type: 'info', ic: '🛂',
+      html: 'Validade do passaporte ainda não cadastrada em <strong>documentos.json</strong> — necessária para o Auditor.',
+    });
+  }
+
+  const list = $('#dashAlertsList');
+  const sec = $('#dashAlerts');
+  if (!alerts.length) {
+    sec.hidden = true;
+    return;
+  }
+  sec.hidden = false;
+  list.innerHTML = alerts.slice(0, 6).map(a => `
+    <div class="dash-alert ${a.type}">
+      <span class="dash-alert-ic" aria-hidden="true">${a.ic}</span>
+      <div class="dash-alert-text">
+        ${a.html}
+        ${a.link ? `<br><a class="dash-alert-link" href="${a.link.href}">${a.link.label}</a>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function daysToTrip(t) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const s = t.startDate
+    ? new Date(t.startDate + 'T00:00:00')
+    : (t.year && t.month ? new Date(t.year, t.month - 1, 1) : null);
+  return s ? Math.round((s - today) / 86400000) : null;
+}
+
+function renderDashKanban(trips) {
+  const confirmadas = trips.filter(t => t.status === 'planned')
+    .sort((a,b) => (daysToTrip(a) ?? 9e9) - (daysToTrip(b) ?? 9e9));
+  const planejando  = trips.filter(t => t.status === 'em_planejamento')
+    .sort((a,b) => (daysToTrip(a) ?? 9e9) - (daysToTrip(b) ?? 9e9));
+  const wish        = trips.filter(t => t.status === 'wishlist');
+
+  const cd = t => {
+    const d = daysToTrip(t);
+    if (d == null) return '';
+    if (d < 90)   return `${d}d`;
+    if (d < 365)  return `${Math.round(d/30)}m`;
+    return `${(d/365).toFixed(1)}a`;
+  };
+
+  const card = t => {
+    const distant = (daysToTrip(t) ?? 0) >= 90;
+    return `
+      <a class="dash-mini" href="#plan/${t.id}">
+        <div class="dash-mini-top">
+          <span class="dash-mini-flag"><span class="flag">${t.flag || '📍'}</span>${CONTINENT_NAMES[t.continent] || ''}</span>
+          <span class="dash-mini-cd ${distant ? 'distant' : ''}">${cd(t)}</span>
+        </div>
+        <div class="dash-mini-name">${t.name}</div>
+        <div class="dash-mini-meta">${t.label || ''}${t.sub ? ' · ' + t.sub : ''}</div>
+      </a>
+    `;
+  };
+
+  const col = (title, dotClass, ic, items, limit = 3) => `
+    <div class="dash-col ${dotClass}">
+      <div class="dash-col-head">
+        <div class="dash-col-h"><span class="ic ${dotClass}">${ic}</span>${title}</div>
+        <div class="dash-col-count">${items.length}</div>
+      </div>
+      ${items.length
+        ? items.slice(0, limit).map(card).join('')
+        : '<div class="dash-col-empty">vazio por enquanto</div>'
+      }
+    </div>
+  `;
+
+  $('#dashKanban').innerHTML =
+    col('Confirmadas',    'confirmed', '✓', confirmadas) +
+    col('Em planejamento','planning',  '◐', planejando) +
+    col('Wishlist',       'wish',      '★', wish);
+}
+
 // ── Routing (hash) ───────────────────────────────────────────────
 function initRouting() { applyHash(); }
+
+function showView(name) {
+  // name: 'dashboard' | 'timeline' | 'plan'
+  if (el.dashboardView) el.dashboardView.hidden = name !== 'dashboard';
+  if (el.timelineView)  el.timelineView.hidden  = name !== 'timeline';
+  // planPage controlled by openPlanPage/closePlanPage
+}
+
 function applyHash() {
   const h = location.hash.replace(/^#/, '');
+
+  // Plan page tem precedência
   if (h.startsWith('plan/')) {
     const id = h.slice(5);
     const trip = state.trips.find(t => t.id === id);
-    if (trip) {
-      openPlanPage(trip);
-      return;
-    }
+    if (trip) { openPlanPage(trip); return; }
   }
-  // Leaving plan page if hash no longer points there
   if (state.activePlanId && !h.startsWith('plan/')) closePlanPage();
 
+  // Trip card expandido (timeline)
   if (h.startsWith('trip/')) {
     const id = h.slice(5);
     if (state.trips.find(t => t.id === id)) {
+      showView('timeline');
+      state.filters.status = 'all';
+      syncStatusButtons('all');
+      render();
       state.expandedTrip = id;
       const card = el.grid.querySelector(`.card[data-trip-id="${id}"]`);
       if (card) {
@@ -1844,14 +2049,47 @@ function applyHash() {
         setTimeout(() => card.classList.remove('highlight'), 1800);
       }
     }
-  } else if (h === 'planned' || h === 'wishlist' || h === 'done') {
-    state.filters.status = h;
-    $$('.status-btn').forEach(x => {
-      const a = x.dataset.status === h;
-      x.classList.toggle('active', a); x.setAttribute('aria-selected', String(a));
-    });
-    render();
+    return;
   }
+
+  // Modo Memória — timeline com viagens realizadas
+  if (h === 'memoria' || h === 'timeline') {
+    showView('timeline');
+    state.filters.status = 'done';
+    syncStatusButtons('done');
+    render();
+    return;
+  }
+
+  // Modo Planejamento — timeline com planned/em_planejamento/wishlist
+  if (h === 'planejamento') {
+    showView('timeline');
+    state.filters.status = 'planned';
+    syncStatusButtons('planned');
+    render();
+    return;
+  }
+
+  // Status diretos (compatibilidade)
+  if (h === 'planned' || h === 'wishlist' || h === 'done') {
+    showView('timeline');
+    state.filters.status = h;
+    syncStatusButtons(h);
+    render();
+    return;
+  }
+
+  // Default: dashboard
+  showView('dashboard');
+  renderDashboard();
+}
+
+function syncStatusButtons(status) {
+  $$('.status-btn').forEach(x => {
+    const a = x.dataset.status === status;
+    x.classList.toggle('active', a);
+    x.setAttribute('aria-selected', String(a));
+  });
 }
 
 // ── Dedicated full-screen plan page ──────────────────────────────

@@ -54,6 +54,94 @@
 
 <main id="main" tabindex="-1">
 
+  <!-- DASHBOARD (default; rota # ou #dashboard) -->
+  <section class="dashboard" id="dashboardView" aria-labelledby="dashTitle">
+
+    <!-- Hero: próxima viagem -->
+    <div class="dash-hero" id="dashHero" hidden>
+      <div class="dash-hero-bg" id="dashHeroBg"></div>
+      <div class="dash-hero-overlay"></div>
+      <div class="dash-hero-inner">
+        <div class="dash-hero-top">
+          <span class="dash-kicker">Próxima viagem</span>
+          <span class="dash-rule"></span>
+          <span class="dash-eyebrow" id="dashHeroEyebrow"></span>
+        </div>
+        <div class="dash-hero-body">
+          <h2 class="dash-hero-name" id="dashHeroName"></h2>
+          <div class="dash-hero-meta">
+            <span id="dashHeroDates"></span><span class="dot">·</span><span id="dashHeroPlace"></span>
+          </div>
+        </div>
+        <div class="dash-hero-cd" id="dashHeroCd" hidden>
+          <div class="dash-cd-n" id="dashHeroCdN"></div>
+          <div class="dash-cd-l">dias para partir</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="dash-stats">
+      <div class="dash-stat"><div class="dash-stat-n" id="dashStatTrips">—</div><div class="dash-stat-l">viagens realizadas</div></div>
+      <div class="dash-stat"><div class="dash-stat-n" id="dashStatCountries">—</div><div class="dash-stat-l">países visitados</div></div>
+      <div class="dash-stat"><div class="dash-stat-n" id="dashStatContinents">—</div><div class="dash-stat-l">continentes</div></div>
+      <div class="dash-stat"><div class="dash-stat-n" id="dashStatKm">—</div><div class="dash-stat-l">mil km voados</div></div>
+    </div>
+
+    <!-- Badges de alerta -->
+    <div class="dash-alerts" id="dashAlerts" hidden>
+      <h3 id="dashTitle" class="dash-h">Atenção</h3>
+      <div class="dash-alerts-list" id="dashAlertsList"></div>
+    </div>
+
+    <!-- Próximas viagens — visão compacta -->
+    <div class="dash-section">
+      <div class="dash-section-head">
+        <h3 class="dash-h">Próximas <em>viagens</em></h3>
+        <a class="dash-section-link" href="#planejamento">Ver planejamento completo →</a>
+      </div>
+      <div class="dash-kanban" id="dashKanban"></div>
+    </div>
+
+    <!-- Última memória -->
+    <div class="dash-section" id="dashLastSection" hidden>
+      <div class="dash-section-head">
+        <h3 class="dash-h">Última <em>memória</em></h3>
+        <a class="dash-section-link" href="#memoria">Ver linha do tempo →</a>
+      </div>
+      <article class="dash-last" id="dashLast">
+        <div class="dash-last-img" id="dashLastImg"></div>
+        <div class="dash-last-meta">
+          <div class="dash-kicker" id="dashLastKicker"></div>
+          <h4 class="dash-last-name" id="dashLastName"></h4>
+          <div class="dash-last-dates" id="dashLastDates"></div>
+          <p class="dash-last-memory" id="dashLastMemory"></p>
+        </div>
+      </article>
+    </div>
+
+    <!-- Atalhos para modos -->
+    <div class="dash-modes">
+      <a class="dash-mode dash-mode-memoria" href="#memoria">
+        <span class="dash-mode-ic" aria-hidden="true">📖</span>
+        <div>
+          <div class="dash-mode-title">Modo Memória</div>
+          <div class="dash-mode-sub">Mapa, linha do tempo e cards das viagens realizadas</div>
+        </div>
+        <span class="dash-mode-arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="dash-mode dash-mode-plano" href="#planejamento">
+        <span class="dash-mode-ic" aria-hidden="true">🗺</span>
+        <div>
+          <div class="dash-mode-title">Modo Planejamento</div>
+          <div class="dash-mode-sub">Kanban das próximas viagens, decisões pendentes, checklists</div>
+        </div>
+        <span class="dash-mode-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+  </section>
+
   <!-- DEDICATED PLAN PAGE (mostrada quando rota #plan/<id>) -->
   <section class="plan-page" id="planPage" hidden aria-labelledby="planPageTitle">
     <header class="plan-head">
@@ -127,7 +215,7 @@
     </section>
   </section>
 
-  <div id="timelineView">
+  <div id="timelineView" hidden>
 
   <!-- STATS -->
   <section class="stats-section" aria-labelledby="stats-title">
