@@ -264,6 +264,7 @@ function cacheDom() {
   el.dashboardView = $('#dashboardView');
   el.timelineView = $('#timelineView');
   el.memoriaView = $('#memoriaView');
+  el.planejamentoView = $('#planejamentoView');
 }
 
 // ── Theme ────────────────────────────────────────────────────────
@@ -2128,14 +2129,207 @@ function yearNarrative(year, ents) {
 
 function fmtNumBR(n) { return new Intl.NumberFormat('pt-BR').format(n); }
 
+// ── Modo Planejamento (Fase 4b) ──────────────────────────────────
+function renderPlanejamento() {
+  const trips = state.trips || [];
+  const wish        = trips.filter(t => t.status === 'wishlist');
+  const planning    = trips.filter(t => t.status === 'em_planejamento');
+  const planned     = trips.filter(t => t.status === 'planned');
+
+  // Próximas: planned + daysUntil <= 90 (e >= 0)
+  // Confirmadas: planned + daysUntil > 90 (ou daysUntil null = sem data firme)
+  const proximas    = planned.filter(t => { const d = daysToTrip(t); return d != null && d >= 0 && d <= 90; })
+    .sort((a, b) => (daysToTrip(a) ?? 9e9) - (daysToTrip(b) ?? 9e9));
+  const confirmadas = planned.filter(t => !proximas.includes(t))
+    .sort((a, b) => (daysToTrip(a) ?? 9e9) - (daysToTrip(b) ?? 9e9));
+
+  // Meta no header
+  const meta = $('#planjMeta');
+  const total = wish.length + planning.length + planned.length;
+  if (meta) meta.textContent =
+    `${total} viagens no horizonte · ${proximas.length} próximas · ${confirmadas.length} confirmadas · ${planning.length} em planejamento · ${wish.length} wishlist`;
+
+  // Summary strip — próximo deadline + alertas críticos
+  renderPlanjSummary(proximas, confirmadas, planning);
+
+  // Kanban
+  const kanban = $('#planjKanban');
+  if (kanban) {
+    kanban.innerHTML =
+      planjCol('Próximas',         'imminent',  '⚡', proximas) +
+      planjCol('Confirmadas',      'confirmed', '✓', confirmadas) +
+      planjCol('Em planejamento',  'planning',  '◐', planning.sort((a, b) => (daysToTrip(a) ?? 9e9) - (daysToTrip(b) ?? 9e9))) +
+      planjCol('Wishlist',         'wish',      '★', wish);
+
+    // Animar progress bars
+    setTimeout(() => {
+      kanban.querySelectorAll('.planj-card-progress-bar > div').forEach(el => {
+        el.style.width = (el.dataset.pct || 0) + '%';
+      });
+    }, 100);
+  }
+}
+
+function planjCol(title, dotClass, ic, items) {
+  return `
+    <div class="planj-col ${dotClass}">
+      <div class="planj-col-head">
+        <div class="planj-col-h"><span class="ic ${dotClass}">${ic}</span>${title}</div>
+        <div class="planj-col-count">${items.length}</div>
+      </div>
+      ${items.length
+        ? items.map(planjCard).join('')
+        : '<div class="planj-col-empty">vazio por enquanto</div>'
+      }
+    </div>
+  `;
+}
+
+function planjCard(t) {
+  const d = daysToTrip(t);
+  const cd = d == null ? '' : d < 90 ? `${d}d` : d < 365 ? `${Math.round(d/30)}m` : `${(d/365).toFixed(1)}a`;
+  const cdClass = d != null && d <= 90 ? '' : 'distant';
+  const imgUrl = (t.gallery && t.gallery[0])
+    || `https://picsum.photos/seed/${encodeURIComponent(t.id)}/600/340`;
+
+  // % checklist real (decisões + hospedagem + documentos como proxy de progresso)
+  const pct = calcProgress(t);
+
+  // Badges
+  const badges = [];
+  const decisoes = (t.decisoes_pendentes || []).length;
+  if (decisoes) badges.push(`<span class="planj-badge alert">⚠ ${decisoes} decis${decisoes === 1 ? 'ão' : 'ões'}</span>`);
+
+  if (t.status === 'em_planejamento' && (!t.hospedagem || t.hospedagem.length === 0))
+    badges.push('<span class="planj-badge warn">🏨 Sem hotel</span>');
+  else if (t.hospedagem && t.hospedagem.length > 0)
+    badges.push(`<span class="planj-badge ok">🏨 ${t.hospedagem.length}</span>`);
+
+  const docs = (t.documentos_necessarios || []);
+  const docsPend = docs.filter(d => !d.obtido).length;
+  if (docsPend) badges.push(`<span class="planj-badge info">🛂 ${docsPend} doc${docsPend === 1 ? '' : 's'}</span>`);
+
+  const dates = t.startDate && t.endDate
+    ? `${formatIsoBR(t.startDate)} → ${formatIsoBR(t.endDate)}`
+    : (t.label || '');
+
+  return `
+    <a class="planj-card" href="#plan/${t.id}">
+      <div class="planj-card-photo" style="background-image:url(${imgUrl})">
+        ${cd ? `<span class="planj-card-cd-badge ${cdClass}">${cd}</span>` : ''}
+      </div>
+      <div class="planj-card-body">
+        <span class="planj-card-flag"><span class="flag">${t.flag || '📍'}</span>${CONTINENT_NAMES[t.continent] || ''}</span>
+        <h4 class="planj-card-name">${t.name}</h4>
+        ${t.sub ? `<div class="planj-card-sub">${t.sub}</div>` : ''}
+        <div class="planj-card-dates">${dates}</div>
+        ${t.status !== 'wishlist' ? `
+          <div class="planj-card-progress">
+            <div class="planj-card-progress-bar"><div style="width:0%" data-pct="${pct}"></div></div>
+            <div class="planj-card-progress-l">Checklist · ${pct}%</div>
+          </div>
+        ` : ''}
+        ${badges.length ? `<div class="planj-card-badges">${badges.join('')}</div>` : ''}
+      </div>
+    </a>
+  `;
+}
+
+function renderPlanjSummary(proximas, confirmadas, planning) {
+  const sec = $('#planjSummary');
+  if (!sec) return;
+  const cards = [];
+
+  // Próxima a embarcar
+  const todas = [...proximas, ...confirmadas, ...planning]
+    .filter(t => { const d = daysToTrip(t); return d != null && d >= 0; })
+    .sort((a, b) => daysToTrip(a) - daysToTrip(b));
+  if (todas.length) {
+    const t = todas[0];
+    const d = daysToTrip(t);
+    cards.push(`
+      <div class="planj-summary-card">
+        <span class="planj-summary-ic" aria-hidden="true">⚡</span>
+        <div class="planj-summary-text">
+          <strong>${t.name}</strong> — próxima a embarcar<br>
+          <span class="big">${d}</span> dias · ${t.label || ''}
+        </div>
+      </div>
+    `);
+  }
+
+  // Decisões críticas pendentes (criticidade alta)
+  const decisoesCritic = todas
+    .flatMap(t => (t.decisoes_pendentes || []).filter(d => d.criticidade === 'alta').map(d => ({ trip: t, dec: d })))
+    .slice(0, 1);
+  if (decisoesCritic.length) {
+    const { trip, dec } = decisoesCritic[0];
+    cards.push(`
+      <div class="planj-summary-card warn">
+        <span class="planj-summary-ic" aria-hidden="true">⚠</span>
+        <div class="planj-summary-text">
+          <strong>${trip.name}</strong>: ${dec.titulo}<br>
+          Decisão crítica em aberto
+        </div>
+      </div>
+    `);
+  }
+
+  // Em planejamento sem hospedagem
+  const semHotel = planning.filter(t => !t.hospedagem || t.hospedagem.length === 0);
+  if (semHotel.length) {
+    cards.push(`
+      <div class="planj-summary-card warn">
+        <span class="planj-summary-ic" aria-hidden="true">🏨</span>
+        <div class="planj-summary-text">
+          <span class="big">${semHotel.length}</span> em planejamento sem hospedagem<br>
+          <strong>${semHotel.map(t => t.name).slice(0, 2).join(', ')}${semHotel.length > 2 ? '…' : ''}</strong>
+        </div>
+      </div>
+    `);
+  }
+
+  if (cards.length === 0) {
+    sec.hidden = true;
+    return;
+  }
+  sec.hidden = false;
+  sec.innerHTML = cards.join('');
+}
+
+function calcProgress(t) {
+  // Heurística: peso de signs de "pronto":
+  //  - hospedagem confirmada: +35%
+  //  - sem decisoes_pendentes: +25%
+  //  - todos documentos_necessarios.obtido: +25%
+  //  - transporte definido: +15%
+  let p = 0;
+  if (t.hospedagem && t.hospedagem.some(h => h.confirmada)) p += 35;
+  else if (t.hospedagem && t.hospedagem.length) p += 15;
+
+  const dp = (t.decisoes_pendentes || []).length;
+  if (dp === 0) p += 25;
+  else if (dp <= 2) p += 10;
+
+  const docs = (t.documentos_necessarios || []);
+  if (docs.length && docs.every(d => d.obtido)) p += 25;
+  else if (docs.length === 0 && t.country === 'Brasil') p += 25;
+
+  if (t.transporte && t.transporte.length > 0) p += 15;
+  else if (t.air) p += 8;
+
+  return Math.min(100, Math.max(0, p));
+}
+
 // ── Routing (hash) ───────────────────────────────────────────────
 function initRouting() { applyHash(); }
 
 function showView(name) {
-  // name: 'dashboard' | 'memoria' | 'timeline' | 'plan'
-  if (el.dashboardView) el.dashboardView.hidden = name !== 'dashboard';
-  if (el.timelineView)  el.timelineView.hidden  = name !== 'timeline';
-  if (el.memoriaView)   el.memoriaView.hidden   = name !== 'memoria';
+  // name: 'dashboard' | 'memoria' | 'planejamento' | 'timeline' | 'plan'
+  if (el.dashboardView)     el.dashboardView.hidden     = name !== 'dashboard';
+  if (el.timelineView)      el.timelineView.hidden      = name !== 'timeline';
+  if (el.memoriaView)       el.memoriaView.hidden       = name !== 'memoria';
+  if (el.planejamentoView)  el.planejamentoView.hidden  = name !== 'planejamento';
   // planPage controlled by openPlanPage/closePlanPage
 }
 
@@ -2186,12 +2380,10 @@ function applyHash() {
     return;
   }
 
-  // Modo Planejamento — timeline com planned/em_planejamento/wishlist
+  // Modo Planejamento — Kanban dedicado (Fase 4b)
   if (h === 'planejamento') {
-    showView('timeline');
-    state.filters.status = 'planned';
-    syncStatusButtons('planned');
-    render();
+    showView('planejamento');
+    renderPlanejamento();
     return;
   }
 
