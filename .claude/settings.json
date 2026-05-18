@@ -4,7 +4,9 @@
       "Bash(git fetch *)",
       "Bash(python3 scripts/test_parsers.py)",
       "Bash(python3 scripts/test_matching.py)",
-      "Bash(python3 scripts/validate_schemas.py)"
+      "Bash(python3 scripts/test_auditor.py)",
+      "Bash(python3 scripts/validate_schemas.py)",
+      "Bash(python3 scripts/auditor.py)"
     ]
   }
 }
