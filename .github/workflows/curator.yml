@@ -1,0 +1,83 @@
+name: curator
+
+on:
+  schedule:
+    # Todo dia às 7h BRT (10h UTC)
+    - cron: "0 10 * * *"
+  workflow_dispatch:
+    inputs:
+      simulate_today:
+        description: "Sobrescrever 'today' (YYYY-MM-DD)"
+        required: false
+        default: ""
+      max_destinos:
+        description: "Override CURADOR_MAX_DESTINOS (default 5)"
+        required: false
+        default: ""
+      model:
+        description: "Override CURADOR_MODEL (default claude-haiku-4-5)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: curator
+  cancel-in-progress: false
+
+jobs:
+  curate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: scripts/requirements-curator.txt
+
+      - name: Install deps
+        run: pip install -r scripts/requirements-curator.txt
+
+      - name: Run curator
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          CURADOR_TODAY:       ${{ github.event.inputs.simulate_today }}
+          CURADOR_MAX_DESTINOS: ${{ github.event.inputs.max_destinos }}
+          CURADOR_MODEL:        ${{ github.event.inputs.model }}
+        run: python scripts/curador.py
+
+      - name: Check for report changes
+        id: diff
+        run: |
+          if git diff --quiet -- data/curator-report.md; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open PR if report changed
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/curator-report
+          delete-branch: true
+          title: "chore(curator): relatório diário atualizado"
+          commit-message: "chore(curator): relatório diário atualizado"
+          body: |
+            Relatório diário do Curador gerado por `scripts/curador.py`.
+
+            Veja `data/curator-report.md` para os findings de hoje.
+
+            🤖 Workflow: `.github/workflows/curator.yml` (cron diário 7h BRT)
+          labels: auto-curator
+          add-paths: |
+            data/curator-report.md

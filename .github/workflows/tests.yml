@@ -31,8 +31,9 @@ jobs:
           pip install python-dateutil
           pip install -r scripts/requirements-validate.txt
 
-      - name: Run unit tests (sem deps Google)
+      - name: Run unit tests (sem deps Google nem Anthropic)
         run: |
           python scripts/test_parsers.py
           python scripts/test_matching.py
           python scripts/test_auditor.py
+          python scripts/test_curador.py
