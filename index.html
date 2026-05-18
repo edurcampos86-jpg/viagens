@@ -48,7 +48,7 @@
         <span class="edits-badge" id="editsBadgeN">0</span>
         <span class="btn-label">edições</span>
       </button>
-      <button class="icon-btn" id="darkBtn" aria-pressed="false" aria-label="Alternar tema claro/escuro">
+      <button class="icon-btn" id="darkBtn" aria-pressed="false" aria-label="Alternar tema claro/escuro" data-tooltip="Alterna entre modo claro e escuro">
         <span class="dark-icon" aria-hidden="true">☾</span>
         <span class="btn-label" id="darkLbl">Escuro</span>
       </button>
@@ -266,8 +266,8 @@
     </div>
     <section class="plan-tabs-section">
       <div class="tabs" role="tablist" aria-label="Mais detalhes" id="planExtraTabs">
-        <button class="tab active" role="tab" data-pp-tab="packing">🧳 Bagagem</button>
-        <button class="tab" role="tab" data-pp-tab="inspire">💡 Inspiração</button>
+        <button class="tab active" role="tab" data-pp-tab="packing" aria-label="Agente de Bagagem" data-tooltip="Monta lista personalizada de bagagem para a viagem">🧳 Bagagem</button>
+        <button class="tab" role="tab" data-pp-tab="inspire" aria-label="Agente de Inspiração" data-tooltip="Sugere destinos baseado em humor, orçamento e tempo disponível">💡 Inspiração</button>
       </div>
       <div class="tab-panels">
         <div class="tab-panel active" role="tabpanel" data-pp-panel="packing" id="planPacking"></div>
@@ -304,11 +304,11 @@
 
       <!-- SEARCH + FILTER -->
       <div class="controls">
-        <div class="search-wrap">
+        <div class="search-wrap" data-tooltip="Busca viagens por nome, cidade ou palavra-chave">
           <span aria-hidden="true">🔍</span>
           <input type="search" id="search" placeholder="Buscar destino, país, cidade…" aria-label="Buscar viagem" autocomplete="off"/>
         </div>
-        <button class="advanced-toggle" id="advToggle" aria-expanded="false" aria-controls="advPanel">
+        <button class="advanced-toggle" id="advToggle" aria-expanded="false" aria-controls="advPanel" aria-label="Filtros avançados" data-tooltip="Filtra viagens por continente, duração, tipo e companhia">
           <span aria-hidden="true">⚙</span> Filtros
           <span class="adv-count" id="advCount" hidden>0</span>
         </button>
@@ -397,7 +397,7 @@
       <h2 id="trip-list-title" class="sec-title">
         <span id="secTitleText">📅 Linha do Tempo das Viagens</span>
         <div class="sec-actions">
-          <button class="sec-action" id="compareBtn" hidden aria-pressed="false">
+          <button class="sec-action" id="compareBtn" hidden aria-pressed="false" data-tooltip="Compare duas ou mais viagens lado a lado">
             <span aria-hidden="true">⚖</span> Comparar
           </button>
           <span class="sec-count" id="secCount" aria-live="polite"></span>
@@ -507,19 +507,19 @@
   <form method="dialog" class="share-sheet">
     <h3 id="shareTitle">Compartilhar viagem</h3>
     <div class="share-options">
-      <button type="button" class="sh-opt" data-share-action="copy">
+      <button type="button" class="sh-opt" data-share-action="copy" data-tooltip="Copia o resumo da viagem para colar onde quiser">
         <span class="sh-icon" style="background:#f1f5f9" aria-hidden="true">📋</span>
         <span class="sh-lbl">Copiar texto</span>
       </button>
-      <button type="button" class="sh-opt" data-share-action="whatsapp">
+      <button type="button" class="sh-opt" data-share-action="whatsapp" data-tooltip="Compartilha o resumo da viagem no WhatsApp">
         <span class="sh-icon" style="background:#dcfce7" aria-hidden="true">💬</span>
         <span class="sh-lbl">WhatsApp</span>
       </button>
-      <button type="button" class="sh-opt" data-share-action="x">
+      <button type="button" class="sh-opt" data-share-action="x" data-tooltip="Compartilha o resumo da viagem no X">
         <span class="sh-icon" style="background:#e0f2fe" aria-hidden="true">𝕏</span>
         <span class="sh-lbl">X / Twitter</span>
       </button>
-      <button type="button" class="sh-opt" data-share-action="native">
+      <button type="button" class="sh-opt" data-share-action="native" data-tooltip="Usa o menu de compartilhamento nativo do sistema">
         <span class="sh-icon" style="background:#eff6ff" aria-hidden="true">🔗</span>
         <span class="sh-lbl">Sistema</span>
       </button>

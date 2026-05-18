@@ -2942,3 +2942,65 @@ body.plan-page-open { background: var(--surface2); }
 [data-theme="dark"] .export-howto summary { color: #66c0d8; }
 [data-theme="dark"] .export-howto a { color: #ff8a72; }
 [data-theme="dark"] .export-warn { color: #f4c771; }
+
+/* ── Tooltips (Fase 2) ──────────────────────────────────────────── */
+[data-tooltip] { position: relative; }
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--bg2);
+  color: var(--text);
+  border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: normal;
+  text-align: center;
+  width: max-content;
+  max-width: min(220px, calc(100vw - 24px));
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 120ms ease, transform 120ms ease, visibility 120ms;
+  z-index: 1000;
+}
+[data-tooltip]::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  border: 6px solid transparent;
+  border-top-color: var(--bg2);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 120ms ease, transform 120ms ease, visibility 120ms;
+  z-index: 1000;
+}
+@media (hover: hover) {
+  [data-tooltip]:hover::after,
+  [data-tooltip]:hover::before,
+  [data-tooltip]:focus-visible::after,
+  [data-tooltip]:focus-visible::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+[data-tooltip].tt-show::after,
+[data-tooltip].tt-show::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-tooltip]::after,
+  [data-tooltip]::before { transition: none; }
+}

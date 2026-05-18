@@ -2973,5 +2973,28 @@ function trackMapInteraction() {
 }
 setTimeout(trackMapInteraction, 100);
 
+// ── Tooltips em mobile (Fase 2) ──────────────────────────────────
+// Touch dispara tooltip por ~2s via classe .tt-show; em desktop o
+// :hover/:focus-visible do CSS já cuida sozinho.
+(() => {
+  let activeEl = null;
+  let activeTimer = null;
+  const hide = () => {
+    if (activeEl) activeEl.classList.remove('tt-show');
+    activeEl = null;
+    if (activeTimer) { clearTimeout(activeTimer); activeTimer = null; }
+  };
+  document.addEventListener('touchstart', (e) => {
+    const el = e.target.closest('[data-tooltip]');
+    if (!el) { hide(); return; }
+    if (activeEl && activeEl !== el) hide();
+    activeEl = el;
+    el.classList.add('tt-show');
+    if (activeTimer) clearTimeout(activeTimer);
+    activeTimer = setTimeout(hide, 2000);
+  }, { passive: true });
+  document.addEventListener('scroll', hide, { passive: true, capture: true });
+})();
+
 // ── Go! ──────────────────────────────────────────────────────────
 boot();
