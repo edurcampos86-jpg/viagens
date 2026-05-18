@@ -44,6 +44,10 @@
       <button class="icon-btn" id="installBtn" hidden aria-label="Instalar como aplicativo">
         <span aria-hidden="true">⬇</span> <span class="btn-label">Instalar</span>
       </button>
+      <button class="icon-btn edits-btn" id="editsBtn" hidden aria-label="Edições pendentes para exportar">
+        <span class="edits-badge" id="editsBadgeN">0</span>
+        <span class="btn-label">edições</span>
+      </button>
       <button class="icon-btn" id="darkBtn" aria-pressed="false" aria-label="Alternar tema claro/escuro">
         <span class="dark-icon" aria-hidden="true">☾</span>
         <span class="btn-label" id="darkLbl">Escuro</span>
@@ -518,6 +522,43 @@
 </dialog>
 
 <div class="share-toast" id="shareToast" role="status" aria-live="polite"></div>
+
+<!-- EXPORT DIALOG (Fase 7a — edições locais → trips.json) -->
+<dialog id="exportDialog" class="export-dialog" aria-labelledby="exportTitle">
+  <form method="dialog" class="export-sheet">
+    <header class="export-head">
+      <h3 id="exportTitle">Exportar edições</h3>
+      <button type="submit" class="export-close" aria-label="Fechar">×</button>
+    </header>
+    <div class="export-body">
+      <p class="export-intro">
+        Você tem <strong id="exportCount">0</strong> edição(ões) feita(s) no site.
+        Para que apareçam no repositório (e nos agentes), exporte abaixo e
+        envie para o GitHub.
+      </p>
+      <div class="export-list" id="exportList"></div>
+      <div class="export-actions">
+        <button type="button" class="export-btn export-btn-primary" id="exportDownload">
+          📥 Baixar trips.json
+        </button>
+        <button type="button" class="export-btn export-btn-danger" id="exportClear">
+          🗑 Descartar edições locais
+        </button>
+      </div>
+      <details class="export-howto">
+        <summary>Como aplicar no GitHub Web</summary>
+        <ol>
+          <li>Baixe o <code>trips.json</code> com o botão acima.</li>
+          <li>Abra <a href="https://github.com/edurcampos86-jpg/viagens/blob/main/data/trips.json" target="_blank" rel="noopener">data/trips.json no GitHub Web</a> e clique no ícone do lápis (canto superior direito).</li>
+          <li>Selecione tudo (Ctrl+A) e cole o conteúdo do arquivo baixado (Ctrl+V).</li>
+          <li>Commit (mensagem "edições do site — DATA" serve).</li>
+          <li>Volte aqui e clique "Descartar edições locais" — elas já estão no repo.</li>
+        </ol>
+        <p class="export-warn">⚠ Não esqueça do passo 5. Senão as edições locais e do repo vão divergir.</p>
+      </details>
+    </div>
+  </form>
+</dialog>
 
 <noscript>
   <div style="padding:24px;text-align:center;background:#fef3c7;color:#92400e;">

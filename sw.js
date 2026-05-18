@@ -1,4 +1,4 @@
-const VERSION = 'viagens-v8-planejamento';
+const VERSION = 'viagens-v9-edicoes';
 const CORE = [
   './',
   './index.html',
