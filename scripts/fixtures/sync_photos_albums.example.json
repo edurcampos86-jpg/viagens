@@ -1,0 +1,45 @@
+{
+  "_comment": "Fixture de exemplo pra testar sync_photos.py offline. Use com --dry-run --fixture.",
+  "albums": [
+    {
+      "id": "ALBUM_TML",
+      "title": "europa-tomorrowland-2026 — Bélgica & Tomorrowland"
+    },
+    {
+      "id": "ALBUM_IGU",
+      "title": "iguacu-2021 - Foz do Iguaçu"
+    },
+    {
+      "id": "ALBUM_RANDOM",
+      "title": "Fim de ano 2024"
+    },
+    {
+      "id": "ALBUM_NOMATCH",
+      "title": "iguacu-2021x album extra"
+    }
+  ],
+  "mediaItems": {
+    "ALBUM_TML": [
+      {
+        "id": "media-tml-001",
+        "filename": "IMG_0001.HEIC",
+        "mimeType": "image/heic",
+        "baseUrl": "https://photoslibrary.googleusercontent.com/example/tml-001"
+      },
+      {
+        "id": "media-tml-002",
+        "filename": "IMG_0002.JPG",
+        "mimeType": "image/jpeg",
+        "baseUrl": "https://photoslibrary.googleusercontent.com/example/tml-002"
+      }
+    ],
+    "ALBUM_IGU": [
+      {
+        "id": "media-igu-001",
+        "filename": "cataratas.jpg",
+        "mimeType": "image/jpeg",
+        "baseUrl": "https://photoslibrary.googleusercontent.com/example/igu-001"
+      }
+    ]
+  }
+}

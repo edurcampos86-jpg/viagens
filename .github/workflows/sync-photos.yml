@@ -1,0 +1,94 @@
+name: sync-photos
+
+on:
+  schedule:
+    # Mensal, dia 1 às 04:13 UTC. Frequência baixa porque fotos não chegam o tempo todo.
+    - cron: "13 4 1 * *"
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Sincronizar apenas esta viagem (id). Vazio = todos os álbuns matched."
+        required: false
+        default: ""
+      dry_run:
+        description: "Apenas listar mapeamento álbum→viagem, sem upload"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-photos
+  cancel-in-progress: false
+
+jobs:
+  sync-photos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Install deps
+        run: pip install -r scripts/requirements.txt
+
+      - name: Build args
+        id: args
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.slug }}" ]; then
+            ARGS="$ARGS --slug ${{ github.event.inputs.slug }}"
+          fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          echo "args=$ARGS" >> "$GITHUB_OUTPUT"
+
+      - name: Run sync_photos
+        env:
+          GOOGLE_CLIENT_ID:     ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY:    ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: python scripts/sync_photos.py ${{ steps.args.outputs.args }}
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet -- data/trips.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create Pull Request with new photos
+        if: steps.diff.outputs.changed == 'true' && github.event.inputs.dry_run != 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/auto-sync-photos
+          delete-branch: true
+          title: "chore(photos): sincronizar fotos de álbuns do Google Photos"
+          commit-message: "chore(photos): sincronizar fotos via Google Photos → Cloudinary"
+          body: |
+            Sincronização automática de fotos: álbuns do Google Photos cujo título começa
+            com um slug de viagem foram baixados, enviados ao Cloudinary, e as URLs
+            otimizadas foram gravadas em `data/trips.json` (campos `gallery`, `fotos`,
+            `photo`).
+
+            Rode `npm run audit` localmente para conferir todas as URLs antes de mergear.
+          labels: auto-sync, photos
+          add-paths: |
+            data/trips.json
