@@ -27,9 +27,12 @@ jobs:
           python-version: "3.11"
 
       - name: Install minimal deps
-        run: pip install python-dateutil
+        run: |
+          pip install python-dateutil
+          pip install -r scripts/requirements-validate.txt
 
       - name: Run unit tests (sem deps Google)
         run: |
           python scripts/test_parsers.py
           python scripts/test_matching.py
+          python scripts/test_auditor.py

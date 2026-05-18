@@ -1,0 +1,72 @@
+name: auditor
+
+on:
+  schedule:
+    # Toda segunda às 9h BRT (12h UTC). Cron: minute hour day month dow
+    - cron: "0 12 * * 1"
+  workflow_dispatch:
+    inputs:
+      simulate_today:
+        description: "Sobrescrever 'today' (YYYY-MM-DD) — útil para testar regras de prazo"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: scripts/requirements-validate.txt
+
+      - name: Install deps
+        run: pip install -r scripts/requirements-validate.txt
+
+      - name: Run auditor
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          AUDIT_TODAY: ${{ github.event.inputs.simulate_today }}
+        run: python scripts/auditor.py
+
+      - name: Check for report changes
+        id: diff
+        run: |
+          if git diff --quiet -- data/audit-report.md; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open PR if report changed
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/audit-report
+          delete-branch: true
+          title: "chore(audit): relatório semanal atualizado"
+          commit-message: "chore(audit): relatório semanal atualizado"
+          body: |
+            Relatório semanal do Auditor gerado por `scripts/auditor.py`.
+
+            Veja `data/audit-report.md` para os findings desta semana.
+
+            🤖 Workflow: `.github/workflows/audit.yml` (cron toda segunda 9h BRT)
+          labels: auto-audit
+          add-paths: |
+            data/audit-report.md
