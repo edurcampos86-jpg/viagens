@@ -1,4 +1,4 @@
-const VERSION = 'viagens-v4';
+const VERSION = 'viagens-v5-c4';
 const CORE = [
   './',
   './index.html',
@@ -11,7 +11,7 @@ const CORE = [
   'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css',
   'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css',
   'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&display=swap'
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap'
 ];
 
 self.addEventListener('install', e => {
