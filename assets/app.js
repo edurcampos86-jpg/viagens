@@ -263,6 +263,7 @@ function cacheDom() {
   el.emptyWishlist = el.noResults.querySelector('[data-empty-wishlist]');
   el.dashboardView = $('#dashboardView');
   el.timelineView = $('#timelineView');
+  el.memoriaView = $('#memoriaView');
 }
 
 // ── Theme ────────────────────────────────────────────────────────
@@ -289,6 +290,7 @@ function toggleTheme() {
   localStorage.setItem('theme', state.isDark ? 'dark' : 'light');
   applyTheme();
   if (map) updateMapTiles();
+  if (memMap) syncMemTile();
 }
 
 // ── Events ───────────────────────────────────────────────────────
@@ -2011,13 +2013,129 @@ function renderDashKanban(trips) {
     col('Wishlist',       'wish',      '★', wish);
 }
 
+// ── Modo Memória (Fase 4a) ───────────────────────────────────────
+let memMap, memTileLayer;
+
+function renderMemoria() {
+  const trips = state.trips || [];
+  const done = trips.filter(t => t.status === 'done')
+    .sort((a, b) => (b.year - a.year) || (b.month - a.month));
+
+  // Meta no header
+  const countries = new Set(done.map(t => t.country).filter(Boolean));
+  const continents = new Set(done.map(t => t.continent).filter(Boolean));
+  const totalKm = done.reduce((s, t) => s + (Number(t.km) || 0), 0);
+  const meta = $('#memMeta');
+  if (meta) meta.textContent =
+    `${done.length} viagens · ${countries.size} países · ${continents.size} continentes · ${Math.round(totalKm/1000)} mil km`;
+
+  // Mapa
+  if (!memMap) initMemMap(done);
+  else { memMap.invalidateSize(); syncMemTile(); }
+
+  // Timeline narrativa
+  renderMemTimeline(done);
+}
+
+function initMemMap(done) {
+  const container = document.getElementById('memMap');
+  if (!container || typeof L === 'undefined') return;
+  memMap = L.map('memMap', { zoomControl: true, scrollWheelZoom: false, worldCopyJump: true });
+  memMap.setView([15, 0], 2);
+  syncMemTile();
+  done.forEach(t => {
+    if (typeof t.lat !== 'number' || typeof t.lon !== 'number') return;
+    const icon = L.divIcon({
+      className: '',
+      html: '<div class="mem-pin"></div>',
+      iconSize: [16, 16],
+      iconAnchor: [8, 8],
+    });
+    L.marker([t.lat, t.lon], { icon })
+      .bindPopup(`<div style="font-weight:700">${t.flag || ''} ${t.name}</div><div style="font-size:11px;opacity:.65">${t.label || ''}</div>`)
+      .addTo(memMap);
+  });
+  // Garante render após view virar visível (Leaflet precisa do container medido)
+  setTimeout(() => memMap.invalidateSize(), 100);
+}
+
+function syncMemTile() {
+  if (!memMap || typeof L === 'undefined') return;
+  if (memTileLayer) memMap.removeLayer(memTileLayer);
+  memTileLayer = L.tileLayer(state.isDark ? TILES.dark : TILES.light, {
+    attribution: TILES_ATTR,
+    subdomains: 'abcd',
+    maxZoom: 18,
+  }).addTo(memMap);
+}
+
+function renderMemTimeline(done) {
+  const container = $('#memTimeline');
+  if (!container) return;
+
+  const porAno = {};
+  for (const t of done) (porAno[t.year] ||= []).push(t);
+  const anos = Object.keys(porAno).map(Number).sort((a, b) => b - a);
+
+  let altCount = 0;
+  container.innerHTML = anos.map(ano => {
+    const ents = porAno[ano];
+    const entriesHtml = ents.map(t => {
+      const side = altCount++ % 2 === 0 ? 'right' : 'left';
+      const imgUrl = (t.gallery && t.gallery[0])
+        || `https://picsum.photos/seed/${encodeURIComponent(t.id)}/800/600`;
+      return `
+        <article class="mem-entry ${side}">
+          <a class="mem-entry-photo" href="#plan/${t.id}" style="background-image:url(${imgUrl})" aria-label="Abrir ${t.name}"></a>
+          <div class="mem-entry-meta">
+            <div class="mem-entry-kicker">${t.label || ''} · ${CONTINENT_NAMES[t.continent] || ''}</div>
+            <h3 class="mem-entry-name"><a href="#plan/${t.id}">${t.name}</a></h3>
+            <div class="mem-entry-sub">${t.sub || ''}</div>
+            ${t.memory ? `<p class="mem-entry-memory">${t.memory}</p>` : ''}
+            <div class="mem-entry-tags">
+              ${t.nts ? `<span class="mem-entry-tag">${t.nts} noites</span>` : ''}
+              ${t.pax ? `<span class="mem-entry-tag">${t.pax}</span>` : ''}
+              ${t.km ? `<span class="mem-entry-tag">${fmtNumBR(t.km)} km</span>` : ''}
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+    return `
+      <div class="mem-year-block">
+        <div class="mem-year-marker">
+          <span class="mem-year-n">${ano}</span>
+          <div class="mem-year-narrative">${yearNarrative(ano, ents)}</div>
+        </div>
+        ${entriesHtml}
+      </div>
+    `;
+  }).join('');
+}
+
+function yearNarrative(year, ents) {
+  const continentes = new Set(ents.map(t => CONTINENT_NAMES[t.continent]).filter(Boolean));
+  const km = ents.reduce((s, t) => s + (Number(t.km) || 0), 0);
+  const tipos = new Set(ents.map(t => t.type).filter(Boolean));
+  const parts = [`${ents.length} ${ents.length === 1 ? 'viagem' : 'viagens'}`];
+  if (continentes.size) parts.push(`${continentes.size} ${continentes.size === 1 ? 'continente' : 'continentes'}`);
+  if (km >= 1000) parts.push(`${fmtNumBR(Math.round(km/1000))} mil km`);
+  if (tipos.has('adventure')) parts.push('aventura');
+  if (tipos.has('festival')) parts.push('festivais');
+  if (tipos.has('luxury')) parts.push('refúgio');
+  return parts.join(' · ');
+}
+
+function fmtNumBR(n) { return new Intl.NumberFormat('pt-BR').format(n); }
+
 // ── Routing (hash) ───────────────────────────────────────────────
 function initRouting() { applyHash(); }
 
 function showView(name) {
-  // name: 'dashboard' | 'timeline' | 'plan'
+  // name: 'dashboard' | 'memoria' | 'timeline' | 'plan'
   if (el.dashboardView) el.dashboardView.hidden = name !== 'dashboard';
   if (el.timelineView)  el.timelineView.hidden  = name !== 'timeline';
+  if (el.memoriaView)   el.memoriaView.hidden   = name !== 'memoria';
   // planPage controlled by openPlanPage/closePlanPage
 }
 
@@ -2052,11 +2170,18 @@ function applyHash() {
     return;
   }
 
-  // Modo Memória — timeline com viagens realizadas
-  if (h === 'memoria' || h === 'timeline') {
+  // Modo Memória — view dedicada (Fase 4a)
+  if (h === 'memoria') {
+    showView('memoria');
+    renderMemoria();
+    return;
+  }
+
+  // Timeline antiga com filtros completos (acessível via "ver tudo com filtros")
+  if (h === 'linha-do-tempo' || h === 'timeline') {
     showView('timeline');
-    state.filters.status = 'done';
-    syncStatusButtons('done');
+    state.filters.status = 'all';
+    syncStatusButtons('all');
     render();
     return;
   }

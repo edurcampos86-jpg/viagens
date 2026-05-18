@@ -1,4 +1,4 @@
-const VERSION = 'viagens-v6-dashboard';
+const VERSION = 'viagens-v7-memoria';
 const CORE = [
   './',
   './index.html',
