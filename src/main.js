@@ -8,47 +8,175 @@
 // Expõe `window.viagensV2` para inspeção via console.
 
 import { openTripEditor } from './components/trip-editor.js';
+import * as settings from './core/settings.js';
+import { upsertTrip, deleteTripById, commitMessageFor } from './core/trips-api.js';
 
 const v2 = (window.viagensV2 = window.viagensV2 || {});
 v2.openTripEditor = openTripEditor;
+v2.settings = settings;
 
-// Handler de save: substituído por F1.2 (GitHub API). Por padrão baixa um
-// rascunho .json para o usuário aplicar manualmente — fluxo fallback.
-v2.onSaveTrip =
-  v2.onSaveTrip ||
-  function defaultDownload(trip) {
-    const blob = new Blob([JSON.stringify(trip, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `trip-${trip.id || 'novo'}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(a.href);
-    console.info('[v2] Rascunho exportado:', trip.id);
+// ── Fallback: baixa rascunho .json para aplicar manualmente. ────────────
+function downloadDraft(trip) {
+  const blob = new Blob([JSON.stringify(trip, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `trip-${trip.id || 'novo'}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(a.href);
+  console.info('[v2] Rascunho exportado:', trip.id);
+}
+
+// ── Save handler: usa GitHub API se PAT desbloqueado; senão, baixa rascunho. ──
+async function saveTrip(trip) {
+  if (settings.isUnlocked()) {
+    await upsertTrip({
+      token: settings.getToken(),
+      trip,
+      message: commitMessageFor(trip),
+    });
+    console.info('[v2] commit criado:', trip.id);
+    return { committed: true };
+  }
+  downloadDraft(trip);
+  return { committed: false };
+}
+
+async function deleteTrip(id) {
+  if (!settings.isUnlocked()) throw new Error('Conecte e desbloqueie o PAT para excluir via API.');
+  await deleteTripById({ token: settings.getToken(), id });
+  console.info('[v2] commit de exclusão criado:', id);
+}
+
+v2.saveTrip = saveTrip;
+v2.deleteTrip = deleteTrip;
+
+// ── UI: modal mínimo para configurar/desbloquear PAT. ───────────────────
+function openPATModal() {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `position:fixed;inset:0;background:rgba(15,23,42,.55);
+    display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;`;
+  const modal = document.createElement('div');
+  modal.style.cssText = `background:#fff;color:#0f172a;padding:20px;border-radius:12px;
+    width:min(440px,100%);font:14px Inter,system-ui,sans-serif;
+    box-shadow:0 25px 50px -12px rgba(0,0,0,.35);`;
+  const configured = settings.isConfigured();
+  modal.innerHTML = `
+    <h2 style="margin:0 0 8px;font-size:16px;font-weight:700;">
+      ${configured ? 'Desbloquear PAT' : 'Configurar GitHub PAT'}
+    </h2>
+    <p style="margin:0 0 12px;color:#64748b;font-size:13px;">
+      ${configured
+        ? 'Digite sua senha mestra para desbloquear o PAT já configurado.'
+        : 'Cole um PAT com escopo <code>contents:write</code> no repo viagens. O token é cifrado com AES-256 (PBKDF2 200k iter) e fica só no seu navegador.'}
+    </p>
+    ${configured ? '' : `
+    <label style="display:block;margin-bottom:8px;">
+      <span style="display:block;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">PAT</span>
+      <input id="pat-input" type="password" autocomplete="off" placeholder="ghp_… ou github_pat_…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;"/>
+    </label>
+    `}
+    <label style="display:block;margin-bottom:12px;">
+      <span style="display:block;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Senha mestra</span>
+      <input id="pwd-input" type="password" autocomplete="off" placeholder="8+ caracteres" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;"/>
+    </label>
+    <div id="pat-err" style="color:#991b1b;background:#fef2f2;border:1px solid #fecaca;padding:6px 10px;border-radius:6px;font-size:13px;margin-bottom:8px;display:none;"></div>
+    <div style="display:flex;gap:8px;justify-content:space-between;">
+      <button id="pat-cancel" type="button" style="font:inherit;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer;">Cancelar</button>
+      <div style="display:flex;gap:8px;">
+        ${configured ? '<button id="pat-clear" type="button" style="font:inherit;padding:8px 12px;border:1px solid #fecaca;color:#b91c1c;background:#fff;border-radius:6px;cursor:pointer;">Limpar configuração</button>' : ''}
+        <button id="pat-submit" type="button" style="font:inherit;padding:8px 14px;border:0;border-radius:6px;background:#0f172a;color:#fff;cursor:pointer;">
+          ${configured ? 'Desbloquear' : 'Salvar'}
+        </button>
+      </div>
+    </div>
+  `;
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+  modal.querySelector('#pat-cancel').addEventListener('click', close);
+  const errBox = modal.querySelector('#pat-err');
+  const showErr = (m) => {
+    errBox.textContent = m;
+    errBox.style.display = 'block';
   };
 
-function injectFloatingButton() {
-  if (document.getElementById('v2-new-trip-fab')) return;
-  const btn = document.createElement('button');
-  btn.id = 'v2-new-trip-fab';
-  btn.type = 'button';
-  btn.textContent = '+ Nova viagem';
-  btn.title = 'Adicionar nova viagem (v2 alpha)';
-  btn.style.cssText = `
-    position: fixed; right: 20px; bottom: 20px; z-index: 9000;
-    background: #0f172a; color: #fff; border: 0; border-radius: 999px;
-    padding: 12px 18px; font: 600 14px Inter, system-ui, sans-serif;
-    box-shadow: 0 10px 20px -5px rgba(15,23,42,0.4); cursor: pointer;
-  `;
-  btn.addEventListener('click', () => {
-    openTripEditor({
-      mode: 'create',
-      onSave: (trip) => v2.onSaveTrip(trip),
-    });
+  modal.querySelector('#pat-clear')?.addEventListener('click', () => {
+    if (!confirm('Apagar PAT cifrado deste navegador? Você precisará configurar novamente.')) return;
+    settings.clear();
+    close();
+    updateBadge();
   });
-  document.body.appendChild(btn);
+
+  modal.querySelector('#pat-submit').addEventListener('click', async () => {
+    const password = modal.querySelector('#pwd-input').value;
+    try {
+      if (configured) {
+        await settings.unlock(password);
+      } else {
+        const token = modal.querySelector('#pat-input').value.trim();
+        await settings.setupPAT(token, password);
+      }
+      close();
+      updateBadge();
+    } catch (e) {
+      showErr(e.message);
+    }
+  });
 }
+
+function injectFloatingButton() {
+  if (document.getElementById('v2-fab-stack')) return;
+  const stack = document.createElement('div');
+  stack.id = 'v2-fab-stack';
+  stack.style.cssText = `position:fixed;right:20px;bottom:20px;z-index:9000;
+    display:flex;flex-direction:column;gap:8px;align-items:flex-end;`;
+
+  const badge = document.createElement('div');
+  badge.id = 'v2-pat-badge';
+  badge.style.cssText = `font:600 11px Inter,system-ui,sans-serif;color:#fff;
+    background:#475569;padding:4px 10px;border-radius:999px;cursor:pointer;
+    box-shadow:0 4px 10px -2px rgba(15,23,42,.3);`;
+  badge.addEventListener('click', openPATModal);
+
+  const newBtn = document.createElement('button');
+  newBtn.type = 'button';
+  newBtn.textContent = '+ Nova viagem';
+  newBtn.title = 'Adicionar nova viagem (v2 alpha)';
+  newBtn.style.cssText = `background:#0f172a;color:#fff;border:0;border-radius:999px;
+    padding:12px 18px;font:600 14px Inter,system-ui,sans-serif;
+    box-shadow:0 10px 20px -5px rgba(15,23,42,.4);cursor:pointer;`;
+  newBtn.addEventListener('click', () => {
+    openTripEditor({ mode: 'create', onSave: saveTrip });
+  });
+
+  stack.appendChild(badge);
+  stack.appendChild(newBtn);
+  document.body.appendChild(stack);
+  updateBadge();
+}
+
+function updateBadge() {
+  const badge = document.getElementById('v2-pat-badge');
+  if (!badge) return;
+  if (settings.isUnlocked()) {
+    badge.textContent = '🔓 PAT ativo — clique para gerenciar';
+    badge.style.background = '#16a34a';
+  } else if (settings.isConfigured()) {
+    badge.textContent = '🔒 PAT configurado — clique p/ desbloquear';
+    badge.style.background = '#ca8a04';
+  } else {
+    badge.textContent = '⚙ Configurar PAT (commit automático)';
+    badge.style.background = '#475569';
+  }
+}
+
+v2.openPATModal = openPATModal;
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', injectFloatingButton);
