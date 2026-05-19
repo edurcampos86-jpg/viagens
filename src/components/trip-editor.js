@@ -16,6 +16,7 @@ import { flagFromCountryCode, nominatimSearch, slugify, tripIdFrom } from '../co
 import { loadRules, injectChecklistItems, renderChecklist } from './checklist.js';
 import { deriveDatesFromBookings } from '../core/dates.js';
 import { renderBudget, mergeActual } from './budget.js';
+import { renderBenchmarkBanner } from './benchmark.js';
 
 let stylesInjected = false;
 
@@ -226,6 +227,14 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
   });
   notesInput.value = draft.notes?.general || '';
 
+  // Benchmark histórico — atualiza quando destino muda.
+  const benchmarkBox = el('div', { class: 'tev-bm-box' });
+  function refreshBenchmark() {
+    renderBenchmarkBanner(benchmarkBox, draft).catch((e) => {
+      benchmarkBox.textContent = `Benchmark indisponível: ${e.message}`;
+    });
+  }
+
   // Orçamento vivo — recalcula a partir de bookings.
   const budgetBox = el('div', { class: 'tev-bg-box' });
   function refreshBudget() {
@@ -300,6 +309,7 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
     activeSuggestionIndex = -1;
     renderIdMeta();
     refreshChecklist();
+    refreshBenchmark();
   }
 
   destInput.addEventListener('input', () => {
@@ -444,6 +454,10 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
       checklistBox,
     ]),
     el('div', { class: 'tev-row' }, [
+      el('label', {}, 'Benchmark próprio'),
+      benchmarkBox,
+    ]),
+    el('div', { class: 'tev-row' }, [
       el('label', {}, 'Orçamento (realizado / planejado)'),
       budgetBox,
     ]),
@@ -543,6 +557,7 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
   // Em modo edit/duplicate, dispara o refresh inicial da checklist.
   if (mode !== 'create') refreshChecklist();
   refreshBudget();
+  refreshBenchmark();
 
   return { close };
 }
