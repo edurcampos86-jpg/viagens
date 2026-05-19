@@ -1,0 +1,235 @@
+{
+  "version": "1.0",
+  "updated_at": "2026-05-19T00:00:00Z",
+  "fonte": "Regras consolidadas a partir de Itamaraty (gov.br/mre), Anvisa, OMS, CDC e guias de adaptadores eletricos (IEC).",
+  "rules": [
+    {
+      "match": { "country_code": "BR", "is_domestic": true },
+      "country_name": "Brasil",
+      "checklist_items": [
+        "RG ou CNH dentro da validade",
+        "Cartao de credito (nao depender so de Pix em rotas rurais)",
+        "Comprovante de vacinacao em dia para regioes de febre amarela (Pantanal, Norte)"
+      ],
+      "voltage": "127V/220V (varia por regiao)",
+      "drives_on": "right",
+      "currency": "BRL",
+      "visa_required_for_brazilians": false,
+      "vaccines_required": [],
+      "sources": {
+        "vaccines": "https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/f/febre-amarela"
+      }
+    },
+    {
+      "match": { "country_code": "US" },
+      "country_name": "Estados Unidos",
+      "checklist_items": [
+        "Passaporte valido por toda a estadia + 6 meses",
+        "Visto B1/B2 vigente OU pre-autorizacao via ESTA (se elegivel ao VWP)",
+        "Comprovante de hospedagem e passagem de retorno",
+        "Seguro saude internacional (sistema americano e caro)",
+        "Adaptador para tomada tipo A/B (110V/60Hz)"
+      ],
+      "voltage": "120V/60Hz",
+      "drives_on": "right",
+      "currency": "USD",
+      "visa_required_for_brazilians": true,
+      "vaccines_required": [],
+      "sources": {
+        "visa": "https://br.usembassy.gov/pt/visas-pt/",
+        "consulado": "https://br.usembassy.gov/"
+      }
+    },
+    {
+      "match": { "country_code": "TH" },
+      "country_name": "Tailandia",
+      "checklist_items": [
+        "Passaporte valido por 6 meses apos a entrada",
+        "Visto eletronico de turismo (validar elegibilidade VOA/eVisa)",
+        "Certificado Internacional de Vacinacao (febre amarela, exigido se vindo do Brasil)",
+        "Seguro saude com cobertura no Sudeste Asiatico",
+        "Repelente com DEET >= 30% (dengue + chikungunya)",
+        "Adaptador tipo A/B/C (220V)"
+      ],
+      "voltage": "220V/50Hz",
+      "drives_on": "left",
+      "currency": "THB",
+      "visa_required_for_brazilians": true,
+      "vaccines_required": ["Febre amarela (se vindo do Brasil)"],
+      "sources": {
+        "visa": "https://www.thaievisa.go.th/",
+        "vaccines": "https://wwwnc.cdc.gov/travel/destinations/traveler/none/thailand"
+      }
+    },
+    {
+      "match": { "country_code": "JP" },
+      "country_name": "Japao",
+      "checklist_items": [
+        "Passaporte valido por toda a estadia",
+        "Visto consular (Japao NAO da isencao a brasileiros ate 2026)",
+        "Comprovante de hospedagem e roteiro",
+        "Suica Card ou IC card carregado para metro/JR",
+        "Adaptador tipo A (100V/50-60Hz)"
+      ],
+      "voltage": "100V (50Hz Leste / 60Hz Oeste)",
+      "drives_on": "left",
+      "currency": "JPY",
+      "visa_required_for_brazilians": true,
+      "vaccines_required": [],
+      "sources": {
+        "visa": "https://www.br.emb-japan.go.jp/itpr_pt/visa.html"
+      }
+    },
+    {
+      "match": { "country_code": "ID" },
+      "country_name": "Indonesia",
+      "checklist_items": [
+        "Passaporte valido por 6 meses apos entrada + 2 paginas em branco",
+        "Visa on Arrival (VOA) ou eVisa B1 para turismo",
+        "Certificado Internacional de Vacinacao (febre amarela, se vindo do Brasil)",
+        "Seguro saude com cobertura asiatica",
+        "Repelente DEET >= 30% (regiao tropical)",
+        "Adaptador tipo C/F (230V)"
+      ],
+      "voltage": "230V/50Hz",
+      "drives_on": "left",
+      "currency": "IDR",
+      "visa_required_for_brazilians": true,
+      "vaccines_required": ["Febre amarela (se vindo do Brasil)"],
+      "sources": {
+        "visa": "https://molina.imigrasi.go.id/"
+      }
+    },
+    {
+      "match": { "region": "schengen" },
+      "country_name": "Espaco Schengen (generico)",
+      "applies_to": ["FR", "IT", "ES", "DE", "NL", "BE", "PT", "AT", "CH", "GR", "CZ", "HU", "PL", "DK", "SE", "NO", "FI", "IS", "LU", "EE", "LV", "LT", "MT", "SI", "SK", "HR"],
+      "checklist_items": [
+        "Passaporte valido por 3 meses apos saida prevista",
+        "EES (Sistema de Entrada/Saida) — biometria na fronteira a partir de 2025",
+        "ETIAS (autorizacao eletronica) — obrigatoria para brasileiros a partir de 2026",
+        "Seguro saude internacional com cobertura >= EUR 30.000",
+        "Comprovante de hospedagem, passagem de retorno e meios financeiros",
+        "Adaptador tipo C/E/F (230V)"
+      ],
+      "voltage": "230V/50Hz",
+      "drives_on": "right",
+      "currency": "EUR",
+      "visa_required_for_brazilians": false,
+      "vaccines_required": [],
+      "sources": {
+        "etias": "https://travel-europe.europa.eu/etias_en",
+        "ees": "https://travel-europe.europa.eu/ees_en"
+      }
+    },
+    {
+      "match": { "country_code": "GB" },
+      "country_name": "Reino Unido",
+      "checklist_items": [
+        "Passaporte valido por toda a estadia",
+        "ETA (Electronic Travel Authorisation) — obrigatoria para brasileiros desde 2025",
+        "Comprovante de hospedagem, passagem de retorno e meios financeiros",
+        "Seguro saude (NHS so cobre emergencias)",
+        "Adaptador tipo G (230V)"
+      ],
+      "voltage": "230V/50Hz",
+      "drives_on": "left",
+      "currency": "GBP",
+      "visa_required_for_brazilians": false,
+      "vaccines_required": [],
+      "sources": {
+        "eta": "https://www.gov.uk/guidance/apply-for-an-electronic-travel-authorisation-eta"
+      }
+    },
+    {
+      "match": { "country_code": "CL" },
+      "country_name": "Chile",
+      "checklist_items": [
+        "Documento de viagem valido (RG ate 10 anos OU passaporte)",
+        "Comprovante de hospedagem para entrada terrestre",
+        "Declaracao SAG ao desembarcar (sem alimentos de origem animal/vegetal)",
+        "Adaptador tipo C/L (220V)"
+      ],
+      "voltage": "220V/50Hz",
+      "drives_on": "right",
+      "currency": "CLP",
+      "visa_required_for_brazilians": false,
+      "vaccines_required": [],
+      "sources": {
+        "entrada": "https://www.gob.cl/"
+      }
+    },
+    {
+      "match": { "country_code": "AR" },
+      "country_name": "Argentina",
+      "checklist_items": [
+        "Documento de viagem (RG ate 10 anos OU passaporte) para Mercosul",
+        "Cartao de credito internacional (dolar/peso oficial vs blue: planejar)",
+        "Adaptador tipo C/I (220V)"
+      ],
+      "voltage": "220V/50Hz",
+      "drives_on": "right",
+      "currency": "ARS",
+      "visa_required_for_brazilians": false,
+      "vaccines_required": [],
+      "sources": {
+        "entrada": "https://www.argentina.gob.ar/migraciones"
+      }
+    },
+    {
+      "match": { "country_code": "MX" },
+      "country_name": "Mexico",
+      "checklist_items": [
+        "Passaporte valido por toda a estadia",
+        "FMM (forma migratoria) preenchida — entregue no voo ou no balcao",
+        "Seguro saude internacional",
+        "Adaptador tipo A/B (127V/60Hz)"
+      ],
+      "voltage": "127V/60Hz",
+      "drives_on": "right",
+      "currency": "MXN",
+      "visa_required_for_brazilians": false,
+      "vaccines_required": [],
+      "sources": {
+        "fmm": "https://www.inm.gob.mx/fmme/publico/solicitud.html"
+      }
+    },
+    {
+      "match": { "country_code": "PE" },
+      "country_name": "Peru",
+      "checklist_items": [
+        "Documento de viagem (RG ate 10 anos OU passaporte) para Mercosul",
+        "Vacina febre amarela recomendada para Amazonia/Madre de Dios",
+        "Folha de coca para sintomas de altitude (Cusco 3.400m)",
+        "Adaptador tipo A/B/C (220V)"
+      ],
+      "voltage": "220V/60Hz",
+      "drives_on": "right",
+      "currency": "PEN",
+      "visa_required_for_brazilians": false,
+      "vaccines_required": ["Febre amarela (Amazonia)"],
+      "sources": {
+        "vaccines": "https://wwwnc.cdc.gov/travel/destinations/traveler/none/peru"
+      }
+    },
+    {
+      "match": { "country_code": "CO" },
+      "country_name": "Colombia",
+      "checklist_items": [
+        "Passaporte valido por toda a estadia",
+        "Vacina febre amarela obrigatoria para sair do Brasil rumo a Colombia",
+        "Formulario Check-Mig 24h antes do embarque",
+        "Adaptador tipo A/B (110V/60Hz)"
+      ],
+      "voltage": "110V/60Hz",
+      "drives_on": "right",
+      "currency": "COP",
+      "visa_required_for_brazilians": false,
+      "vaccines_required": ["Febre amarela"],
+      "sources": {
+        "check_mig": "https://apps.migracioncolombia.gov.co/pre-registro/",
+        "vaccines": "https://www.gov.br/anvisa/pt-br/assuntos/viajante/cive"
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+# Não reformatar código existente — só arquivos novos em src/ e docs/.
+assets/
+data/
+icons/
+previews/
+dist/
+node_modules/
+.claude/
+sw.js
+index.html
+404.html
+CHANGELOG-UX.md
+*.lock
+package-lock.json

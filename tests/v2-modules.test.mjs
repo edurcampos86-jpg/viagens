@@ -1,0 +1,296 @@
+// Testes funcionais dos módulos puros da v2.0
+// Roda em Node 22 sem dependências extras.
+
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+
+const ROOT = new URL('..', import.meta.url).pathname;
+
+let passed = 0;
+let failed = 0;
+
+function test(name, fn) {
+  try {
+    fn();
+    console.log(`✓ ${name}`);
+    passed++;
+  } catch (e) {
+    console.error(`✗ ${name}\n  ${e.message}`);
+    failed++;
+  }
+}
+
+async function asyncTest(name, fn) {
+  try {
+    await fn();
+    console.log(`✓ ${name}`);
+    passed++;
+  } catch (e) {
+    console.error(`✗ ${name}\n  ${e.message}`);
+    failed++;
+  }
+}
+
+// ── schema.js ────────────────────────────────────────────────────────
+const schema = await import(`${ROOT}/src/core/schema.js`);
+
+test('schema.getDates: v2 trip with dates', () => {
+  const trip = { dates: { start: '2026-07-14', end: '2026-07-26' } };
+  const d = schema.getDates(trip);
+  assert.equal(d.start, '2026-07-14');
+  assert.equal(d.end, '2026-07-26');
+  assert.equal(d.nts, 12);
+  assert.equal(d.source, 'v2');
+});
+
+test('schema.getDates: v1 legacy trip (year/month/nts)', () => {
+  const trip = { year: 2021, month: 6, nts: 4 };
+  const d = schema.getDates(trip);
+  assert.equal(d.start, '2021-06-01');
+  assert.equal(d.end, '2021-06-05');
+  assert.equal(d.source, 'v1');
+});
+
+test('schema.getDates: empty trip', () => {
+  const d = schema.getDates({});
+  assert.equal(d.start, null);
+  assert.equal(d.source, 'unknown');
+});
+
+test('schema.validateTrip: valid v2 trip', () => {
+  const r = schema.validateTrip({
+    id: 'test-2026',
+    name: 'Teste',
+    status: 'planned',
+    lat: -23, lon: -46,
+    dates: { start: '2026-07-14', end: '2026-07-26' },
+  });
+  assert.equal(r.valid, true);
+  assert.equal(r.errors.length, 0);
+});
+
+test('schema.validateTrip: rejects start > end', () => {
+  const r = schema.validateTrip({
+    id: 't', name: 'X', status: 'planned', lat: 0, lon: 0,
+    dates: { start: '2026-07-26', end: '2026-07-14' },
+  });
+  assert.equal(r.valid, false);
+  assert.ok(r.errors.some((e) => e.includes('start > dates.end')));
+});
+
+test('schema.getBookings: v2 with bookings', () => {
+  const b = schema.getBookings({
+    bookings: { flights: [{ from: 'GRU' }], stays: [], experiences: [] },
+  });
+  assert.equal(b.flights.length, 1);
+  assert.equal(b.source, 'v2');
+});
+
+test('schema.getBookings: v1 legacy hospedagem', () => {
+  const b = schema.getBookings({
+    id: 'old', hospedagem: [{ nome: 'Aman' }],
+  });
+  assert.equal(b.stays.length, 1);
+  assert.equal(b.stays[0].name, 'Aman');
+  assert.equal(b.source, 'v1');
+});
+
+// ── dates.js ─────────────────────────────────────────────────────────
+const dates = await import(`${ROOT}/src/core/dates.js`);
+
+test('dates.deriveDatesFromBookings: from flights', () => {
+  const inferred = dates.deriveDatesFromBookings({
+    flights: [
+      { departure: '2026-07-14T22:30:00', arrival: '2026-07-15T10:00:00' },
+      { departure: '2026-07-26T08:00:00', arrival: '2026-07-26T18:00:00' },
+    ],
+    stays: [],
+    experiences: [],
+  });
+  assert.equal(inferred.start, '2026-07-14');
+  assert.equal(inferred.end, '2026-07-26');
+  assert.equal(inferred.nts, 12);
+  assert.equal(inferred.computed_from, 'flight');
+});
+
+test('dates.deriveDatesFromBookings: from stays only', () => {
+  const inferred = dates.deriveDatesFromBookings({
+    flights: [],
+    stays: [
+      { check_in: '2026-08-01', check_out: '2026-08-05' },
+      { check_in: '2026-08-05', check_out: '2026-08-10' },
+    ],
+  });
+  assert.equal(inferred.start, '2026-08-01');
+  assert.equal(inferred.end, '2026-08-10');
+  assert.equal(inferred.computed_from, 'stay');
+});
+
+test('dates.deriveDatesFromBookings: empty returns null', () => {
+  assert.equal(dates.deriveDatesFromBookings({ flights: [], stays: [] }), null);
+  assert.equal(dates.deriveDatesFromBookings(null), null);
+});
+
+// ── geo.js ───────────────────────────────────────────────────────────
+const geo = await import(`${ROOT}/src/core/geo.js`);
+
+test('geo.flagFromCountryCode: BR -> 🇧🇷', () => {
+  assert.equal(geo.flagFromCountryCode('BR'), '🇧🇷');
+  assert.equal(geo.flagFromCountryCode('us'), '🇺🇸');
+  assert.equal(geo.flagFromCountryCode(''), '');
+  assert.equal(geo.flagFromCountryCode('XYZ'), '');
+});
+
+test('geo.slugify: handles accents/special chars', () => {
+  assert.equal(geo.slugify('Bruxelas + Tomorrowland'), 'bruxelas-tomorrowland');
+  assert.equal(geo.slugify('São Paulo, Brasil'), 'sao-paulo-brasil');
+  assert.equal(geo.slugify(''), '');
+});
+
+test('geo.tripIdFrom: name + ISO date', () => {
+  assert.equal(geo.tripIdFrom('Bruxelas Trip', '2026-07-14'), 'bruxelas-trip-2026-07');
+  assert.equal(geo.tripIdFrom('Foo', null), 'foo');
+});
+
+// ── decision-matrix.js (computeScores) ────────────────────────────────
+const dm = await import(`${ROOT}/src/components/decision-matrix.js`);
+
+test('decision.computeScores: ranks correctly with weights', () => {
+  const decision = {
+    options: [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }],
+    criteria: [
+      { id: 'c1', label: 'C1', weight: 5 },
+      { id: 'c2', label: 'C2', weight: 1 },
+    ],
+    scores: {
+      a: { c1: 5, c2: 0 },    // 5*5 + 0*1 = 25
+      b: { c1: 0, c2: 5 },    // 0*5 + 5*1 = 5
+    },
+  };
+  const r = dm.computeScores(decision);
+  assert.equal(r.best.option.id, 'a');
+  assert.equal(r.results[0].option.id, 'a');
+  assert.equal(r.results[0].raw, 25);
+});
+
+// ── benchmark.js (compareTrip) ────────────────────────────────────────
+const bm = await import(`${ROOT}/src/components/benchmark.js`);
+
+test('benchmark.compareTrip: no data returns has_data=false', () => {
+  const r = bm.compareTrip(
+    { continent: 'Europe' },
+    { by_continent: {}, by_country: {}, hotels: [] }
+  );
+  assert.equal(r.has_data, false);
+});
+
+test('benchmark.compareTrip: continent stats present', () => {
+  const r = bm.compareTrip(
+    { continent: 'Europa', budget: { actual: { flights: 5000 } } },
+    {
+      by_continent: { Europa: { daily: { avg: 1200, n: 3 }, flight: { avg: 4500 } } },
+      by_country: {},
+      hotels: [],
+    }
+  );
+  assert.equal(r.has_data, true);
+  assert.ok(r.lines[0].includes('Europa'));
+  assert.ok(r.lines.some((l) => l.includes('11%')));  // 5000 vs 4500 ≈ +11%
+});
+
+// ── wizard.js (nextStep) ──────────────────────────────────────────────
+const wizard = await import(`${ROOT}/src/components/wizard.js`);
+
+test('wizard.nextStep: D > 90 → flight', () => {
+  const today = new Date('2026-01-01');
+  const trip = { dates: { start: '2026-07-14' } };
+  const p = wizard.nextStep(trip, today);
+  assert.equal(p.id, 'flight');
+  assert.equal(p.daysToStart, 194);
+});
+
+test('wizard.nextStep: D in 14..30 → compliance', () => {
+  const today = new Date('2026-06-25');
+  const trip = { dates: { start: '2026-07-14' } };
+  const p = wizard.nextStep(trip, today);
+  assert.equal(p.id, 'compliance');
+});
+
+test('wizard.nextStep: post-trip → done', () => {
+  const today = new Date('2026-12-01');
+  const trip = { dates: { start: '2026-07-14' } };
+  const p = wizard.nextStep(trip, today);
+  assert.equal(p.id, 'done');
+});
+
+// ── checklist.js (injectChecklistItems) ───────────────────────────────
+const cl = await import(`${ROOT}/src/components/checklist.js`);
+const rules = JSON.parse(readFileSync(`${ROOT}data/destination_rules.json`, 'utf8'));
+
+test('checklist: Tailândia injeta visto + febre amarela', () => {
+  const items = cl.injectChecklistItems([], { country_code: 'TH', country: 'Tailandia' }, rules);
+  const labels = items.map((it) => it.item).join(' | ');
+  assert.ok(labels.toLowerCase().includes('visto'), `nao achou visto: ${labels}`);
+  assert.ok(labels.toLowerCase().includes('febre amarela'), `nao achou febre amarela: ${labels}`);
+  assert.ok(items.every((it) => it.auto_added === true));
+});
+
+test('checklist: Brasil doméstico não pede visto', () => {
+  const items = cl.injectChecklistItems([], { country_code: 'BR', country: 'Brasil' }, rules);
+  const labels = items.map((it) => it.item).join(' | ').toLowerCase();
+  assert.ok(!labels.includes('visto'), `BR doméstico não deveria ter visto: ${labels}`);
+  assert.ok(labels.includes('rg') || labels.includes('cnh'));
+});
+
+test('checklist: Schengen genérico (FR) via applies_to', () => {
+  const items = cl.injectChecklistItems([], { country_code: 'FR', country: 'França' }, rules);
+  const labels = items.map((it) => it.item).join(' | ').toLowerCase();
+  assert.ok(labels.includes('etias') || labels.includes('schengen'), `FR deveria pegar schengen: ${labels}`);
+});
+
+test('checklist: injeção idempotente', () => {
+  const trip = { country_code: 'TH', country: 'Tailandia' };
+  const first = cl.injectChecklistItems([], trip, rules);
+  const second = cl.injectChecklistItems(first, trip, rules);
+  assert.equal(first.length, second.length, 'segunda chamada não deveria duplicar');
+});
+
+// ── customs.js (run for international trip) ───────────────────────────
+// Não testamos a UI; só a função pura `run` retornando estrutura esperada.
+const customs = await import(`${ROOT}/src/agents/customs.js`);
+
+await asyncTest('customs.run: viagem doméstica reporta só voltagem/direção', async () => {
+  // Para domésticas, passaporte/visto/vacinas/seguro são puladas (returns null);
+  // voltagem e direção continuam aparecendo como info útil.
+  const result = await customs.run({
+    trip: { country_code: 'BR', country: 'Brasil' },
+    profile: null,
+    rulesDoc: rules,
+  });
+  assert.equal(result.international, false);
+  const ids = result.items.map((it) => it.id).sort();
+  // Aceita voltagem + direção; nunca deve ter passport/visa/vaccines/insurance
+  for (const forbidden of ['passport', 'visa', 'vaccines', 'insurance']) {
+    assert.ok(!ids.includes(forbidden), `domestica nao deveria ter ${forbidden}: ${ids}`);
+  }
+});
+
+await asyncTest('customs.run: viagem internacional reporta itens', async () => {
+  const result = await customs.run({
+    trip: {
+      country_code: 'TH', country: 'Tailandia',
+      dates: { start: '2026-12-01', end: '2026-12-10' },
+    },
+    profile: null,
+    rulesDoc: rules,
+  });
+  assert.ok(result.items.length >= 4, `esperava 4+ itens, veio ${result.items.length}`);
+  assert.ok(result.items.every((it) => it.id && it.label && it.status && it.message));
+  assert.ok(['green', 'yellow', 'red'].includes(result.overall));
+});
+
+// ── Sumário ───────────────────────────────────────────────────────────
+console.log(`\n${passed} passed, ${failed} failed.`);
+if (failed > 0) process.exit(1);

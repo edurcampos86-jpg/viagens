@@ -1,0 +1,10 @@
+From: automated@airbnb.com
+Subject: Sua reserva está confirmada
+
+Reserva confirmada em Cidade do Cabo
+
+Check-in: 2026-02-10
+Check-out: 2026-02-15
+Total: R$ 3.150,00
+
+Anfitrião: Pieter (Superhost)

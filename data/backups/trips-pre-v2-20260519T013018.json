@@ -47,21 +47,7 @@
         {
           "nome": "Hotel das Cataratas"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2021-06-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "atacama-2021",
@@ -104,21 +90,7 @@
         {
           "nome": "Alto Atacama Desert Lodge"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2021-11-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "argentina-2021",
@@ -165,21 +137,7 @@
         {
           "nome": "Los Sauces (El Calafate)"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2021-12-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "florida-2022",
@@ -221,21 +179,7 @@
         {
           "nome": "Hard Rock Hotel Universal Orlando"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2022-01-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "punta-2022",
@@ -277,21 +221,7 @@
         {
           "nome": "L'Auberge Hotel"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2022-02-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "cartagena-2022",
@@ -334,21 +264,7 @@
         {
           "nome": "Hotel Tcherassi Spa + Hotel"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2022-03-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "ny-2022",
@@ -391,21 +307,7 @@
         {
           "nome": "The Knickerbocker"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2022-06-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "cancun-2022",
@@ -447,21 +349,7 @@
         {
           "nome": "Grand Hyatt Playa del Carmen"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2022-07-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "abc-2022",
@@ -503,21 +391,7 @@
         {
           "nome": "Bucuti & Tara Beach Resort (Aruba)"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2022-08-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "mykonos-2022",
@@ -559,21 +433,7 @@
         {
           "nome": "Cavo Tagoo Mykonos"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2022-09-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "lisboapo-2022",
@@ -621,21 +481,7 @@
         {
           "nome": "The Yeatman (Porto)"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2022-10-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "tailandia-2023",
@@ -677,21 +523,7 @@
         {
           "nome": "Mandarin Oriental Bangkok"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2023-01-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "houston-2023",
@@ -733,21 +565,7 @@
         {
           "nome": "The Post Oak Hotel"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2023-02-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "pragabud-2023",
@@ -794,21 +612,7 @@
         {
           "nome": "Four Seasons Gresham Palace Budapest"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2023-03-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "bali-2023",
@@ -854,21 +658,7 @@
         {
           "nome": "Alila Seminyak"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2023-03-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "machupicchu-2023",
@@ -910,21 +700,7 @@
         {
           "nome": "Inkaterra Machu Picchu Pueblo Hotel"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2023-04-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "italia-2023",
@@ -967,21 +743,7 @@
         {
           "nome": "Hotel de Russie"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2023-05-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "amsterda-2023",
@@ -1027,21 +789,7 @@
         {
           "nome": "Hotel Amigo (Bruxelas)"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2023-08-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "alemanha-2023",
@@ -1084,21 +832,7 @@
         {
           "nome": "Hotel Adlon Kempinski (Berlim)"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2023-10-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "japao-2023",
@@ -1145,21 +879,7 @@
         {
           "nome": "Aman Kyoto"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2023-10-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "patagonia-2024",
@@ -1204,21 +924,7 @@
         {
           "nome": "Explora Patagonia"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2024-01-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "santiago-2024",
@@ -1260,21 +966,7 @@
         {
           "nome": "The Singular Santiago"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2024-03-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "espanha-2024",
@@ -1322,21 +1014,7 @@
         {
           "nome": "Six Senses Ibiza"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2024-05-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "costarica-2024",
@@ -1382,21 +1060,7 @@
         {
           "nome": "Lapa Rios Lodge (Osa)"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2024-06-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "havai-2024",
@@ -1440,21 +1104,7 @@
         {
           "nome": "Halekulani Honolulu"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2024-07-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "mykonos-2025",
@@ -1498,21 +1148,7 @@
         {
           "nome": "Cavo Tagoo Mykonos"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2025-07-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "tailandia-2026",
@@ -1562,21 +1198,7 @@
         {
           "nome": "Rayavadee (Krabi)"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2026-01-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "africa-2026",
@@ -1624,21 +1246,7 @@
         {
           "nome": "One&Only Cape Town"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2026-03-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "noronha-2024",
@@ -1681,21 +1289,7 @@
         {
           "nome": "Pousada Maravilha"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2024-09-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "gramado-2023",
@@ -1738,21 +1332,7 @@
         {
           "nome": "Saint Andrews Hotel"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2023-07-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "rio-2023",
@@ -1795,21 +1375,7 @@
         {
           "nome": "Belmond Copacabana Palace"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2023-12-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "jericoacoara-2025",
@@ -1852,21 +1418,7 @@
         {
           "nome": "Vila Kalango"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2025-04-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "maragogi-2024",
@@ -1909,27 +1461,13 @@
         {
           "nome": "Salinas do Maragogi"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2024-11-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "sp-junho-2026",
       "name": "São Paulo — Só Track Boa + Pride",
       "sub": "São Paulo · SP",
-      "status": "planned",
+      "status": "em_planejamento",
       "continent": "Americas",
       "country": "Brasil",
       "flag": "🇧🇷",
@@ -1957,27 +1495,13 @@
         "hotels": [],
         "restaurants": [],
         "tips": "Passagem já comprada pela TAM. Falta hotel."
-      },
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2026-06-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      }
     },
     {
       "id": "europa-tomorrowland-2026",
       "name": "Europa — Tomorrowland Bélgica",
       "sub": "Boom · Bruxelas · Bélgica",
-      "status": "planned",
+      "status": "em_planejamento",
       "continent": "Europe",
       "country": "Bélgica",
       "flag": "🇧🇪",
@@ -2005,27 +1529,13 @@
         "hotels": [],
         "restaurants": [],
         "tips": "Contrato Tomorrowland assinado. Passagem comprada. Falta hotel em Boom/Bruxelas."
-      },
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2026-07-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      }
     },
     {
       "id": "brasilia-2026",
       "name": "Brasília — Festa da Lili",
       "sub": "Brasília · DF",
-      "status": "planned",
+      "status": "em_planejamento",
       "continent": "Americas",
       "country": "Brasil",
       "flag": "🇧🇷",
@@ -2052,27 +1562,13 @@
         "hotels": [],
         "restaurants": [],
         "tips": "Tudo confirmado: passagem, hospedagem, ingresso."
-      },
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2026-08-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      }
     },
     {
       "id": "sanisland-2026",
       "name": "San Island — Maldivas",
       "sub": "Male · Maldivas",
-      "status": "planned",
+      "status": "em_planejamento",
       "continent": "Asia",
       "country": "Maldivas",
       "flag": "🇲🇻",
@@ -2100,21 +1596,7 @@
         "hotels": [],
         "restaurants": [],
         "tips": "Viagem completa a planejar. Conexão DXB ou CMB."
-      },
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2026-10-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      }
     },
     {
       "id": "japao-2027",
@@ -2155,21 +1637,7 @@
         {
           "nome": "Park Hyatt Niseko Hanazono"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2027-02-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "marrocos-2027",
@@ -2210,21 +1678,7 @@
         {
           "nome": "La Mamounia (Marrakech)"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2027-04-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "noruega-2027",
@@ -2265,21 +1719,7 @@
         {
           "nome": "Juvet Landscape Hotel"
         }
-      ],
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2027-09-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      ]
     },
     {
       "id": "patagonia-wishlist",
@@ -2310,21 +1750,7 @@
         "hotels": [],
         "restaurants": [],
         "tips": "Temporada ideal: novembro a março."
-      },
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2028-01-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      }
     },
     {
       "id": "maldivas-luademel-wishlist",
@@ -2355,24 +1781,9 @@
         "hotels": [],
         "restaurants": [],
         "tips": "Monitorar promoções de resorts 5 estrelas."
-      },
-      "bookings": {
-        "flights": [],
-        "stays": [],
-        "experiences": []
-      },
-      "budget": {
-        "planned": {},
-        "actual": {},
-        "currency": "BRL"
-      },
-      "checklist": [],
-      "created_at": "2028-06-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
-      "_schema": 2
+      }
     }
   ],
-  "atualizado_em": "2026-05-19T01:30:18Z",
-  "fonte": "Mesclagem entre trips.json (GitHub Pages), index.html local e Google Photos Places · Fase 1b: hospedagem[] derivada de logistics.hotels[]",
-  "_schema": 2
+  "atualizado_em": "2026-05-17",
+  "fonte": "Mesclagem entre trips.json (GitHub Pages), index.html local e Google Photos Places · Fase 1b: hospedagem[] derivada de logistics.hotels[]"
 }
