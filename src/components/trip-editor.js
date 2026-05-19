@@ -14,6 +14,7 @@
 
 import { flagFromCountryCode, nominatimSearch, slugify, tripIdFrom } from '../core/geo.js';
 import { loadRules, injectChecklistItems, renderChecklist } from './checklist.js';
+import { deriveDatesFromBookings } from '../core/dates.js';
 
 let stylesInjected = false;
 
@@ -180,6 +181,45 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
   const startInput = el('input', { type: 'date', value: draft.dates?.start || '' });
   const endInput = el('input', { type: 'date', value: draft.dates?.end || '' });
 
+  // F2.5: botão para inferir datas a partir de bookings cadastrados.
+  const inferBtn = el('button', {
+    type: 'button',
+    class: 'tev-btn tev-btn-secondary',
+    style: 'padding: 4px 10px; font-size: 12px;',
+  }, '✈ Inferir do aéreo');
+  const datesProvenance = el('div', { class: 'tev-status-line' });
+
+  function refreshProvenance() {
+    const src = draft.dates?.computed_from;
+    if (!src) {
+      datesProvenance.textContent = '';
+      return;
+    }
+    const map = { flight: '✈ inferido do voo', stay: '🏨 inferido da hospedagem', manual: '✍ manual' };
+    datesProvenance.textContent = map[src] || src;
+  }
+  refreshProvenance();
+
+  inferBtn.addEventListener('click', () => {
+    const inferred = deriveDatesFromBookings(draft.bookings);
+    if (!inferred) {
+      datesProvenance.textContent = 'Sem bookings com datas — cadastre voos ou stays primeiro (via inbox de Gmail ou edição manual).';
+      return;
+    }
+    if (inferred.start) {
+      startInput.value = inferred.start;
+      draft.dates = { ...(draft.dates || {}), start: inferred.start };
+    }
+    if (inferred.end) {
+      endInput.value = inferred.end;
+      draft.dates = { ...(draft.dates || {}), end: inferred.end };
+    }
+    draft.dates.computed_from = inferred.computed_from;
+    if (inferred.nts != null) draft.nts = inferred.nts;
+    refreshProvenance();
+    renderIdMeta();
+  });
+
   const notesInput = el('textarea', {
     placeholder: 'Notas gerais (markdown OK)',
   });
@@ -314,7 +354,15 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
   });
 
   nameInput.addEventListener('input', renderIdMeta);
-  startInput.addEventListener('input', renderIdMeta);
+  startInput.addEventListener('input', () => {
+    if (draft.dates) draft.dates.computed_from = 'manual';
+    refreshProvenance();
+    renderIdMeta();
+  });
+  endInput.addEventListener('input', () => {
+    if (draft.dates) draft.dates.computed_from = 'manual';
+    refreshProvenance();
+  });
 
   // Se for edição, preencher metadados do destino sem fazer busca
   if (mode !== 'create' && draft.lat != null && draft.lon != null) {
@@ -355,6 +403,10 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
     el('div', { class: 'tev-row row-2' }, [
       el('div', { class: 'tev-row' }, [el('label', {}, 'Início'), startInput]),
       el('div', { class: 'tev-row' }, [el('label', {}, 'Fim'), endInput]),
+    ]),
+    el('div', { class: 'tev-row', style: 'flex-direction: row; align-items: center; gap: 8px;' }, [
+      inferBtn,
+      datesProvenance,
     ]),
     el('div', { class: 'tev-row' }, [
       el('label', {}, 'Status'),
