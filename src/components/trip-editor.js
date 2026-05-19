@@ -15,6 +15,7 @@
 import { flagFromCountryCode, nominatimSearch, slugify, tripIdFrom } from '../core/geo.js';
 import { loadRules, injectChecklistItems, renderChecklist } from './checklist.js';
 import { deriveDatesFromBookings } from '../core/dates.js';
+import { renderBudget, mergeActual } from './budget.js';
 
 let stylesInjected = false;
 
@@ -225,6 +226,27 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
   });
   notesInput.value = draft.notes?.general || '';
 
+  // Orçamento vivo — recalcula a partir de bookings.
+  const budgetBox = el('div', { class: 'tev-bg-box' });
+  function refreshBudget() {
+    renderBudget(budgetBox, draft, {
+      onChange: ({ planned, actual }) => {
+        draft.budget = {
+          ...(draft.budget || {}),
+          planned,
+          actual,
+          currency: 'BRL',
+        };
+      },
+    });
+    // Atualiza draft.budget.actual já com o cálculo inicial
+    draft.budget = {
+      ...(draft.budget || {}),
+      actual: mergeActual(draft),
+      currency: 'BRL',
+    };
+  }
+
   // Checklist contextual — popula automaticamente quando destino muda.
   const checklistBox = el('div', { class: 'tev-cl-box' });
   const checklistMeta = el('div', { class: 'tev-status-line' }, 'Selecione um destino para gerar checklist contextual.');
@@ -421,6 +443,10 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
       checklistMeta,
       checklistBox,
     ]),
+    el('div', { class: 'tev-row' }, [
+      el('label', {}, 'Orçamento (realizado / planejado)'),
+      budgetBox,
+    ]),
   ]);
 
   const modal = el('div', { class: 'tev-modal', role: 'dialog', 'aria-modal': 'true' }, [
@@ -516,6 +542,7 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
 
   // Em modo edit/duplicate, dispara o refresh inicial da checklist.
   if (mode !== 'create') refreshChecklist();
+  refreshBudget();
 
   return { close };
 }
