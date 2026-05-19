@@ -15,6 +15,11 @@ import * as backend from './core/backend.js';
 import { openInbox } from './components/inbox.js';
 import * as dates from './core/dates.js';
 import { renderHeatmap, computeYearData } from './components/heatmap.js';
+import {
+  openDecisionMatrix,
+  computeScores,
+  attachDecisionToTrip,
+} from './components/decision-matrix.js';
 
 const v2 = (window.viagensV2 = window.viagensV2 || {});
 v2.openTripEditor = openTripEditor;
@@ -25,6 +30,9 @@ v2.openInbox = openInbox;
 v2.dates = dates;
 v2.renderHeatmap = renderHeatmap;
 v2.computeYearData = computeYearData;
+v2.openDecisionMatrix = openDecisionMatrix;
+v2.computeScores = computeScores;
+v2.attachDecisionToTrip = attachDecisionToTrip;
 
 // Captura tokens do magic link assim que carrega.
 try {
@@ -215,6 +223,19 @@ function injectFloatingButton() {
   heatmapBadge.textContent = '📅 Heatmap anual';
   heatmapBadge.addEventListener('click', openHeatmapModal);
 
+  const decisionBadge = document.createElement('div');
+  decisionBadge.id = 'v2-decision-badge';
+  decisionBadge.style.cssText = `font:600 11px Inter,system-ui,sans-serif;color:#fff;
+    background:#ea580c;padding:4px 10px;border-radius:999px;cursor:pointer;
+    box-shadow:0 4px 10px -2px rgba(15,23,42,.3);`;
+  decisionBadge.textContent = '🧭 Matriz de decisão';
+  decisionBadge.addEventListener('click', () => openDecisionMatrix({
+    onSave: (decision) => {
+      console.info('[v2] decisão salva (sem trip atrelado):', decision);
+      alert(`Decisão registrada localmente. Para anexar a uma viagem, use viagensV2.attachDecisionToTrip(trip, decision) + viagensV2.openTripEditor.`);
+    },
+  }));
+
   const newBtn = document.createElement('button');
   newBtn.type = 'button';
   newBtn.textContent = '+ Nova viagem';
@@ -236,6 +257,7 @@ function injectFloatingButton() {
   stack.appendChild(beBadge);
   stack.appendChild(inboxBadge);
   stack.appendChild(heatmapBadge);
+  stack.appendChild(decisionBadge);
   stack.appendChild(hint);
   stack.appendChild(newBtn);
   document.body.appendChild(stack);
