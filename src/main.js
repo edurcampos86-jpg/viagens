@@ -13,6 +13,7 @@ import { upsertTrip, deleteTripById, commitMessageFor } from './core/trips-api.j
 import * as customs from './agents/customs.js';
 import * as priceHunter from './agents/price-hunter.js';
 import * as concierge from './agents/concierge.js';
+import * as chronicler from './agents/chronicler.js';
 import * as backend from './core/backend.js';
 import { openInbox } from './components/inbox.js';
 import * as dates from './core/dates.js';
@@ -29,9 +30,26 @@ v2.settings = settings;
 v2.customs = customs;
 v2.priceHunter = priceHunter;
 v2.concierge = concierge;
+v2.chronicler = chronicler;
 v2['concierge'] = (trip) => concierge.openConciergeModal(trip);
 v2['price-hunter'] = (_trip) => priceHunter.openPriceHunterModal();
 v2['customs'] = (trip) => customs.run({ trip }).then((r) => openCustomsForTrip(trip));
+v2['chronicler'] = (trip) => chronicler.openChroniclerModal(trip, {
+  onSave: async (next) => {
+    if (settings.isUnlocked()) {
+      await upsertTrip({ token: settings.getToken(), trip: next });
+      alert('Memória salva e commitada!');
+    } else {
+      const blob = new Blob([JSON.stringify(next, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `trip-${next.id}-cronista.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      alert('PAT não desbloqueado — rascunho baixado. Aplique manualmente.');
+    }
+  },
+});
 v2.backend = backend;
 v2.openInbox = openInbox;
 v2.dates = dates;
