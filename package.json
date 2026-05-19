@@ -11,7 +11,10 @@
     "lint": "eslint \"assets/**/*.js\" \"src/**/*.js\"",
     "lint:fix": "eslint --fix \"assets/**/*.js\" \"src/**/*.js\"",
     "format": "prettier --write \"src/**/*.{js,css,html,md}\" \"docs/**/*.md\"",
-    "format:check": "prettier --check \"src/**/*.{js,css,html,md}\" \"docs/**/*.md\""
+    "format:check": "prettier --check \"src/**/*.{js,css,html,md}\" \"docs/**/*.md\"",
+    "test": "node tests/v2-modules.test.mjs",
+    "test:migration": "python3 scripts/migrate_v1_to_v2.py --dry-run",
+    "test:benchmarks": "python3 scripts/compute_benchmarks.py --dry-run"
   },
   "devDependencies": {
     "eslint": "^9.18.0",
