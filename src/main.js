@@ -14,6 +14,7 @@ import * as customs from './agents/customs.js';
 import * as backend from './core/backend.js';
 import { openInbox } from './components/inbox.js';
 import * as dates from './core/dates.js';
+import { renderHeatmap, computeYearData } from './components/heatmap.js';
 
 const v2 = (window.viagensV2 = window.viagensV2 || {});
 v2.openTripEditor = openTripEditor;
@@ -22,6 +23,8 @@ v2.customs = customs;
 v2.backend = backend;
 v2.openInbox = openInbox;
 v2.dates = dates;
+v2.renderHeatmap = renderHeatmap;
+v2.computeYearData = computeYearData;
 
 // Captura tokens do magic link assim que carrega.
 try {
@@ -204,6 +207,14 @@ function injectFloatingButton() {
   inboxBadge.textContent = '📥 Sugestões do Gmail';
   inboxBadge.addEventListener('click', openInbox);
 
+  const heatmapBadge = document.createElement('div');
+  heatmapBadge.id = 'v2-heatmap-badge';
+  heatmapBadge.style.cssText = `font:600 11px Inter,system-ui,sans-serif;color:#fff;
+    background:#15803d;padding:4px 10px;border-radius:999px;cursor:pointer;
+    box-shadow:0 4px 10px -2px rgba(15,23,42,.3);`;
+  heatmapBadge.textContent = '📅 Heatmap anual';
+  heatmapBadge.addEventListener('click', openHeatmapModal);
+
   const newBtn = document.createElement('button');
   newBtn.type = 'button';
   newBtn.textContent = '+ Nova viagem';
@@ -224,6 +235,7 @@ function injectFloatingButton() {
   stack.appendChild(badge);
   stack.appendChild(beBadge);
   stack.appendChild(inboxBadge);
+  stack.appendChild(heatmapBadge);
   stack.appendChild(hint);
   stack.appendChild(newBtn);
   document.body.appendChild(stack);
@@ -354,6 +366,37 @@ function openBackendModal() {
 }
 
 v2.openBackendModal = openBackendModal;
+
+// ── Heatmap modal (F3.1) ───────────────────────────────────────────────
+async function openHeatmapModal() {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `position:fixed;inset:0;background:rgba(15,23,42,.55);
+    display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;`;
+  const modal = document.createElement('div');
+  modal.style.cssText = `background:#fff;color:#0f172a;padding:20px;border-radius:12px;
+    width:min(820px,100%);max-height:90vh;overflow:auto;
+    box-shadow:0 25px 50px -12px rgba(0,0,0,.35);font:14px Inter,system-ui,sans-serif;`;
+  modal.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <strong>📅 Heatmap anual de viagens</strong>
+      <button id="hm-close" type="button" style="background:transparent;border:0;font-size:22px;cursor:pointer;color:#64748b;">×</button>
+    </div>
+    <div id="hm-content">Carregando…</div>
+  `;
+  overlay.appendChild(modal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+  modal.querySelector('#hm-close').addEventListener('click', () => overlay.remove());
+  document.body.appendChild(overlay);
+
+  try {
+    const res = await fetch('data/trips.json', { cache: 'no-cache' });
+    const data = await res.json();
+    renderHeatmap(modal.querySelector('#hm-content'), { trips: data.trips });
+  } catch (e) {
+    modal.querySelector('#hm-content').textContent = `Erro: ${e.message}`;
+  }
+}
+v2.openHeatmap = openHeatmapModal;
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', injectFloatingButton);
