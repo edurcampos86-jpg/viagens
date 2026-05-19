@@ -11,11 +11,20 @@ import { openTripEditor } from './components/trip-editor.js';
 import * as settings from './core/settings.js';
 import { upsertTrip, deleteTripById, commitMessageFor } from './core/trips-api.js';
 import * as customs from './agents/customs.js';
+import * as backend from './core/backend.js';
 
 const v2 = (window.viagensV2 = window.viagensV2 || {});
 v2.openTripEditor = openTripEditor;
 v2.settings = settings;
 v2.customs = customs;
+v2.backend = backend;
+
+// Captura tokens do magic link assim que carrega.
+try {
+  backend.captureSessionFromUrl();
+} catch (e) {
+  console.warn('[v2] captureSessionFromUrl falhou:', e);
+}
 
 // ── Fallback: baixa rascunho .json para aplicar manualmente. ────────────
 function downloadDraft(trip) {
@@ -175,6 +184,14 @@ function injectFloatingButton() {
     box-shadow:0 4px 10px -2px rgba(15,23,42,.3);`;
   badge.addEventListener('click', openPATModal);
 
+  const beBadge = document.createElement('div');
+  beBadge.id = 'v2-be-badge';
+  beBadge.style.cssText = `font:600 11px Inter,system-ui,sans-serif;color:#fff;
+    background:#0891b2;padding:4px 10px;border-radius:999px;cursor:pointer;
+    box-shadow:0 4px 10px -2px rgba(15,23,42,.3);`;
+  beBadge.textContent = '🛠 Backend & Gmail';
+  beBadge.addEventListener('click', openBackendModal);
+
   const newBtn = document.createElement('button');
   newBtn.type = 'button';
   newBtn.textContent = '+ Nova viagem';
@@ -193,6 +210,7 @@ function injectFloatingButton() {
   hint.innerHTML = 'Console: <code>viagensV2.openCustoms(trip)</code>';
 
   stack.appendChild(badge);
+  stack.appendChild(beBadge);
   stack.appendChild(hint);
   stack.appendChild(newBtn);
   document.body.appendChild(stack);
@@ -215,6 +233,114 @@ function updateBadge() {
 }
 
 v2.openPATModal = openPATModal;
+
+// ── Modal de backend (Supabase + Gmail) ────────────────────────────────
+function openBackendModal() {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `position:fixed;inset:0;background:rgba(15,23,42,.55);
+    display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;`;
+  const modal = document.createElement('div');
+  modal.style.cssText = `background:#fff;color:#0f172a;padding:20px;border-radius:12px;
+    width:min(480px,100%);font:14px Inter,system-ui,sans-serif;max-height:90vh;overflow:auto;
+    box-shadow:0 25px 50px -12px rgba(0,0,0,.35);`;
+  const cfg = backend.getConfig();
+  const authed = backend.isAuthenticated();
+  modal.innerHTML = `
+    <h2 style="margin:0 0 8px;font-size:16px;font-weight:700;">Backend de integrações</h2>
+    <p style="margin:0 0 12px;color:#64748b;font-size:13px;">
+      Opcional. Conecte um projeto Supabase para habilitar Gmail/preços/etc.
+      Sem isso, o site funciona em modo só-memória + commits via PAT.
+    </p>
+    <fieldset style="border:1px solid #e2e8f0;padding:12px;border-radius:8px;margin-bottom:12px;">
+      <legend style="font-size:12px;color:#475569;padding:0 6px;">1. Conexão Supabase</legend>
+      <label style="display:block;margin-bottom:8px;">
+        <span style="display:block;font-size:11px;color:#475569;margin-bottom:2px;">URL do projeto</span>
+        <input id="be-url" type="url" placeholder="https://xxxxx.supabase.co"
+          value="${cfg?.url || ''}"
+          style="width:100%;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;"/>
+      </label>
+      <label style="display:block;margin-bottom:8px;">
+        <span style="display:block;font-size:11px;color:#475569;margin-bottom:2px;">Anon key (pública)</span>
+        <input id="be-anon" type="text" placeholder="eyJhbGciOi..."
+          value="${cfg?.anonKey || ''}"
+          style="width:100%;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;font-family:monospace;font-size:11px;"/>
+      </label>
+      <button id="be-save" type="button" style="font:inherit;padding:6px 12px;border:0;border-radius:6px;background:#0f172a;color:#fff;cursor:pointer;">Salvar conexão</button>
+      ${cfg ? '<button id="be-clear" type="button" style="font:inherit;padding:6px 12px;border:1px solid #fecaca;color:#b91c1c;border-radius:6px;background:#fff;margin-left:6px;cursor:pointer;">Desconectar</button>' : ''}
+    </fieldset>
+    ${cfg ? `
+    <fieldset style="border:1px solid #e2e8f0;padding:12px;border-radius:8px;margin-bottom:12px;">
+      <legend style="font-size:12px;color:#475569;padding:0 6px;">2. Login (magic link)</legend>
+      ${authed ? `
+        <div style="font-size:13px;color:#16a34a;">Sessão ativa.</div>
+        <button id="be-signout" type="button" style="margin-top:6px;font:inherit;padding:6px 12px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer;">Sair</button>
+      ` : `
+        <label style="display:block;margin-bottom:6px;">
+          <span style="display:block;font-size:11px;color:#475569;">Seu e-mail</span>
+          <input id="be-email" type="email" placeholder="voce@exemplo.com" style="width:100%;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;"/>
+        </label>
+        <button id="be-magic" type="button" style="font:inherit;padding:6px 12px;border:0;border-radius:6px;background:#0f172a;color:#fff;cursor:pointer;">Enviar magic link</button>
+      `}
+    </fieldset>
+    ${authed ? `
+    <fieldset style="border:1px solid #e2e8f0;padding:12px;border-radius:8px;">
+      <legend style="font-size:12px;color:#475569;padding:0 6px;">3. Conectar Gmail</legend>
+      <p style="margin:0 0 6px;font-size:13px;color:#475569;">Scope <code>gmail.readonly</code>. Tokens ficam cifrados no Supabase.</p>
+      <button id="be-gmail" type="button" style="font:inherit;padding:6px 12px;border:0;border-radius:6px;background:#dc2626;color:#fff;cursor:pointer;">Conectar Gmail →</button>
+    </fieldset>
+    ` : ''}
+    ` : ''}
+    <div id="be-err" style="color:#991b1b;background:#fef2f2;border:1px solid #fecaca;padding:6px 10px;border-radius:6px;font-size:13px;margin-top:8px;display:none;"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+      <button id="be-close" type="button" style="font:inherit;padding:6px 12px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer;">Fechar</button>
+    </div>
+  `;
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  const close = () => overlay.remove();
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  modal.querySelector('#be-close').addEventListener('click', close);
+
+  const err = modal.querySelector('#be-err');
+  const showErr = (m) => { err.textContent = m; err.style.display = 'block'; };
+
+  modal.querySelector('#be-save').addEventListener('click', () => {
+    try {
+      backend.setConfig({
+        url: modal.querySelector('#be-url').value.trim(),
+        anonKey: modal.querySelector('#be-anon').value.trim(),
+      });
+      close();
+      openBackendModal();
+    } catch (e) { showErr(e.message); }
+  });
+  modal.querySelector('#be-clear')?.addEventListener('click', () => {
+    if (!confirm('Remover configuração do backend?')) return;
+    backend.clearConfig();
+    close();
+    updateBadge();
+  });
+  modal.querySelector('#be-magic')?.addEventListener('click', async () => {
+    const email = modal.querySelector('#be-email').value.trim();
+    if (!email) return showErr('E-mail obrigatório');
+    try {
+      await backend.signInWithEmail(email);
+      showErr('Magic link enviado — verifique seu e-mail. Após o clique você volta para cá autenticado.');
+    } catch (e) { showErr(e.message); }
+  });
+  modal.querySelector('#be-signout')?.addEventListener('click', () => {
+    backend.signOut();
+    close();
+    openBackendModal();
+  });
+  modal.querySelector('#be-gmail')?.addEventListener('click', () => {
+    try {
+      window.location.href = backend.buildGmailOAuthStartUrl();
+    } catch (e) { showErr(e.message); }
+  });
+}
+
+v2.openBackendModal = openBackendModal;
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', injectFloatingButton);
