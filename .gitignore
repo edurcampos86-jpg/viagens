@@ -10,6 +10,18 @@ client_secret.json
 token.json
 *.credentials
 
+# Environment / secrets (v2.0)
+.env
+.env.local
+.env.*.local
+secrets.*
+*.secret
+
+# Node / Vite
+node_modules/
+dist/
+.vite/
+
 # OS
 .DS_Store
 Thumbs.db
