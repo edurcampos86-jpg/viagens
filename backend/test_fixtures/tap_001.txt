@@ -1,0 +1,15 @@
+From: noreply@flytap.com
+Subject: Confirmação da sua reserva — TP1234
+
+Olá Eduardo,
+
+Sua reserva foi confirmada com sucesso!
+
+Localizador: ABC123
+Voos:
+TP 1234 GRU → LIS  Saída: 2026-07-14T22:30
+TP 567 LIS → BRU  Saída: 2026-07-15T10:15
+
+Valor total: R$ 4.890,00
+
+Obrigado por voar com a TAP.
