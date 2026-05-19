@@ -1,59 +1,20 @@
-const VERSION = 'viagens-v9-edicoes';
-const CORE = [
-  './',
-  './index.html',
-  './data/trips.json',
-  './manifest.webmanifest',
-  './icons/icon-192.svg',
-  './icons/icon-512.svg',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-  'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css',
-  'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css',
-  'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap'
-];
+// Stub do Service Worker antigo — redireciona para o SW v2 (Workbox).
+// Mantido para compatibilidade com manifest.webmanifest e instalações
+// existentes. Ao detectar uma versão antiga, expira e desregistra.
+//
+// O SW novo está em src/pwa/sw-workbox.js e é registrado por src/main.js.
 
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE).catch(() => {})));
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
-  if (e.request.method !== 'GET') return;
-
-  // Map tiles: cache-first, long-lived
-  if (url.hostname.includes('basemaps.cartocdn.com') || url.hostname.includes('tile.openstreetmap')) {
-    e.respondWith(
-      caches.open(VERSION + '-tiles').then(cache =>
-        cache.match(e.request).then(hit => hit || fetch(e.request).then(res => {
-          if (res.ok) cache.put(e.request, res.clone());
-          return res;
-        }).catch(() => hit))
-      )
-    );
-    return;
-  }
-
-  // App shell + JSON: stale-while-revalidate
-  e.respondWith(
-    caches.open(VERSION).then(cache =>
-      cache.match(e.request).then(hit => {
-        const fetcher = fetch(e.request).then(res => {
-          if (res.ok) cache.put(e.request, res.clone());
-          return res;
-        }).catch(() => hit);
-        return hit || fetcher;
-      })
-    )
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (async () => {
+      // Limpa caches antigos
+      const keys = await caches.keys();
+      await Promise.all(keys.filter((k) => k.startsWith('viagens-v')).map((k) => caches.delete(k)));
+      // Self-destroy: o cliente vai re-registrar o SW novo via src/main.js
+      await self.registration.unregister();
+      const clients = await self.clients.matchAll({ type: 'window' });
+      for (const c of clients) c.navigate(c.url);
+    })()
   );
 });

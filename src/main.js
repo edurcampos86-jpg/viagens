@@ -14,6 +14,8 @@ import * as customs from './agents/customs.js';
 import * as priceHunter from './agents/price-hunter.js';
 import * as concierge from './agents/concierge.js';
 import * as chronicler from './agents/chronicler.js';
+import * as syncQueue from './pwa/sync-queue.js';
+import * as push from './pwa/push.js';
 import * as backend from './core/backend.js';
 import { openInbox } from './components/inbox.js';
 import * as dates from './core/dates.js';
@@ -31,6 +33,8 @@ v2.customs = customs;
 v2.priceHunter = priceHunter;
 v2.concierge = concierge;
 v2.chronicler = chronicler;
+v2.syncQueue = syncQueue;
+v2.push = push;
 v2['concierge'] = (trip) => concierge.openConciergeModal(trip);
 v2['price-hunter'] = (_trip) => priceHunter.openPriceHunterModal();
 v2['customs'] = (trip) => customs.run({ trip }).then((r) => openCustomsForTrip(trip));
@@ -66,6 +70,33 @@ try {
   console.warn('[v2] captureSessionFromUrl falhou:', e);
 }
 
+// Registra o Service Worker v2 (Workbox) — substitui o sw.js antigo.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('src/pwa/sw-workbox.js', { scope: './' })
+      .then((reg) => {
+        console.info('[v2] SW Workbox registrado:', reg.scope);
+      })
+      .catch((e) => console.warn('[v2] SW Workbox registration failed:', e));
+  });
+  // SW dispara mensagem 'flush-edit-queue' quando volta online
+  navigator.serviceWorker.addEventListener('message', async (e) => {
+    if (e.data?.type === 'flush-edit-queue' && settings.isUnlocked()) {
+      const result = await syncQueue.flush(async (op) => {
+        if (op.kind === 'upsert') {
+          await upsertTrip({ token: settings.getToken(), trip: op.trip, message: op.message });
+        } else if (op.kind === 'delete') {
+          await deleteTripById({ token: settings.getToken(), id: op.id, message: op.message });
+        }
+      });
+      if (result.processed) {
+        console.info(`[v2] sync queue: ${result.processed} drenadas, ${result.remaining} restantes.`);
+      }
+    }
+  });
+}
+
 // ── Fallback: baixa rascunho .json para aplicar manualmente. ────────────
 function downloadDraft(trip) {
   const blob = new Blob([JSON.stringify(trip, null, 2)], { type: 'application/json' });
@@ -82,13 +113,38 @@ function downloadDraft(trip) {
 // ── Save handler: usa GitHub API se PAT desbloqueado; senão, baixa rascunho. ──
 async function saveTrip(trip) {
   if (settings.isUnlocked()) {
-    await upsertTrip({
-      token: settings.getToken(),
-      trip,
-      message: commitMessageFor(trip),
-    });
-    console.info('[v2] commit criado:', trip.id);
-    return { committed: true };
+    if (!navigator.onLine) {
+      // Offline: enfileira para retentar quando voltar
+      await syncQueue.enqueue({
+        kind: 'upsert',
+        trip,
+        message: commitMessageFor(trip),
+      });
+      await syncQueue.requestSync();
+      console.info('[v2] offline — viagem enfileirada para sync:', trip.id);
+      return { committed: false, queued: true };
+    }
+    try {
+      await upsertTrip({
+        token: settings.getToken(),
+        trip,
+        message: commitMessageFor(trip),
+      });
+      console.info('[v2] commit criado:', trip.id);
+      return { committed: true };
+    } catch (e) {
+      // Falha de rede transitória: enfileira
+      if (e.message?.includes('NetworkError') || e.message?.includes('fetch')) {
+        await syncQueue.enqueue({
+          kind: 'upsert',
+          trip,
+          message: commitMessageFor(trip),
+        });
+        await syncQueue.requestSync();
+        return { committed: false, queued: true };
+      }
+      throw e;
+    }
   }
   downloadDraft(trip);
   return { committed: false };

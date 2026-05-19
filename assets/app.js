@@ -3003,7 +3003,8 @@ function renderPlanInspire(trip) {
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW register fail', err));
+    // v2.0: SW migrado para Workbox em src/pwa/sw-workbox.js (registrado por src/main.js).
+    // O sw.js antigo virou stub auto-destrutivo — não registramos mais aqui.
   });
 }
 
