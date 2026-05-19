@@ -12,12 +12,16 @@ import * as settings from './core/settings.js';
 import { upsertTrip, deleteTripById, commitMessageFor } from './core/trips-api.js';
 import * as customs from './agents/customs.js';
 import * as backend from './core/backend.js';
+import { openInbox } from './components/inbox.js';
+import * as dates from './core/dates.js';
 
 const v2 = (window.viagensV2 = window.viagensV2 || {});
 v2.openTripEditor = openTripEditor;
 v2.settings = settings;
 v2.customs = customs;
 v2.backend = backend;
+v2.openInbox = openInbox;
+v2.dates = dates;
 
 // Captura tokens do magic link assim que carrega.
 try {
@@ -192,6 +196,14 @@ function injectFloatingButton() {
   beBadge.textContent = '🛠 Backend & Gmail';
   beBadge.addEventListener('click', openBackendModal);
 
+  const inboxBadge = document.createElement('div');
+  inboxBadge.id = 'v2-inbox-badge';
+  inboxBadge.style.cssText = `font:600 11px Inter,system-ui,sans-serif;color:#fff;
+    background:#7c3aed;padding:4px 10px;border-radius:999px;cursor:pointer;
+    box-shadow:0 4px 10px -2px rgba(15,23,42,.3);`;
+  inboxBadge.textContent = '📥 Sugestões do Gmail';
+  inboxBadge.addEventListener('click', openInbox);
+
   const newBtn = document.createElement('button');
   newBtn.type = 'button';
   newBtn.textContent = '+ Nova viagem';
@@ -211,6 +223,7 @@ function injectFloatingButton() {
 
   stack.appendChild(badge);
   stack.appendChild(beBadge);
+  stack.appendChild(inboxBadge);
   stack.appendChild(hint);
   stack.appendChild(newBtn);
   document.body.appendChild(stack);
