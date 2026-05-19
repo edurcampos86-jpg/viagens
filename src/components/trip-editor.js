@@ -17,6 +17,7 @@ import { loadRules, injectChecklistItems, renderChecklist } from './checklist.js
 import { deriveDatesFromBookings } from '../core/dates.js';
 import { renderBudget, mergeActual } from './budget.js';
 import { renderBenchmarkBanner } from './benchmark.js';
+import { renderWizardCard } from './wizard.js';
 
 let stylesInjected = false;
 
@@ -227,6 +228,21 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
   });
   notesInput.value = draft.notes?.general || '';
 
+  // Wizard temporal — atualiza quando datas mudam.
+  const wizardBox = el('div', { class: 'tev-wz-box' });
+  function refreshWizard() {
+    renderWizardCard(wizardBox, draft, {
+      default: (cta) => {
+        if (cta.startsWith('edit-')) {
+          // Foca no campo apropriado (no-op visual; usuário já está editando)
+          return;
+        }
+        // Outros CTAs disparam agentes externos via callback global
+        if (window.viagensV2?.[cta]) window.viagensV2[cta](draft);
+      },
+    });
+  }
+
   // Benchmark histórico — atualiza quando destino muda.
   const benchmarkBox = el('div', { class: 'tev-bm-box' });
   function refreshBenchmark() {
@@ -423,6 +439,7 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
 
   const body = el('div', { class: 'tev-body' }, [
     errorsBox,
+    wizardBox,
     el('div', { class: 'tev-row' }, [
       el('label', {}, 'Nome'),
       nameInput,
@@ -558,6 +575,11 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
   if (mode !== 'create') refreshChecklist();
   refreshBudget();
   refreshBenchmark();
+  refreshWizard();
+
+  // Re-renderiza wizard quando datas mudam
+  startInput.addEventListener('change', refreshWizard);
+  endInput.addEventListener('change', refreshWizard);
 
   return { close };
 }
