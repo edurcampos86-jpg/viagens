@@ -11,6 +11,7 @@ import { openTripEditor } from './components/trip-editor.js';
 import * as settings from './core/settings.js';
 import { upsertTrip, deleteTripById, commitMessageFor } from './core/trips-api.js';
 import * as customs from './agents/customs.js';
+import * as priceHunter from './agents/price-hunter.js';
 import * as backend from './core/backend.js';
 import { openInbox } from './components/inbox.js';
 import * as dates from './core/dates.js';
@@ -25,6 +26,7 @@ const v2 = (window.viagensV2 = window.viagensV2 || {});
 v2.openTripEditor = openTripEditor;
 v2.settings = settings;
 v2.customs = customs;
+v2.priceHunter = priceHunter;
 v2.backend = backend;
 v2.openInbox = openInbox;
 v2.dates = dates;
@@ -236,6 +238,14 @@ function injectFloatingButton() {
     },
   }));
 
+  const priceBadge = document.createElement('div');
+  priceBadge.id = 'v2-price-badge';
+  priceBadge.style.cssText = `font:600 11px Inter,system-ui,sans-serif;color:#fff;
+    background:#be185d;padding:4px 10px;border-radius:999px;cursor:pointer;
+    box-shadow:0 4px 10px -2px rgba(15,23,42,.3);`;
+  priceBadge.textContent = '💸 Otimizador de Bolso';
+  priceBadge.addEventListener('click', priceHunter.openPriceHunterModal);
+
   const newBtn = document.createElement('button');
   newBtn.type = 'button';
   newBtn.textContent = '+ Nova viagem';
@@ -258,6 +268,7 @@ function injectFloatingButton() {
   stack.appendChild(inboxBadge);
   stack.appendChild(heatmapBadge);
   stack.appendChild(decisionBadge);
+  stack.appendChild(priceBadge);
   stack.appendChild(hint);
   stack.appendChild(newBtn);
   document.body.appendChild(stack);
