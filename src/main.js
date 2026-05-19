@@ -10,10 +10,12 @@
 import { openTripEditor } from './components/trip-editor.js';
 import * as settings from './core/settings.js';
 import { upsertTrip, deleteTripById, commitMessageFor } from './core/trips-api.js';
+import * as customs from './agents/customs.js';
 
 const v2 = (window.viagensV2 = window.viagensV2 || {});
 v2.openTripEditor = openTripEditor;
 v2.settings = settings;
+v2.customs = customs;
 
 // ── Fallback: baixa rascunho .json para aplicar manualmente. ────────────
 function downloadDraft(trip) {
@@ -130,6 +132,35 @@ function openPATModal() {
   });
 }
 
+async function openCustomsForTrip(trip) {
+  const result = await customs.run({ trip });
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `position:fixed;inset:0;background:rgba(15,23,42,.55);
+    display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;`;
+  const modal = document.createElement('div');
+  modal.style.cssText = `background:#fff;color:#0f172a;width:min(560px,100%);
+    max-height:90vh;overflow:auto;border-radius:12px;padding:16px 20px;
+    box-shadow:0 25px 50px -12px rgba(0,0,0,.35);
+    font:14px Inter,system-ui,sans-serif;`;
+  const header = document.createElement('div');
+  header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;';
+  header.innerHTML = `<strong>🛂 Despachante — ${trip.name || trip.id || 'viagem'}</strong>`;
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.textContent = '×';
+  close.style.cssText = 'background:transparent;border:0;font-size:22px;cursor:pointer;color:#64748b;';
+  close.addEventListener('click', () => overlay.remove());
+  header.appendChild(close);
+  const cardBox = document.createElement('div');
+  modal.append(header, cardBox);
+  overlay.appendChild(modal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  customs.renderCustomsCard(cardBox, result);
+}
+
+v2.openCustoms = openCustomsForTrip;
+
 function injectFloatingButton() {
   if (document.getElementById('v2-fab-stack')) return;
   const stack = document.createElement('div');
@@ -155,7 +186,14 @@ function injectFloatingButton() {
     openTripEditor({ mode: 'create', onSave: saveTrip });
   });
 
+  const hint = document.createElement('div');
+  hint.style.cssText = `font:500 11px Inter,system-ui,sans-serif;color:#64748b;
+    background:#fff;padding:4px 10px;border-radius:6px;border:1px solid #e2e8f0;
+    box-shadow:0 4px 10px -2px rgba(15,23,42,.1);max-width:240px;text-align:right;`;
+  hint.innerHTML = 'Console: <code>viagensV2.openCustoms(trip)</code>';
+
   stack.appendChild(badge);
+  stack.appendChild(hint);
   stack.appendChild(newBtn);
   document.body.appendChild(stack);
   updateBadge();
