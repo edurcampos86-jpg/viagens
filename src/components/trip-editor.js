@@ -13,6 +13,7 @@
 // Validação mínima local; F1.3 substitui por schema.js completo.
 
 import { flagFromCountryCode, nominatimSearch, slugify, tripIdFrom } from '../core/geo.js';
+import { loadRules, injectChecklistItems, renderChecklist } from './checklist.js';
 
 let stylesInjected = false;
 
@@ -184,6 +185,32 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
   });
   notesInput.value = draft.notes?.general || '';
 
+  // Checklist contextual — popula automaticamente quando destino muda.
+  const checklistBox = el('div', { class: 'tev-cl-box' });
+  const checklistMeta = el('div', { class: 'tev-status-line' }, 'Selecione um destino para gerar checklist contextual.');
+  let rulesDoc = null;
+  let checklistApi = null;
+  async function refreshChecklist() {
+    try {
+      if (!rulesDoc) rulesDoc = await loadRules();
+    } catch (e) {
+      checklistMeta.textContent = `Falha ao carregar regras: ${e.message}`;
+      return;
+    }
+    const next = injectChecklistItems(draft.checklist || [], draft, rulesDoc);
+    draft.checklist = next;
+    const autoCount = next.filter((it) => it.auto_added).length;
+    const manualCount = next.length - autoCount;
+    checklistMeta.textContent = `${autoCount} item(s) auto · ${manualCount} manual(is)`;
+    checklistApi = renderChecklist(checklistBox, next, {
+      onChange: (items) => {
+        draft.checklist = items;
+        const a = items.filter((it) => it.auto_added).length;
+        checklistMeta.textContent = `${a} item(s) auto · ${items.length - a} manual(is)`;
+      },
+    });
+  }
+
   const idMeta = el('div', { class: 'tev-meta' });
   const renderIdMeta = () => {
     const candidate = tripIdFrom(nameInput.value, startInput.value);
@@ -210,6 +237,7 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
     suggestions = [];
     activeSuggestionIndex = -1;
     renderIdMeta();
+    refreshChecklist();
   }
 
   destInput.addEventListener('input', () => {
@@ -336,6 +364,11 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
       el('label', {}, 'Notas'),
       notesInput,
     ]),
+    el('div', { class: 'tev-row' }, [
+      el('label', {}, 'Checklist contextual'),
+      checklistMeta,
+      checklistBox,
+    ]),
   ]);
 
   const modal = el('div', { class: 'tev-modal', role: 'dialog', 'aria-modal': 'true' }, [
@@ -428,6 +461,9 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
 
   document.body.appendChild(overlay);
   nameInput.focus();
+
+  // Em modo edit/duplicate, dispara o refresh inicial da checklist.
+  if (mode !== 'create') refreshChecklist();
 
   return { close };
 }
