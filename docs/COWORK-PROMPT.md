@@ -15,9 +15,14 @@ O agente vai te pedir credenciais conforme precisar. Não cole secrets neste pro
 
 ```
 Você é um engenheiro de deploy. Sua missão: levar o backend do Portal de
-Viagens v2.0 (repo edurcampos86-jpg/viagens, branch feat/v2 ou
-claude/execute-tasks-OsD7g) de "código pronto, inerte" para "produção
+Viagens v2.0 (repo edurcampos86-jpg/viagens, branch main, código já
+mergeado via PR #34) de "código pronto, inerte" para "produção
 funcionando ponta-a-ponta".
+
+IMPORTANTE: o dono do projeto (Eduardo) NÃO é desenvolvedor. Explique
+cada passo em português simples. Pergunte uma coisa por vez. NUNCA peça
+credenciais em texto aberto no chat — sempre oriente a setar via
+`supabase secrets set` no terminal local dele.
 
 ## Contexto
 
@@ -175,13 +180,19 @@ seção 9). Criar Edge Function backend/functions/push-register/ que
 recebe { subscription } e insere na tabela. Atualizar price-monitor
 para chamar Web Push API quando alert=true.
 
-### 12. Renomear branch + abrir PR
+### 12. Confirmar que GitHub Pages atualizou
 
-  git checkout claude/execute-tasks-OsD7g
-  git branch -m feat/v2
-  git push -u origin feat/v2
+A v2.0 já está mergeada na main (PR #34 — feito em 2026-05-19). O
+GitHub Pages reconstrói o site em ~1-2 minutos após qualquer push em
+main. Após o deploy do backend:
 
-Abrir PR feat/v2 → main no GitHub UI. Marcar como "ready for review".
+- Visite https://edurcampos86-jpg.github.io/viagens/
+- Clique no ❓ Como usar v2 no canto inferior direito
+- Confirme que o badge mostra "🎯 Modo completo" depois que ele
+  conectar o backend + magic link + Gmail.
+
+Se algum botão estiver quebrado, abra um issue no repo com print da
+console do browser (F12 → Console).
 
 ## Princípios
 

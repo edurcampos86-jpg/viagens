@@ -167,19 +167,13 @@ Não escopei a Edge Function `push-register` na v2.0 — você precisa:
 
 Sem isso, o handler `push` no SW está pronto mas nunca dispara.
 
-## 10. Renomear branch para feat/v2 (opcional)
+## 10. Histórico de branches
 
-Convenção do PRD:
+A v2.0 já está mergeada em `main` via PR #34 (2026-05-19). As branches
+`feat/v2` e `claude/execute-tasks-OsD7g` já foram deletadas.
 
-```bash
-git checkout claude/execute-tasks-OsD7g
-git branch -m feat/v2
-git push -u origin feat/v2
-# (opcional) deletar branch antiga no remote:
-git push origin --delete claude/execute-tasks-OsD7g
-```
-
-E então abrir PR `feat/v2 → main` para revisão antes de merge.
+Trabalhe direto em `main` ou crie uma branch `fix/<nome>` para hotfixes
+pontuais durante o deploy do backend.
 
 ---
 
