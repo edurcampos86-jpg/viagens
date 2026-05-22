@@ -30,9 +30,19 @@ passada com o site rodando.
 
 **Total: 21 achados** distribuídos em 11 das 15 áreas auditadas.
 
-### Resumo das correções aplicadas nesta fase
+### Resultado final da Fase 1
 
-Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(qa): …` for criado.
+- **19 bugs corrigidos** em commits atômicos `fix(qa):`, `perf(qa):`,
+  `refactor(qa):` e `chore(qa):`.
+- **2 falsos positivos** identificados e documentados (B15 e B21).
+- **0 regressões introduzidas**: `npm test` permanece 25/25 verde
+  e o lint não tem novas issues (warnings/errors existentes são
+  pré-data desta intervenção).
+- **Itens que dependiam de browser real ficaram fora** — listados na
+  seção _"NÃO auditados nesta passada"_ no fim do arquivo. São
+  candidatos a uma futura passagem manual com Lighthouse + DevTools.
+
+### Checklist (estado final)
 
 - [x] B1 — Empty states do timeline mencionam `data/trips.json` (jargão)
 - [x] B2 — Tour não tem focus trap (Tab escapa do balão)
