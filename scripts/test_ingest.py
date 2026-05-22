@@ -602,8 +602,11 @@ def test_prioritize_temporal_spacing_picks_first_and_last():
     assert ts[-1] == 9.0
 
 
-def test_optimize_cluster_emits_caption_auto(tmp_path):
-    """Cluster com place setado deve gerar caption + caption_auto=True por item."""
+def test_optimize_cluster_preserves_pre_generated_captions(tmp_path):
+    """
+    Captions vêm pré-geradas pelo ingest_takeout.py (per-photo via
+    generate_captions). optimize_cluster só preserva — não regenera.
+    """
     pytest.importorskip("PIL")
     from PIL import Image
     from optimize_media import optimize_cluster
@@ -618,15 +621,104 @@ def test_optimize_cluster_emits_caption_auto(tmp_path):
         "place": "Kyoto",
         "items": [
             {"path": p, "type": "image", "timestamp": _ts(f"2023-10-{15+i:02d}"),
-             "lat": 35.01, "lon": 135.76}
+             "lat": 35.01, "lon": 135.76,
+             "caption": f"Kyoto · {15+i} out 2023", "caption_auto": True}
             for i, p in enumerate(paths)
         ],
     }
     results = optimize_cluster(cluster, tmp_path / "media")
     assert len(results) == 2
+    assert results[0].caption == "Kyoto · 15 out 2023"
+    assert results[1].caption == "Kyoto · 16 out 2023"
     for r in results:
         assert r.caption_auto is True
-        assert r.caption.startswith("Kyoto · ")
+
+
+def test_generate_captions_per_photo_with_cache():
+    """
+    Multi-cidade num só álbum: cada foto pega a cidade pelo seu GPS,
+    não pelo centro do cluster. Cache impede re-requests pro mesmo lat/lon.
+    """
+    from ingest_takeout import generate_captions
+    items = [
+        MediaItem(path="/tokyo_a.jpg", type="image",
+                  timestamp=_ts("2023-10-15"), lat=35.68, lon=139.69),
+        MediaItem(path="/tokyo_b.jpg", type="image",
+                  timestamp=_ts("2023-10-16"), lat=35.68, lon=139.69),
+        MediaItem(path="/kyoto.jpg", type="image",
+                  timestamp=_ts("2023-10-17"), lat=35.01, lon=135.76),
+    ]
+    call_count = {"n": 0}
+
+    def fake_geocode(lat, lon):
+        call_count["n"] += 1
+        if abs(lat - 35.68) < 0.1:
+            return {"place": "Tokyo"}
+        if abs(lat - 35.01) < 0.1:
+            return {"place": "Kyoto"}
+        return {}
+
+    captions = generate_captions(items, geocode_fn=fake_geocode)
+    assert captions["/tokyo_a.jpg"] == "Tokyo · 15 out 2023"
+    assert captions["/tokyo_b.jpg"] == "Tokyo · 16 out 2023"
+    assert captions["/kyoto.jpg"] == "Kyoto · 17 out 2023"
+    # Cache: tokyo_a e tokyo_b compartilham bucket de 5km → só 1 chamada.
+    assert call_count["n"] == 2
+
+
+def test_generate_captions_falls_back_to_date_when_no_geocode():
+    """Sem geocode_fn → só data. Sem date nem place → omite o item."""
+    from ingest_takeout import generate_captions
+    items = [
+        MediaItem(path="/a.jpg", type="image",
+                  timestamp=_ts("2023-10-15"), lat=35.01, lon=135.76),
+        MediaItem(path="/sem-ts.jpg", type="image", lat=35.01, lon=135.76),
+    ]
+    captions = generate_captions(items, geocode_fn=None)
+    assert captions["/a.jpg"] == "15 out 2023"
+    assert "/sem-ts.jpg" not in captions  # nem date nem place → omite
+
+
+def test_generate_captions_uses_fallback_place_when_geocode_fails():
+    """Geocoding levanta exceção → cai pra fallback_place."""
+    from ingest_takeout import generate_captions
+    items = [MediaItem(path="/x.jpg", type="image",
+                       timestamp=_ts("2023-10-15"), lat=35.01, lon=135.76)]
+
+    def broken_geocode(lat, lon):
+        raise RuntimeError("Nominatim offline")
+
+    captions = generate_captions(items, geocode_fn=broken_geocode,
+                                  fallback_place="Japão")
+    assert captions["/x.jpg"] == "Japão · 15 out 2023"
+
+
+def test_run_album_mode_emits_per_photo_captions(tmp_path):
+    """
+    Pipeline real: run() em modo álbum injeta captions per-photo no
+    proposals.json. Sem geocode (CI) cai pra cluster.place se houver.
+    """
+    pytest.importorskip("PIL")
+    from PIL import Image
+    foz = tmp_path / "foz-2021"
+    foz.mkdir()
+    for i in range(2):
+        p = foz / f"f{i}.jpg"
+        Image.new("RGB", (50, 50)).save(p, "JPEG")
+        p.with_name(p.name + ".json").write_text(json.dumps({
+            "photoTakenTime": {"timestamp": str(int(_ts(f"2021-06-{10+i:02d}")))},
+            "geoData": {"latitude": -25.69, "longitude": -54.43},
+        }))
+    out = tmp_path / "proposals.json"
+    payload = run(tmp_path, out, trips=[], geocode=False)
+    items = payload["clusters"][0]["items"]
+    assert len(items) == 2
+    # Sem geocode + sem cluster.place → caption == só data
+    for it in items:
+        assert it["caption"] is not None
+        assert it["caption_auto"] is True
+        # Formato: "10 jun 2021" / "11 jun 2021"
+        assert "jun 2021" in it["caption"]
 
 
 def test_optimize_cluster_returns_discards_when_requested(tmp_path):

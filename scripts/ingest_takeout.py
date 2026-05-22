@@ -402,6 +402,82 @@ def _iso_to_epoch(iso: str) -> float:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Captions automáticas (cidade · data) com cache de reverse geocoding
+# ─────────────────────────────────────────────────────────────────────────────
+
+MONTHS_PT = ["", "jan", "fev", "mar", "abr", "mai", "jun",
+             "jul", "ago", "set", "out", "nov", "dez"]
+
+
+def _format_date_pt(ts: float | None) -> str | None:
+    """Formata epoch → 'DD MMM YYYY' em pt-BR. Ex.: '15 out 2023'."""
+    if not ts:
+        return None
+    try:
+        dt = datetime.utcfromtimestamp(float(ts))
+    except (OverflowError, OSError, ValueError):
+        return None
+    return f"{dt.day:02d} {MONTHS_PT[dt.month]} {dt.year}"
+
+
+def _round_coord(v: float, precision: float = 0.05) -> float:
+    """Arredonda lat/lon p/ usar como chave de cache (~5 km a latitudes médias)."""
+    return round(v / precision) * precision
+
+
+def generate_captions(
+    items: list[MediaItem],
+    geocode_fn=None,
+    fallback_place: str | None = None,
+) -> dict[str, str]:
+    """
+    Gera caption automática "Cidade · DD MMM YYYY" para cada item.
+
+    - Mapeia path → caption.
+    - Reverse geocode é cacheado por (lat, lon) arredondado a ~5 km, então
+      um álbum com 30 fotos no mesmo bairro faz só 1 request ao Nominatim.
+    - Em álbuns multi-cidade (Tokyo+Kyoto na mesma viagem), cada foto pega
+      a cidade certa via seu próprio GPS — não o centro do álbum.
+    - Se geocode_fn=None (ex.: CI com --no-geocode), pula geocoding e
+      cai em fallback_place ou só data.
+    - Se reverse geocoding falhar para uma coordenada, cacheia None e
+      reutiliza fallback_place para os próximos itens daquele cluster.
+    """
+    cache: dict[tuple[float, float], str | None] = {}
+    out: dict[str, str] = {}
+
+    for it in items:
+        date_str = _format_date_pt(it.timestamp)
+        place: str | None = None
+
+        if it.has_gps() and geocode_fn is not None:
+            key = (_round_coord(it.lat), _round_coord(it.lon))
+            if key in cache:
+                place = cache[key]
+            else:
+                try:
+                    geo = geocode_fn(it.lat, it.lon)
+                    place = (geo or {}).get("place")
+                    cache[key] = place
+                    time.sleep(1.1)  # rate-limit Nominatim
+                except Exception:
+                    cache[key] = None
+
+        if not place:
+            place = fallback_place
+
+        if place and date_str:
+            out[it.path] = f"{place} · {date_str}"
+        elif date_str:
+            out[it.path] = date_str
+        elif place:
+            out[it.path] = place
+        # Se não tem nem data nem lugar, omite (apply mantém caption None).
+
+    return out
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Reverse geocoding + trip ID + match contra trips.json
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -610,8 +686,14 @@ def load_trips(path: Path) -> list[dict]:
         return []
 
 
-def serialize_cluster(cl: Cluster) -> dict:
-    """Pronto p/ JSON. Lista de items é resumida (paths apenas)."""
+def serialize_cluster(cl: Cluster, captions: dict[str, str] | None = None) -> dict:
+    """
+    Pronto p/ JSON. Lista de items é resumida (paths apenas).
+
+    captions: mapa path → caption_str (de generate_captions). Quando
+    presente, cada item ganha `caption` + `caption_auto: true`.
+    """
+    captions = captions or {}
     return {
         "id": cl.id,
         "action": cl.action,  # "create" | "merge" | "orphan"
@@ -633,6 +715,8 @@ def serialize_cluster(cl: Cluster) -> dict:
                 "lat": it.lat,
                 "lon": it.lon,
                 "source": it.source,
+                "caption": captions.get(it.path),
+                "caption_auto": True if captions.get(it.path) else None,
             }
             for it in cl.items
         ],
@@ -685,6 +769,18 @@ def run(input_dir: Path, output_path: Path, trips: list[dict], *,
             min_samples=min_samples, threshold_days=threshold_days,
         )
 
+    # Gera captions per-photo. Em CI (--no-geocode), cai pra cluster.place
+    # ou só data. Em uso local com geocode, cada foto pega sua própria
+    # cidade (álbum Tokyo+Kyoto vira "Tokyo · DD" / "Kyoto · DD" por foto).
+    geocode_fn = reverse_geocode if geocode else None
+    captions_by_cluster: dict[str, dict[str, str]] = {}
+    for cl in clusters:
+        if cl.action == "orphan":
+            continue
+        captions_by_cluster[cl.id] = generate_captions(
+            cl.items, geocode_fn=geocode_fn, fallback_place=cl.place,
+        )
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "input_dir": str(input_dir),
@@ -695,7 +791,8 @@ def run(input_dir: Path, output_path: Path, trips: list[dict], *,
             "merge_threshold_days": threshold_days,
             "album_match_km": album_match_km,
         },
-        "clusters": [serialize_cluster(cl) for cl in clusters],
+        "clusters": [serialize_cluster(cl, captions_by_cluster.get(cl.id))
+                     for cl in clusters],
         "summary": {
             "total_items": total_items,
             "clusters": len(clusters),

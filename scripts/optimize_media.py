@@ -250,9 +250,6 @@ def optimize_cluster(cluster: dict, media_root: Path, trip_id: str | None = None
     )
     results: list[OptimizedItem] = []
 
-    # Place vem do cluster (reverse-geocodado em ingest_takeout); usado p/ captions.
-    place = cluster.get("place")
-
     # Cover = primeiro item de imagem (se houver)
     cover_src = next((it for it in chosen if it["type"] == "image"), None)
     if cover_src:
@@ -270,6 +267,10 @@ def optimize_cluster(cluster: dict, media_root: Path, trip_id: str | None = None
         src = Path(it["path"])
         if not src.exists():
             continue
+        # Captions vêm pré-geradas em ingest_takeout.py (per-photo com cache
+        # de geocoding). optimize_cluster apenas preserva.
+        cap = it.get("caption")
+        cap_auto = it.get("caption_auto")
         try:
             if it["type"] == "image":
                 photo_i += 1
@@ -280,15 +281,14 @@ def optimize_cluster(cluster: dict, media_root: Path, trip_id: str | None = None
                 _tw, _th = optimize_image(src, out_dir / thumb_fname,
                                           max_side=lim["thumb_max_side"], quality=lim["thumb_quality"])
                 date = _iso_date_from_ts(it.get("timestamp"))
-                caption = make_auto_caption(place, it.get("timestamp"))
                 results.append(OptimizedItem(
                     type="image",
                     src=str((out_dir / fname).relative_to(root)),
                     thumb=str((out_dir / thumb_fname).relative_to(root)),
                     date=date, lat=it.get("lat"), lon=it.get("lon"),
                     width=w, height=h,
-                    caption=caption,
-                    caption_auto=True if caption else None,
+                    caption=cap,
+                    caption_auto=bool(cap_auto) if cap else None,
                 ))
             else:
                 video_i += 1
@@ -301,15 +301,14 @@ def optimize_cluster(cluster: dict, media_root: Path, trip_id: str | None = None
                     print(f"  ⚠ falha ao re-encodar {src.name}", file=sys.stderr)
                     continue
                 make_video_poster(src, out_dir / poster_fname)
-                caption = make_auto_caption(place, it.get("timestamp"))
                 results.append(OptimizedItem(
                     type="video",
                     src=str((out_dir / fname).relative_to(root)),
                     poster=str((out_dir / poster_fname).relative_to(root)),
                     date=_iso_date_from_ts(it.get("timestamp")),
                     lat=it.get("lat"), lon=it.get("lon"),
-                    caption=caption,
-                    caption_auto=True if caption else None,
+                    caption=cap,
+                    caption_auto=bool(cap_auto) if cap else None,
                 ))
         except Exception as e:
             print(f"  ⚠ erro em {src.name}: {e}", file=sys.stderr)
