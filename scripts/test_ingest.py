@@ -24,6 +24,8 @@ from ingest_takeout import (
     match_existing_trip_album,
 )
 
+REPO_ROOT_TESTS = Path(__file__).resolve().parent.parent
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
@@ -649,6 +651,44 @@ def test_optimize_cluster_returns_discards_when_requested(tmp_path):
                                           return_discards=True)
     assert len(results) == 20
     assert len(discards) == 5
+
+
+def test_apply_with_caption_auto_passes_schema_validation(tmp_path):
+    """
+    Regressão: caption_auto precisa estar declarado em trip.schema.json,
+    pois gallery items têm additionalProperties: false. Sem o patch de schema,
+    apply non-dry-run aborta no validate_or_die.
+    """
+    from apply_proposals import apply
+    # Cópia mínima de trips.json (estrutura real, sem trips) usando schema do repo.
+    real_trips = REPO_ROOT_TESTS / "data" / "trips.json"
+    trips = tmp_path / "trips.json"
+    trips.write_text(json.dumps({
+        "config": json.loads(real_trips.read_text())["config"],
+        "trips": [],
+    }))
+    proposals = tmp_path / "proposals.json"
+    proposals.write_text(json.dumps({
+        "clusters": [{
+            "id": "album-0", "action": "create",
+            "suggested_trip_id": "kyoto-2023",
+            "place": "Kyoto", "country": "Japão", "country_code": "JP",
+            "start_date": "2023-10-15", "end_date": "2023-10-15",
+            "center_lat": 35.01, "center_lon": 135.76,
+            "items": [],
+        }],
+        "_optimized": {"album-0": [{
+            "type": "image", "src": "media/kyoto-2023/01.webp",
+            "thumb": "media/kyoto-2023/01-thumb.webp",
+            "caption": "Kyoto · 15 out 2023", "caption_auto": True,
+            "date": "2023-10-15",
+        }]},
+    }))
+    # Roda com dry_run=False — exercita validate_or_die com schema real.
+    res = apply(proposals, trips, dry_run=False, log_path=tmp_path / "log.md")
+    assert res["summary"]["created"] == 1
+    doc = json.loads(trips.read_text())
+    assert doc["trips"][0]["media"]["gallery"][0]["caption_auto"] is True
 
 
 def test_apply_preserves_caption_auto_in_gallery(tmp_path):
