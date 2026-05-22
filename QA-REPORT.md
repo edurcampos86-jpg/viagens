@@ -49,7 +49,7 @@ Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(q
 - [x] B13 — `<noscript>` mostra texto técnico mencionando `data/trips.json`
 - [ ] B14 — Inspiração permite URLs externas sem validar (XSS leve em `src`)
 - [x] B15 — falso positivo: `toast._t` referencia a função declarada, é válido
-- [ ] B16 — `sw.js` stub não trata erro se `unregister()` falhar
+- [x] B16 — `sw.js` stub não trata erro se `unregister()` falhar
 - [x] B17 — `manifest.theme_color` (#0369a1) destoa do header coral/sun
 - [ ] B18 — Falta `cache-busting` em `assets/app.js` e `assets/styles.css`
 - [ ] B19 — `loading="lazy"` ausente nas imagens dos cards hero do dashboard

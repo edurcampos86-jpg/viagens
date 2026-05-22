@@ -8,13 +8,23 @@ self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      // Limpa caches antigos
-      const keys = await caches.keys();
-      await Promise.all(keys.filter((k) => k.startsWith('viagens-v')).map((k) => caches.delete(k)));
-      // Self-destroy: o cliente vai re-registrar o SW novo via src/main.js
-      await self.registration.unregister();
-      const clients = await self.clients.matchAll({ type: 'window' });
-      for (const c of clients) c.navigate(c.url);
+      try {
+        const keys = await caches.keys();
+        await Promise.all(keys.filter((k) => k.startsWith('viagens-v')).map((k) => caches.delete(k)));
+        await self.registration.unregister();
+      } catch (err) {
+        // Se algo falhar (Safari antigo, sem permissao de cache, etc.) preferimos
+        // deixar o SW antigo ativo e tentar de novo na proxima visita do que
+        // navegar com SW indefinido. Loga e sai cedo.
+        console.warn('[sw stub] migration failed; keeping legacy SW for now:', err);
+        return;
+      }
+      try {
+        const clients = await self.clients.matchAll({ type: 'window' });
+        for (const c of clients) c.navigate(c.url);
+      } catch (err) {
+        console.warn('[sw stub] post-unregister navigate failed:', err);
+      }
     })()
   );
 });
