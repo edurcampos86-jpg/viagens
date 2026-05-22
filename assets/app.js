@@ -3216,7 +3216,8 @@ function tourReposition() {
   }
   const rect = target.getBoundingClientRect();
   if (rect.bottom < 0 || rect.top > window.innerHeight) {
-    target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
     requestAnimationFrame(() => requestAnimationFrame(tourReposition));
     return;
   }
