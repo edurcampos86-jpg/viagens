@@ -59,8 +59,20 @@
         "currency": "BRL"
       },
       "checklist": [],
+      "media": {
+        "cover": "https://picsum.photos/seed/iguacu-cover/1600/900",
+        "gallery": [
+          { "type": "image", "src": "https://picsum.photos/seed/iguacu-01/1600/1000", "thumb": "https://picsum.photos/seed/iguacu-01/640/400", "caption": "Cataratas vistas do lado brasileiro", "date": "2021-06-12" },
+          { "type": "image", "src": "https://picsum.photos/seed/iguacu-02/1600/1000", "thumb": "https://picsum.photos/seed/iguacu-02/640/400", "caption": "Garganta do Diabo de perto", "date": "2021-06-13" },
+          { "type": "image", "src": "https://picsum.photos/seed/iguacu-03/1200/1600", "thumb": "https://picsum.photos/seed/iguacu-03/480/640", "caption": "Trilha do Parque das Aves", "date": "2021-06-13" },
+          { "type": "image", "src": "https://picsum.photos/seed/iguacu-04/1600/1000", "thumb": "https://picsum.photos/seed/iguacu-04/640/400", "caption": "Passarela molhada — lado argentino", "date": "2021-06-14" },
+          { "type": "image", "src": "https://picsum.photos/seed/iguacu-05/1600/1000", "thumb": "https://picsum.photos/seed/iguacu-05/640/400", "caption": "Usina de Itaipu — perspectiva colossal", "date": "2021-06-15" },
+          { "type": "image", "src": "https://picsum.photos/seed/iguacu-06/1200/1600", "thumb": "https://picsum.photos/seed/iguacu-06/480/640", "caption": "Tucano no Parque das Aves", "date": "2021-06-13" }
+        ],
+        "stats": { "photos": 6, "videos": 0 }
+      },
       "created_at": "2021-06-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
+      "updated_at": "2026-05-22T00:00:00Z",
       "_schema": 2
     },
     {
@@ -116,8 +128,21 @@
         "currency": "BRL"
       },
       "checklist": [],
+      "media": {
+        "cover": "https://picsum.photos/seed/atacama-cover/1600/900",
+        "gallery": [
+          { "type": "image", "src": "https://picsum.photos/seed/atacama-01/1600/1000", "thumb": "https://picsum.photos/seed/atacama-01/640/400", "caption": "Gêiseres del Tatio ao amanhecer", "date": "2021-11-12" },
+          { "type": "image", "src": "https://picsum.photos/seed/atacama-02/1600/1000", "thumb": "https://picsum.photos/seed/atacama-02/640/400", "caption": "Laguna Cejar — flutuação salina", "date": "2021-11-13" },
+          { "type": "image", "src": "https://picsum.photos/seed/atacama-03/1200/1600", "thumb": "https://picsum.photos/seed/atacama-03/480/640", "caption": "Valle de la Luna ao pôr do sol", "date": "2021-11-14" },
+          { "type": "image", "src": "https://picsum.photos/seed/atacama-04/1600/1000", "thumb": "https://picsum.photos/seed/atacama-04/640/400", "caption": "Salar de Atacama — flamingos cor-de-rosa", "date": "2021-11-15" },
+          { "type": "image", "src": "https://picsum.photos/seed/atacama-05/1600/1000", "thumb": "https://picsum.photos/seed/atacama-05/640/400", "caption": "Céu noturno — o mais límpido do mundo", "date": "2021-11-16" },
+          { "type": "image", "src": "https://picsum.photos/seed/atacama-06/1200/1600", "thumb": "https://picsum.photos/seed/atacama-06/480/640", "caption": "Pueblo de San Pedro — vida pacata", "date": "2021-11-17" },
+          { "type": "image", "src": "https://picsum.photos/seed/atacama-07/1600/1000", "thumb": "https://picsum.photos/seed/atacama-07/640/400", "caption": "Caminhada na trilha das salinas", "date": "2021-11-18" }
+        ],
+        "stats": { "photos": 7, "videos": 0 }
+      },
       "created_at": "2021-11-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
+      "updated_at": "2026-05-22T00:00:00Z",
       "_schema": 2
     },
     {
