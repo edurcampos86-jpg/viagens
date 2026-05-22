@@ -3163,6 +3163,21 @@ body.plan-page-open { background: var(--surface2); }
   margin: 0 0 14px;
   color: var(--text2);
 }
+.tour-progress {
+  height: 4px;
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 0 10px;
+}
+.tour-progress-fill {
+  height: 100%;
+  background: var(--accent, #06b6d4);
+  transition: width 200ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tour-progress-fill { transition: none; }
+}
 .tour-meta {
   display: flex;
   align-items: center;

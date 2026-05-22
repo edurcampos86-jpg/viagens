@@ -40,7 +40,7 @@ Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(q
 - [x] B4 — `tour-balloon` ignora `prefers-reduced-motion` no `scrollIntoView`
 - [x] B5 — Alerta do dashboard cita `documentos.json` (jargão técnico)
 - [ ] B6 — `meta[name=theme-color]` não acompanha toggle manual de tema
-- [ ] B7 — Tour não tem barra de progresso visual (só textual)
+- [x] B7 — Tour não tem barra de progresso visual (só textual)
 - [ ] B8 — Sem `<link rel="preload">` em `data/trips.json` (FCP cai)
 - [ ] B9 — `renderStats` usa `t.name` em vez de `t.country` p/ contar "Destinos"
 - [ ] B10 — Hero background carrega imagem 1800x1000 em mobile sem responsive

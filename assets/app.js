@@ -3235,10 +3235,15 @@ function tourRender() {
   const isLast = !!step.final;
   const primaryLabel = step.primary || (isLast ? 'Concluir' : 'Próximo');
   const secondaryLabel = step.secondary || 'Anterior';
+  const progressPct = Math.round(((TourState.idx + 1) / total) * 100);
   b.innerHTML = `
     ${isFirst ? '' : '<button type="button" class="tour-skip" data-tour-act="skip">Sair do tour ✕</button>'}
     <h4 id="tour-balloon-title">${step.title}</h4>
     <p>${step.body}</p>
+    <div class="tour-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+      aria-valuenow="${progressPct}" aria-label="Progresso do tour">
+      <div class="tour-progress-fill" style="width:${progressPct}%"></div>
+    </div>
     <div class="tour-meta">
       <span class="tour-counter">${TourState.idx + 1} de ${total}</span>
       <div class="tour-btns">
