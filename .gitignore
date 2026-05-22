@@ -43,4 +43,4 @@ Thumbs.db
 # Só vai pro repo o otimizado em /media/<trip-id>/, com EXIF stripado.
 media-import/
 proposals.json
-INGEST-LOG.md
+# INGEST-LOG.md fica tracked (historico do que cada apply rodou)

@@ -1,0 +1,175 @@
+name: ingest
+
+# Pipeline de ingestao de fotos do Google Takeout (Fase 3).
+#
+# Dois estagios manuais (workflow_dispatch) — pensados para serem rodados
+# pelo proprio dono do repo apos um Takeout chegar:
+#
+#   1) detect: roda ingest_takeout.py em /media-import/ e abre um PR com
+#      proposals.json para revisao humana.
+#   2) apply:  apos o PR ser aprovado/editado, roda optimize_media.py +
+#      apply_proposals.py e commita /media/<trip-id>/ + trips.json.
+#
+# Nada acontece em push automatico — o usuario sempre revisa o proposals.json
+# antes de fotos saiirem otimizadas e trips.json ser tocado.
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: "Estagio a rodar: 'detect' (gera proposals + PR) ou 'apply' (otimiza + commita trips)"
+        required: true
+        type: choice
+        options:
+          - detect
+          - apply
+      proposals_branch:
+        description: "Branch onde proposals.json/_optimized esta (so para stage=apply). Default: chore/ingest-proposals"
+        required: false
+        default: chore/ingest-proposals
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ingest-${{ github.event.inputs.stage }}
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    if: github.event.inputs.stage == 'detect'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scripts/requirements-ingest.txt
+
+      - name: Install deps
+        run: |
+          pip install -r scripts/requirements-ingest.txt
+          pip install -r scripts/requirements-validate.txt
+
+      - name: Verify media-import exists
+        run: |
+          if [ ! -d media-import ] || [ -z "$(ls -A media-import 2>/dev/null)" ]; then
+            echo "::error::Pasta media-import/ esta vazia ou nao existe."
+            echo "::error::Faca um Takeout no Google Photos, descompacte em media-import/ e commit a pasta."
+            echo "::error::Lembre: media-import/ esta no .gitignore — voce precisa empurrar para uma branch dedicada."
+            exit 1
+          fi
+
+      - name: Run ingest_takeout.py
+        run: |
+          python scripts/ingest_takeout.py \
+            --input media-import \
+            --output proposals.json \
+            --no-geocode  # geocoding fora do CI evita rate-limit Nominatim
+
+      - name: Show proposals summary
+        run: |
+          python -c "
+          import json
+          p = json.load(open('proposals.json'))
+          s = p['summary']
+          print(f'Clusters detectados: {s[\"clusters\"]}')
+          print(f'  create: {s[\"create\"]}')
+          print(f'  merge:  {s[\"merge\"]}')
+          print(f'  orphan: {s[\"orphan\"]}')
+          "
+
+      - name: Force-add gitignored proposals.json
+        run: git add -f proposals.json
+
+      - name: Create PR for human review
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/ingest-proposals
+          delete-branch: false
+          title: "chore(ingest): proposals.json gerado — revise antes de aplicar"
+          commit-message: "chore(ingest): proposals.json (auto-gerado pelo workflow ingest)"
+          add-paths: proposals.json
+          body: |
+            **Proposals.json** gerado pelo `ingest_takeout.py`.
+
+            ## Como revisar
+
+            1. Abra `proposals.json` neste PR.
+            2. Para cada cluster, decida:
+               - `action: create` → cria nova viagem (ajuste `suggested_trip_id`, `place`, `country` se quiser).
+               - `action: merge` → anexa em trip existente (confirme `merge_with`).
+               - `action: orphan` → ignorado (mídia sem cluster ou com poucas fotos).
+            3. Edite o JSON diretamente neste PR se precisar (GitHub Web ou local).
+            4. Quando estiver bom, **merge este PR**.
+            5. Rode o workflow `ingest` novamente com `stage=apply` para otimizar mídia + commitar trips.
+
+            ⚠ Este PR não otimiza nada ainda — só propõe. Otimização (WebP, thumbs, EXIF strip) acontece no estágio `apply`.
+          labels: auto-ingest
+
+  apply:
+    if: github.event.inputs.stage == 'apply'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout branch com proposals
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.proposals_branch }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scripts/requirements-ingest.txt
+
+      - name: Install Python deps
+        run: |
+          pip install -r scripts/requirements-ingest.txt
+          pip install -r scripts/requirements-validate.txt
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Verify proposals.json exists
+        run: |
+          if [ ! -f proposals.json ]; then
+            echo "::error::proposals.json nao encontrado nesta branch. Rode stage=detect primeiro."
+            exit 1
+          fi
+
+      - name: Optimize media (WebP + thumbs + EXIF strip)
+        run: python scripts/optimize_media.py --proposals proposals.json --media-dir media
+
+      - name: Apply proposals to trips.json
+        run: python scripts/apply_proposals.py --proposals proposals.json --trips data/trips.json
+
+      - name: Configure git for commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit otimizados + trips.json + log
+        run: |
+          git add media/ data/trips.json INGEST-LOG.md
+          git diff --cached --quiet && {
+            echo "Nada para commitar."
+            exit 0
+          }
+          git commit -m "feat(ingest): aplica proposals.json (mídia otimizada + trips.json atualizado)
+
+          Pipeline automatizado:
+          - ingest_takeout.py detectou clusters
+          - optimize_media.py otimizou WebP/h264 com EXIF stripado
+          - apply_proposals.py aplicou em trips.json
+
+          Detalhes em INGEST-LOG.md."
+          git push
