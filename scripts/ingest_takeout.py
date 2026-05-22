@@ -613,16 +613,28 @@ def match_existing_trip_album(
 # Modo álbum-por-álbum
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _is_junk_dir(name: str) -> bool:
+    """
+    Subpastas que devem ser ignoradas na detecção de modo e no scan:
+      - __MACOSX (criado por unzip de ZIPs do Finder no macOS)
+      - Dotfiles (.DS_Store por exemplo aparece como arquivo, mas também
+        guardamos contra subpastas tipo .Spotlight-V100, .Trashes, .git)
+    """
+    return name.startswith(".") or name == "__MACOSX"
+
+
 def detect_mode(input_dir: Path) -> str:
     """
     Inspeciona input_dir e retorna 'album' se contém subpastas (cada uma uma
     viagem) ou 'cluster' se contém arquivos soltos na raiz.
 
     Heurística:
-      - Se há ao menos uma subpasta E nenhum arquivo de mídia na raiz → album.
+      - Se há ao menos uma subpasta legítima E nenhum arquivo de mídia na
+        raiz → album.
       - Se há arquivos de mídia na raiz → cluster (mesmo se também houver
         subpastas, prevalece o comportamento legado).
       - Diretório vazio → cluster (default, pipeline antiga lida com isso).
+      - Subpastas __MACOSX/.dotfiles são ignoradas na contagem.
     """
     if not input_dir.exists():
         return "cluster"
@@ -632,7 +644,8 @@ def detect_mode(input_dir: Path) -> str:
     )
     if root_media:
         return "cluster"
-    has_subdir = any(p.is_dir() for p in input_dir.iterdir())
+    has_subdir = any(p.is_dir() and not _is_junk_dir(p.name)
+                     for p in input_dir.iterdir())
     return "album" if has_subdir else "cluster"
 
 
@@ -640,12 +653,15 @@ def scan_album_mode(input_dir: Path) -> list[tuple[str, list[MediaItem]]]:
     """
     Para cada subpasta de input_dir, devolve (trip_id_sugerido, items[]).
     O trip_id sugerido é o slug do nome da pasta (preservando ano se já houver).
+    Subpastas __MACOSX/.dotfiles são puladas silenciosamente.
     """
     out: list[tuple[str, list[MediaItem]]] = []
     if not input_dir.exists():
         return out
     for sub in sorted(input_dir.iterdir()):
         if not sub.is_dir():
+            continue
+        if _is_junk_dir(sub.name):
             continue
         items = scan_media(sub)
         if not items:

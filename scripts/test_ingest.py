@@ -425,6 +425,40 @@ def test_detect_mode_empty_dir_is_cluster(tmp_path):
     assert detect_mode(tmp_path) == "cluster"
 
 
+def test_detect_mode_ignores_macosx_and_dotfiles(tmp_path):
+    """
+    __MACOSX (criado pelo Finder ao zipar) e .DS_Store/.Spotlight não devem
+    ser contados como subpastas legítimas. Diretório com APENAS esses lixos
+    → 'cluster' (não 'album').
+    """
+    (tmp_path / "__MACOSX").mkdir()
+    (tmp_path / "__MACOSX" / "._ghost.jpg").write_bytes(b"x")
+    (tmp_path / ".Spotlight-V100").mkdir()
+    assert detect_mode(tmp_path) == "cluster"
+
+
+def test_detect_mode_album_when_macosx_alongside_real_album(tmp_path):
+    """Subpasta real + __MACOSX junto → 'album' (a subpasta legítima conta)."""
+    (tmp_path / "__MACOSX").mkdir()
+    (tmp_path / "kyoto-2023").mkdir()
+    (tmp_path / "kyoto-2023" / "p.jpg").write_bytes(b"x")
+    assert detect_mode(tmp_path) == "album"
+
+
+def test_scan_album_mode_skips_macosx(tmp_path):
+    """scan_album_mode pula __MACOSX silenciosamente (sem warning)."""
+    pytest.importorskip("PIL")
+    from PIL import Image
+    (tmp_path / "__MACOSX").mkdir()
+    Image.new("RGB", (10, 10)).save(
+        tmp_path / "__MACOSX" / "._junk.jpg", "JPEG")
+    (tmp_path / "kyoto-2023").mkdir()
+    Image.new("RGB", (10, 10)).save(tmp_path / "kyoto-2023" / "p.jpg", "JPEG")
+    albums = scan_album_mode(tmp_path)
+    assert len(albums) == 1
+    assert albums[0][0] == "kyoto-2023"
+
+
 def test_scan_album_mode_skips_empty_subdirs(tmp_path):
     """Subpastas sem mídia são puladas com aviso."""
     pytest.importorskip("PIL")

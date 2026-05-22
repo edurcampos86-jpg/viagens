@@ -561,3 +561,57 @@ nada da Fase 3):
   álbum sintético `kyoto-2023` de 5 fotos). Próxima execução real
   validará o `peter-evans/create-pull-request` com `body-path` e o
   rendering dos thumbs via raw URL.
+
+## Patches consolidados de `claude/album-by-album-ingest-dQZe0`
+
+Existia uma branch paralela `claude/album-by-album-ingest-dQZe0`
+implementando a mesma feature por outra sessão. Comparação lado-a-lado
+revelou 4 melhorias funcionais que foram cherry-picked aqui antes do
+merge. A `dQZe0` é deletada do remote ao consolidar.
+
+### Patch 1 — `caption_auto` no schema (commit `f35d3ea`)
+
+**Bug crítico encontrado.** `data/schemas/trip.schema.json` tem
+`additionalProperties: false` em `media.gallery[].items`. Sem declarar
+`caption_auto`, `apply_proposals.py` aborta em `validate_or_die()` no
+modo non-dry-run. Coberto pelo teste de regressão
+`test_apply_with_caption_auto_passes_schema_validation`.
+
+### Patch 2 — Captions per-photo com cache (commit `33edb3d`)
+
+**UX win significativo.** Antes: caption usava `cluster.place` (1 cidade
+por álbum). Álbum Tokyo+Kyoto recebia rótulo único errado. Depois:
+`generate_captions()` em `ingest_takeout.py` faz reverse-geocode por
+foto, com cache por `(lat, lon)` arredondado a ~5 km. Foto em Tokyo vira
+`"Tokyo · DD"`, foto em Kyoto vira `"Kyoto · DD"`. 30 fotos no mesmo
+bairro = 1 chamada ao Nominatim. Responsabilidade movida de
+`optimize_media.py` (errada — não tem GPS contexto) para `ingest_takeout.py`.
+
+### Patch 3 — Push trigger no workflow (commit `711cdc2`)
+
+A spec original pedia "push em `/media-import/` OU `workflow_dispatch`".
+A primeira versão tinha só `workflow_dispatch` — agora `on.push.paths:
+["media-import/**"]` dispara `stage=detect` automaticamente. Job `apply`
+permanece manual via dispatch (sem auto-apply, ever).
+
+### Patch 4 — Filtro `__MACOSX` / dotfiles (commit `???`)
+
+`detect_mode()` e `scan_album_mode()` agora ignoram subpastas
+`__MACOSX/` (geradas pelo Finder ao zipar) e qualquer subpasta começando
+com `.` (`.Spotlight-V100`, `.DS_Store`, `.git` etc.). Antes: uma pasta
+com só `__MACOSX/` virava modo `album` com cluster fantasma.
+
+### Testes adicionados pelos patches
+
+49 testes totais (45 anteriores + 4 dos patches):
+
+- `test_apply_with_caption_auto_passes_schema_validation` (patch 1)
+- `test_generate_captions_per_photo_with_cache` (patch 2)
+- `test_generate_captions_falls_back_to_date_when_no_geocode` (patch 2)
+- `test_generate_captions_uses_fallback_place_when_geocode_fails` (patch 2)
+- `test_run_album_mode_emits_per_photo_captions` (patch 2)
+- `test_optimize_cluster_preserves_pre_generated_captions` (patch 2, renomeado)
+- `test_workflow_has_push_trigger_for_media_import` (patch 3)
+- `test_detect_mode_ignores_macosx_and_dotfiles` (patch 4)
+- `test_detect_mode_album_when_macosx_alongside_real_album` (patch 4)
+- `test_scan_album_mode_skips_macosx` (patch 4)
