@@ -235,3 +235,85 @@ def test_run_pipeline_end_to_end_no_geocode(tmp_path):
     assert out.exists()
     assert payload["summary"]["total_items"] == 5
     assert payload["summary"]["create"] + payload["summary"]["orphan"] >= 1
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# optimize_media — testes de otimização e priorização
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_prioritize_gps_first_then_chronological():
+    from optimize_media import prioritize
+    items = [
+        {"type": "image", "timestamp": 100, "lat": None, "lon": None},
+        {"type": "image", "timestamp": 200, "lat": -25, "lon": -54},
+        {"type": "image", "timestamp": 50,  "lat": -25, "lon": -54},
+        {"type": "image", "timestamp": 300, "lat": None, "lon": None},
+    ]
+    out = prioritize(items, max_photos=10, max_videos=2)
+    # Primeiros: os com GPS, ordem cronológica entre eles
+    assert out[0]["timestamp"] == 50
+    assert out[1]["timestamp"] == 200
+    # Sem GPS depois
+    assert out[2]["timestamp"] == 100
+    assert out[3]["timestamp"] == 300
+
+
+def test_prioritize_truncates_to_max():
+    from optimize_media import prioritize
+    items = [{"type": "image", "timestamp": i, "lat": 0, "lon": 0} for i in range(50)]
+    out = prioritize(items, max_photos=20, max_videos=2)
+    assert len([x for x in out if x["type"] == "image"]) == 20
+
+
+def test_optimize_image_writes_webp_strips_exif(tmp_path):
+    """Imagem com EXIF deve ser convertida em WebP sem EXIF."""
+    pytest.importorskip("PIL")
+    from PIL import Image
+    src = tmp_path / "in.jpg"
+    img = Image.new("RGB", (3000, 2000), (10, 200, 60))
+    exif = Image.Exif()
+    exif[0x9003] = "2024:06:12 14:30:00"
+    img.save(src, "JPEG", exif=exif.tobytes())
+
+    from optimize_media import optimize_image
+    dst = tmp_path / "out.webp"
+    w, h = optimize_image(src, dst, max_side=1920, quality=80)
+    assert dst.exists()
+    # Redimensionado para max_side
+    assert max(w, h) <= 1920
+    # Confere que o WebP final NÃO tem EXIF (privacidade)
+    with Image.open(dst) as im:
+        exif_out = im.getexif()
+        assert not exif_out or len(dict(exif_out)) == 0
+
+
+def test_optimize_cluster_end_to_end_with_synthetic_photos(tmp_path):
+    """Cria 5 JPEGs, monta cluster, otimiza, valida saída em media/<trip-id>/."""
+    pytest.importorskip("PIL")
+    from PIL import Image
+    paths = []
+    for i in range(5):
+        p = tmp_path / f"in_{i:02d}.jpg"
+        Image.new("RGB", (1000, 700), (i * 30, 100, 50)).save(p, "JPEG")
+        paths.append(str(p))
+
+    cluster = {
+        "id": "cluster-0",
+        "suggested_trip_id": "teste-2024",
+        "items": [
+            {"path": p, "type": "image", "timestamp": _ts(f"2024-06-{10+i:02d}"),
+             "lat": -25.69, "lon": -54.43}
+            for i, p in enumerate(paths)
+        ],
+    }
+    media_root = tmp_path / "media"
+    from optimize_media import optimize_cluster
+    results = optimize_cluster(cluster, media_root)
+
+    assert len(results) == 5
+    trip_dir = media_root / "teste-2024"
+    assert (trip_dir / "cover.webp").exists()
+    assert (trip_dir / "01.webp").exists()
+    assert (trip_dir / "01-thumb.webp").exists()
+    # Path retornado é relativo ao repo root
+    assert results[0].src.startswith("media/teste-2024/")  # type: ignore[attr-defined]
