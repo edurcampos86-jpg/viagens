@@ -20,6 +20,8 @@ import pytest
 from ingest_takeout import (
     MediaItem, cluster_items, haversine_km, slugify,
     suggest_trip_id, match_existing_trip, run, _epoch_to_iso,
+    detect_mode, scan_album_mode, build_album_cluster,
+    match_existing_trip_album,
 )
 
 
@@ -395,6 +397,285 @@ def test_apply_skips_orphan(tmp_path):
     res = apply(proposals, trips, dry_run=True)
     assert res["summary"]["skipped_orphan"] == 1
     assert res["summary"]["created"] == 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Modo álbum-por-álbum
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_detect_mode_album_when_only_subdirs(tmp_path):
+    """Subpastas + zero arquivos na raiz → 'album'."""
+    (tmp_path / "foz-2021").mkdir()
+    (tmp_path / "foz-2021" / "p.jpg").write_bytes(b"x")
+    (tmp_path / "atacama-2021").mkdir()
+    assert detect_mode(tmp_path) == "album"
+
+
+def test_detect_mode_cluster_when_files_at_root(tmp_path):
+    """Arquivos soltos na raiz → 'cluster' (mesmo se houver subpasta junto)."""
+    (tmp_path / "img.jpg").write_bytes(b"x")
+    (tmp_path / "subdir").mkdir()
+    assert detect_mode(tmp_path) == "cluster"
+
+
+def test_detect_mode_empty_dir_is_cluster(tmp_path):
+    """Diretório vazio → 'cluster' (pipeline antiga reporta vazio)."""
+    assert detect_mode(tmp_path) == "cluster"
+
+
+def test_scan_album_mode_skips_empty_subdirs(tmp_path):
+    """Subpastas sem mídia são puladas com aviso."""
+    pytest.importorskip("PIL")
+    from PIL import Image
+    (tmp_path / "vazia").mkdir()
+    (tmp_path / "kyoto-2023").mkdir()
+    Image.new("RGB", (10, 10)).save(tmp_path / "kyoto-2023" / "p.jpg", "JPEG")
+    albums = scan_album_mode(tmp_path)
+    assert len(albums) == 1
+    trip_id, items = albums[0]
+    assert trip_id == "kyoto-2023"
+    assert len(items) == 1
+
+
+def test_build_album_cluster_no_dbscan_groups_everything(tmp_path):
+    """Tudo da pasta vai pro mesmo cluster, sem importar dispersão geográfica."""
+    items = [
+        _item("/tmp/a.jpg", "2023-10-15", 35.01, 135.76),  # Kyoto
+        _item("/tmp/b.jpg", "2023-10-16", 35.68, 139.69),  # Tokyo (~370 km)
+        _item("/tmp/c.jpg", "2023-10-17", 34.69, 135.50),  # Osaka
+    ]
+    cl = build_album_cluster("japao-2023", items, idx=0)
+    assert cl.id == "album-0"
+    assert cl.suggested_trip_id == "japao-2023"
+    assert len(cl.items) == 3
+    assert cl.start_date == "2023-10-15"
+    assert cl.end_date == "2023-10-17"
+
+
+def test_album_match_by_direct_trip_id():
+    cl = build_album_cluster(
+        "iguacu-2021",
+        [_item("/tmp/x.jpg", "2021-06-12", -25.69, -54.43)], idx=0)
+    trips = [{"id": "iguacu-2021", "year": 2021, "country": "Brasil"}]
+    assert match_existing_trip_album(cl, trips) == "iguacu-2021"
+
+
+def test_album_match_by_year_and_country():
+    cl = build_album_cluster(
+        "fronteira-trifurcada",
+        [_item("/tmp/x.jpg", "2021-06-12", -25.69, -54.43)], idx=0)
+    cl.country = "Brasil"
+    trips = [{"id": "iguacu-2021", "year": 2021, "country": "Brasil"}]
+    assert match_existing_trip_album(cl, trips) == "iguacu-2021"
+
+
+def test_album_match_by_year_and_proximity():
+    cl = build_album_cluster(
+        "pasta-sem-pais",
+        [_item("/tmp/x.jpg", "2021-06-12", -25.69, -54.43)], idx=0)
+    # country não setado, mas lat/lon batem com Foz
+    trips = [{"id": "iguacu-2021", "year": 2021,
+              "country": None, "lat": -25.6953, "lon": -54.4367}]
+    assert match_existing_trip_album(cl, trips, album_match_km=100) == "iguacu-2021"
+
+
+def test_album_no_match_when_year_off():
+    cl = build_album_cluster(
+        "pasta",
+        [_item("/tmp/x.jpg", "2024-06-12", -25.69, -54.43)], idx=0)
+    cl.country = "Brasil"
+    trips = [{"id": "iguacu-2021", "year": 2021, "country": "Brasil"}]
+    assert match_existing_trip_album(cl, trips) is None
+
+
+def test_run_album_mode_end_to_end(tmp_path):
+    """
+    Estrutura: tmp_path/foz-2021/*.jpg + tmp_path/kyoto-2023/*.jpg.
+    Espera 2 clusters, sem DBSCAN, com IDs derivados do nome da pasta.
+    """
+    pytest.importorskip("PIL")
+    from PIL import Image
+    foz = tmp_path / "foz-2021"
+    foz.mkdir()
+    for i in range(3):
+        p = foz / f"f{i}.jpg"
+        Image.new("RGB", (50, 50)).save(p, "JPEG")
+        p.with_name(p.name + ".json").write_text(json.dumps({
+            "photoTakenTime": {"timestamp": str(int(_ts(f"2021-06-{10+i:02d}")))},
+            "geoData": {"latitude": -25.69, "longitude": -54.43},
+        }))
+    kyoto = tmp_path / "kyoto-2023"
+    kyoto.mkdir()
+    for i in range(2):
+        p = kyoto / f"k{i}.jpg"
+        Image.new("RGB", (50, 50)).save(p, "JPEG")
+        p.with_name(p.name + ".json").write_text(json.dumps({
+            "photoTakenTime": {"timestamp": str(int(_ts(f"2023-10-{15+i:02d}")))},
+            "geoData": {"latitude": 35.01, "longitude": 135.76},
+        }))
+
+    out = tmp_path / "proposals.json"
+    payload = run(tmp_path, out, trips=[], geocode=False)
+
+    assert payload["mode"] == "album"
+    assert payload["summary"]["clusters"] == 2
+    ids = sorted(c["suggested_trip_id"] for c in payload["clusters"])
+    assert ids == ["foz-2021", "kyoto-2023"]
+
+
+def test_run_album_mode_matches_existing_trip(tmp_path):
+    """
+    Pasta `iguacu-2021/` deve dar merge com trip `iguacu-2021` existente.
+    Garante que cenário de regressão (re-ingest do Foz) não duplica viagem.
+    """
+    pytest.importorskip("PIL")
+    from PIL import Image
+    foz = tmp_path / "iguacu-2021"
+    foz.mkdir()
+    for i in range(2):
+        p = foz / f"f{i}.jpg"
+        Image.new("RGB", (50, 50)).save(p, "JPEG")
+        p.with_name(p.name + ".json").write_text(json.dumps({
+            "photoTakenTime": {"timestamp": str(int(_ts(f"2021-06-{10+i:02d}")))},
+            "geoData": {"latitude": -25.69, "longitude": -54.43},
+        }))
+
+    out = tmp_path / "proposals.json"
+    trips = [{"id": "iguacu-2021", "year": 2021, "country": "Brasil",
+              "startDate": "2021-06-10", "lat": -25.69, "lon": -54.43}]
+    payload = run(tmp_path, out, trips=trips, geocode=False)
+    assert payload["summary"]["merge"] == 1
+    assert payload["clusters"][0]["merge_with"] == "iguacu-2021"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Captions automáticas + priorização com espaçamento
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_make_auto_caption_format_pt_br():
+    from optimize_media import make_auto_caption
+    ts = _ts("2023-10-15")
+    assert make_auto_caption("Kyoto", ts) == "Kyoto · 15 out 2023"
+
+
+def test_make_auto_caption_falls_back_to_date_only():
+    from optimize_media import make_auto_caption
+    ts = _ts("2023-10-15")
+    assert make_auto_caption(None, ts) == "15 out 2023"
+
+
+def test_make_auto_caption_returns_place_when_no_ts():
+    from optimize_media import make_auto_caption
+    assert make_auto_caption("Kyoto", None) == "Kyoto"
+    assert make_auto_caption(None, None) is None
+
+
+def test_prioritize_with_discards_returns_both():
+    from optimize_media import prioritize_with_discards
+    items = [
+        {"type": "image", "path": f"/p{i}.jpg", "timestamp": i,
+         "lat": -25 if i < 30 else None, "lon": -54 if i < 30 else None}
+        for i in range(50)
+    ]
+    chosen, discards = prioritize_with_discards(items, max_photos=20, max_videos=0)
+    assert len(chosen) == 20
+    assert len(discards) == 30
+    # Nenhum item aparece nos dois
+    chosen_paths = {it["path"] for it in chosen}
+    disc_paths = {it["path"] for it in discards}
+    assert chosen_paths.isdisjoint(disc_paths)
+
+
+def test_prioritize_temporal_spacing_picks_first_and_last():
+    """Com 10 itens e cap=3, escolhidos devem cobrir t=0, intermediário e t=9."""
+    from optimize_media import prioritize_with_discards
+    items = [
+        {"type": "image", "path": f"/p{i}.jpg", "timestamp": float(i),
+         "lat": -25, "lon": -54}
+        for i in range(10)
+    ]
+    chosen, _ = prioritize_with_discards(items, max_photos=3, max_videos=0)
+    ts = sorted(c["timestamp"] for c in chosen)
+    assert ts[0] == 0.0
+    assert ts[-1] == 9.0
+
+
+def test_optimize_cluster_emits_caption_auto(tmp_path):
+    """Cluster com place setado deve gerar caption + caption_auto=True por item."""
+    pytest.importorskip("PIL")
+    from PIL import Image
+    from optimize_media import optimize_cluster
+    paths = []
+    for i in range(2):
+        p = tmp_path / f"in_{i:02d}.jpg"
+        Image.new("RGB", (200, 200)).save(p, "JPEG")
+        paths.append(str(p))
+    cluster = {
+        "id": "album-0",
+        "suggested_trip_id": "kyoto-2023",
+        "place": "Kyoto",
+        "items": [
+            {"path": p, "type": "image", "timestamp": _ts(f"2023-10-{15+i:02d}"),
+             "lat": 35.01, "lon": 135.76}
+            for i, p in enumerate(paths)
+        ],
+    }
+    results = optimize_cluster(cluster, tmp_path / "media")
+    assert len(results) == 2
+    for r in results:
+        assert r.caption_auto is True
+        assert r.caption.startswith("Kyoto · ")
+
+
+def test_optimize_cluster_returns_discards_when_requested(tmp_path):
+    pytest.importorskip("PIL")
+    from PIL import Image
+    from optimize_media import optimize_cluster
+    paths = []
+    for i in range(25):  # > max_photos (20)
+        p = tmp_path / f"in_{i:02d}.jpg"
+        Image.new("RGB", (50, 50)).save(p, "JPEG")
+        paths.append(str(p))
+    cluster = {
+        "id": "album-0",
+        "suggested_trip_id": "kyoto-2023",
+        "items": [
+            {"path": p, "type": "image", "timestamp": float(i),
+             "lat": 35.01, "lon": 135.76}
+            for i, p in enumerate(paths)
+        ],
+    }
+    results, discards = optimize_cluster(cluster, tmp_path / "media",
+                                          return_discards=True)
+    assert len(results) == 20
+    assert len(discards) == 5
+
+
+def test_apply_preserves_caption_auto_in_gallery(tmp_path):
+    """caption_auto deve viajar de _optimized → trip.media.gallery."""
+    from apply_proposals import apply
+    proposals = tmp_path / "proposals.json"
+    trips = tmp_path / "trips.json"
+    trips.write_text(json.dumps({"trips": []}))
+    opt = [{
+        "type": "image", "src": "media/kyoto-2023/01.webp",
+        "thumb": "media/kyoto-2023/01-thumb.webp",
+        "caption": "Kyoto · 15 out 2023", "caption_auto": True,
+        "date": "2023-10-15", "lat": 35.01, "lon": 135.76,
+    }]
+    proposals.write_text(json.dumps({
+        "clusters": [{
+            "id": "album-0", "action": "create",
+            "suggested_trip_id": "kyoto-2023",
+            "place": "Kyoto", "country": "Japão", "country_code": "JP",
+            "start_date": "2023-10-15", "end_date": "2023-10-15",
+            "center_lat": 35.01, "center_lon": 135.76,
+            "items": [],
+        }],
+        "_optimized": {"album-0": opt},
+    }))
+    res = apply(proposals, trips, dry_run=True)
+    assert res["summary"]["created"] == 1
 
 
 def test_apply_collision_dedupes_id(tmp_path):

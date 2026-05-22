@@ -67,11 +67,14 @@ jobs:
           fi
 
       - name: Run ingest_takeout.py
+        # Modo auto: detecta album (subpastas) vs cluster (arquivos soltos).
+        # --no-geocode em CI evita rate-limit Nominatim; geocoding pode rodar local.
         run: |
           python scripts/ingest_takeout.py \
             --input media-import \
             --output proposals.json \
-            --no-geocode  # geocoding fora do CI evita rate-limit Nominatim
+            --mode auto \
+            --no-geocode
 
       - name: Show proposals summary
         run: |
@@ -79,14 +82,29 @@ jobs:
           import json
           p = json.load(open('proposals.json'))
           s = p['summary']
+          print(f'Modo: {p.get(\"mode\")}')
           print(f'Clusters detectados: {s[\"clusters\"]}')
           print(f'  create: {s[\"create\"]}')
           print(f'  merge:  {s[\"merge\"]}')
           print(f'  orphan: {s[\"orphan\"]}')
           "
 
-      - name: Force-add gitignored proposals.json
-        run: git add -f proposals.json
+      - name: Build PR preview (thumbs 2×2 + lista de captions)
+        # Gera previews/ingest/<cluster-id>/N.webp e pr-body.md.
+        # Os thumbs entram no commit (add-paths abaixo) e o body do PR usa
+        # raw.githubusercontent.com pra renderizar inline.
+        run: |
+          python scripts/build_pr_preview.py \
+            --proposals proposals.json \
+            --previews-dir previews/ingest \
+            --branch chore/ingest-proposals \
+            --repo "${GITHUB_REPOSITORY}" \
+            --out pr-body.md
+
+      - name: Force-add gitignored proposals.json + previews
+        run: |
+          git add -f proposals.json
+          git add -f previews/ingest/ 2>/dev/null || true
 
       - name: Create PR for human review
         uses: peter-evans/create-pull-request@v6
@@ -95,23 +113,11 @@ jobs:
           branch: chore/ingest-proposals
           delete-branch: false
           title: "chore(ingest): proposals.json gerado — revise antes de aplicar"
-          commit-message: "chore(ingest): proposals.json (auto-gerado pelo workflow ingest)"
-          add-paths: proposals.json
-          body: |
-            **Proposals.json** gerado pelo `ingest_takeout.py`.
-
-            ## Como revisar
-
-            1. Abra `proposals.json` neste PR.
-            2. Para cada cluster, decida:
-               - `action: create` → cria nova viagem (ajuste `suggested_trip_id`, `place`, `country` se quiser).
-               - `action: merge` → anexa em trip existente (confirme `merge_with`).
-               - `action: orphan` → ignorado (mídia sem cluster ou com poucas fotos).
-            3. Edite o JSON diretamente neste PR se precisar (GitHub Web ou local).
-            4. Quando estiver bom, **merge este PR**.
-            5. Rode o workflow `ingest` novamente com `stage=apply` para otimizar mídia + commitar trips.
-
-            ⚠ Este PR não otimiza nada ainda — só propõe. Otimização (WebP, thumbs, EXIF strip) acontece no estágio `apply`.
+          commit-message: "chore(ingest): proposals.json + previews (auto-gerado)"
+          add-paths: |
+            proposals.json
+            previews/ingest/**
+          body-path: pr-body.md
           labels: auto-ingest
 
   apply:

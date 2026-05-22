@@ -11,6 +11,135 @@ permissões passaram a receber `403`. O Takeout (download manual de um
 ZIP) é hoje a única forma estável e gratuita de acessar todo o histórico
 de fotos com metadados (EXIF + GPS + timestamp).
 
+## Dois modos de ingestão
+
+A pipeline detecta automaticamente qual modo usar pelo conteúdo de
+`/media-import/`:
+
+| Modo | Quando | Como funciona |
+|---|---|---|
+| **`album`** *(recomendado)* | `/media-import/` tem subpastas | Cada subpasta = uma viagem. Sem clustering. |
+| `cluster` *(legado)* | `/media-import/` tem arquivos soltos | DBSCAN espaço-temporal descobre viagens a partir de EXIF. |
+
+→ **Pule para [Modo álbum-por-álbum](#modo-álbum-por-álbum-recomendado) se você sabe quais álbuns quer importar** (é o caminho mais previsível e simples). Use `cluster` se quiser jogar um Takeout inteiro e deixar o script descobrir as viagens.
+
+## Modo álbum-por-álbum (recomendado)
+
+Fluxo end-to-end, do iPhone ao site, em 6 passos:
+
+### 1. Criar álbum no Google Photos
+
+- **Web:** [photos.google.com](https://photos.google.com) → menu lateral →
+  **Álbuns** → **Criar álbum** → selecione as fotos da viagem → nomeie
+  (ex.: `Kyoto 2023`).
+- **App:** abra Google Photos → toque longo em uma foto → toque em mais
+  fotos → ícone `+` (canto superior) → **Álbum** → nomeie.
+
+> 💡 O nome do álbum vira o `trip-id` (depois de slugify). Use kebab-case
+> ou frases curtas: `Foz 2021`, `Kyoto 2023`, `Patagonia Mar 2024`.
+
+### 2. Exportar via Takeout
+
+1. Acesse [takeout.google.com](https://takeout.google.com).
+2. **Desmarcar tudo** → marcar **apenas Google Fotos**.
+3. Clique em **Todos os álbuns de fotos incluídos** → desmarque tudo →
+   marque **só o álbum da viagem** (ou vários, um por viagem).
+4. **Próxima etapa** → formato `.zip` → enviar por email.
+5. Aguarde notificação do Google (minutos a horas). Baixe e descompacte.
+
+### 3. Colocar em `/media-import/<trip-id>/`
+
+```bash
+cd seu-clone-do-viagens/
+mkdir -p media-import
+# A pasta do Takeout vem como "Takeout/Google Fotos/Kyoto 2023/"
+# — copie pra media-import/ renomeando se quiser controlar o trip-id:
+cp -r "~/Downloads/Takeout/Google Fotos/Kyoto 2023" media-import/kyoto-2023
+```
+
+Estrutura final:
+
+```
+media-import/
+├── kyoto-2023/
+│   ├── IMG_0001.HEIC
+│   ├── IMG_0001.HEIC.json   ← sidecar Takeout (lat/lon/timestamp)
+│   └── …
+└── foz-2021/
+    └── …
+```
+
+### 4. Commit + push → GitHub Actions roda automaticamente
+
+```bash
+git checkout -b feat/takeout-kyoto-2023
+git add -f media-import/      # -f pq media-import/ está no .gitignore
+git commit -m "chore(takeout): álbum Kyoto 2023"
+git push -u origin feat/takeout-kyoto-2023
+```
+
+Vá em **Actions → ingest → Run workflow** com `stage=detect`.
+Em 3–5 min você recebe notificação de **PR novo** com:
+
+- ✅ Nome da viagem detectada (`suggested_trip_id`)
+- ✅ Contagem `Detectadas N fotos + M vídeos`
+- ✅ Grid 2×2 com 4 thumbnails representativos
+- ✅ Lista de legendas geradas (`caption_auto: true`)
+
+### 5. Revisar PR no GitHub
+
+- Confira preview das fotos (4 thumbs no comentário do PR).
+- Edite legendas **marcantes** direto no `proposals.json` (campo
+  `items[N].caption` — toda caption editada deve setar `caption_auto: false`
+  para você distinguir depois quais ainda são automáticas).
+- Se algum cluster estiver errado: edite `action: orphan` para pulá-lo.
+- Aprove + merge o PR `chore/ingest-proposals`.
+
+### 6. Aplicar (otimizar mídia + atualizar trips.json)
+
+**Actions → ingest → Run workflow** com `stage=apply` e
+`proposals_branch=chore/ingest-proposals`. O workflow:
+
+1. Otimiza WebP/h264 e stripa EXIF.
+2. Aplica em `data/trips.json` (preservando captions editadas).
+3. Commita `/media/<trip-id>/` e `INGEST-LOG.md`.
+
+Site no Pages atualiza em 2–3 min.
+
+> 💡 As fotos descartadas pelo cap de **20 fotos + 2 vídeos** ficam
+> registradas em `INGEST-LOG.md` com o critério aplicado (GPS presente >
+> espaçamento temporal > cronológico).
+
+### Legendas híbridas — `caption_auto`
+
+Cada item da galeria carrega um booleano `caption_auto`:
+
+| Valor | Significa |
+|---|---|
+| `caption_auto: true` | Legenda foi gerada automaticamente (formato `"Kyoto · 15 out 2023"`). |
+| `caption_auto: false` | Você editou manualmente — não tocar. |
+
+Isso permite identificar visualmente (no PR ou em um admin futuro) quais
+legendas ainda precisam de carinho.
+
+### Matching contra viagens existentes (sem duplicar)
+
+Em modo álbum, o script tenta 3 estratégias antes de criar viagem nova:
+
+1. **`trip-id` direto**: nome da pasta == `id` de uma trip já em `trips.json`.
+2. **Ano + país**: EXIF revela ano e Nominatim revela país; bate com trip
+   existente do mesmo ano e país.
+3. **Ano + lat/lon próximos**: centro da pasta a ≤300 km do centro de uma
+   trip existente do mesmo ano (configurável via `--album-match-km`).
+
+Se algum match: `action: merge` (anexa fotos sem duplicar `src`).
+Se nenhum: `action: create` (nova viagem).
+
+## Modo cluster (legado — Takeout inteiro)
+
+Use se você jogou o Takeout inteiro em `/media-import/` (sem subpastas).
+Pipeline original com DBSCAN espaço-temporal. Pula direto para [Passo 1 — solicitar o Takeout](#passo-1--solicitar-o-takeout).
+
 ## Passo 1 — solicitar o Takeout
 
 1. Acesse [takeout.google.com](https://takeout.google.com).
@@ -166,3 +295,6 @@ rotacionadas.
 - [ ] Geração de `memory` (texto narrativo) via LLM a partir dos clusters.
 - [ ] Multi-cidade: dividir cluster grande em sub-clusters geográficos
       automaticamente quando span > 500 km.
+- [ ] Screenshots inline nos passos do Google Photos e Takeout (placeholders
+      enquanto não tenho prints reais — pode adicionar manualmente em
+      `docs/img/takeout-*.png`).
