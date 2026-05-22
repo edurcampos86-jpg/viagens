@@ -38,7 +38,7 @@ Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(q
 - [ ] B2 — Tour não tem focus trap (Tab escapa do balão)
 - [ ] B3 — Dead code de status `em_planejamento` (não existe em trips.json)
 - [ ] B4 — `tour-balloon` ignora `prefers-reduced-motion` no `scrollIntoView`
-- [ ] B5 — Alerta do dashboard cita `documentos.json` (jargão técnico)
+- [x] B5 — Alerta do dashboard cita `documentos.json` (jargão técnico)
 - [ ] B6 — `meta[name=theme-color]` não acompanha toggle manual de tema
 - [ ] B7 — Tour não tem barra de progresso visual (só textual)
 - [ ] B8 — Sem `<link rel="preload">` em `data/trips.json` (FCP cai)

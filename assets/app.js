@@ -2089,7 +2089,7 @@ function renderDashAlerts(trips, futuras) {
   if (futuras.some(t => t.country && t.country !== 'Brasil')) {
     alerts.push({
       type: 'info', ic: '🛂',
-      html: 'Validade do passaporte ainda não cadastrada em <strong>documentos.json</strong> — necessária para o Auditor.',
+      html: 'Validade do passaporte ainda não cadastrada — necessária para liberar o Auditor de viagens internacionais.',
     });
   }
 
