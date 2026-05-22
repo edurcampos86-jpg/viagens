@@ -3197,6 +3197,7 @@ function tourPositionSpotlight(rect) {
   s.style.height = `${rect.height + pad * 2}px`;
 }
 
+let _tourScrolling = false;
 function tourReposition() {
   if (!TourState.active || !TourState.els) return;
   const step = TOUR_STEPS[TourState.idx];
@@ -3216,9 +3217,14 @@ function tourReposition() {
   }
   const rect = target.getBoundingClientRect();
   if (rect.bottom < 0 || rect.top > window.innerHeight) {
+    // Evita loops: enquanto um scroll programatico esta em andamento,
+    // ignora chamadas reentrante (o smooth scroll dispara o evento 'scroll'
+    // varias vezes ate concluir).
+    if (_tourScrolling) return;
+    _tourScrolling = true;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     target.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
-    requestAnimationFrame(() => requestAnimationFrame(tourReposition));
+    setTimeout(() => { _tourScrolling = false; tourReposition(); }, reduceMotion ? 50 : 400);
     return;
   }
   TourState.els.overlay.hidden = true;

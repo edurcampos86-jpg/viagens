@@ -45,7 +45,7 @@ Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(q
 - [ ] B9 — `renderStats` usa `t.name` em vez de `t.country` p/ contar "Destinos"
 - [ ] B10 — Hero background carrega imagem 1800x1000 em mobile sem responsive
 - [x] B11 — Tour não confirma com Enter explicitamente (depende do `focus()`)
-- [ ] B12 — `tourReposition` pode entrar em loop se elemento sai da viewport
+- [x] B12 — `tourReposition` pode entrar em loop se elemento sai da viewport
 - [x] B13 — `<noscript>` mostra texto técnico mencionando `data/trips.json`
 - [ ] B14 — Inspiração permite URLs externas sem validar (XSS leve em `src`)
 - [ ] B15 — `share-toast` usa `_t` em variável local `toast` indefinida (bug latente)
