@@ -42,8 +42,8 @@ def gallery_from_optimized(opt_items: list[dict]) -> list[dict]:
     out = []
     for it in opt_items:
         d = {"type": it["type"], "src": it["src"]}
-        for k in ("thumb", "poster", "caption", "date", "lat", "lon",
-                  "width", "height", "duration"):
+        for k in ("thumb", "poster", "caption", "caption_auto", "date",
+                  "lat", "lon", "width", "height", "duration"):
             if it.get(k) is not None:
                 d[k] = it[k]
         out.append(d)
@@ -130,7 +130,8 @@ def validate_or_die(trips_path: Path) -> None:
         raise SystemExit(2)
 
 
-def write_log(log_path: Path, summary: dict, details: list[dict]) -> None:
+def write_log(log_path: Path, summary: dict, details: list[dict],
+              discards: dict[str, list[dict]] | None = None) -> None:
     """Gera INGEST-LOG.md em Markdown."""
     lines = [
         "# INGEST-LOG — última ingestão de mídia",
@@ -155,6 +156,25 @@ def write_log(log_path: Path, summary: dict, details: list[dict]) -> None:
             f"- **{d['cluster_id']}** → `{d['action']}` em `{d['trip_id']}` "
             f"({d['photos']} fotos, {d['videos']} vídeos)"
         )
+    if discards:
+        total_disc = sum(len(v) for v in discards.values())
+        lines += [
+            "",
+            f"## Descartes pelo cap (20 fotos + 2 vídeos): {total_disc}",
+            "",
+            "_Critério: priorizou com-GPS espaçado temporalmente, depois cronológico._",
+            "",
+        ]
+        for cid, items in discards.items():
+            lines.append(f"### {cid} — {len(items)} descartado(s)")
+            for it in items:
+                gps = "GPS" if it.get("has_gps") else "sem-GPS"
+                ts = it.get("timestamp")
+                date = ""
+                if ts:
+                    date = datetime.utcfromtimestamp(float(ts)).strftime(" · %Y-%m-%d")
+                lines.append(f"- `{it.get('path')}` ({it.get('type')}, {gps}{date})")
+            lines.append("")
     log_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -223,7 +243,7 @@ def apply(proposals_path: Path, trips_path: Path, *,
     if not dry_run:
         save_json(trips_path, trips_doc)
         validate_or_die(trips_path)
-        write_log(log_target, summary, details)
+        write_log(log_target, summary, details, discards=proposals.get("_discards"))
         print(f"✓ {trips_path.name} atualizado; log em {log_target.name}",
               file=sys.stderr)
     return {"summary": summary, "details": details}

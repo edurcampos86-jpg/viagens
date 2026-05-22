@@ -2,15 +2,23 @@
 """
 ingest_takeout.py — detecta viagens a partir de um export do Google Takeout.
 
-Pipeline:
-  1. Varre /media-import/ (ou pasta passada via --input).
-  2. Para cada foto/vídeo, extrai timestamp e GPS via EXIF (Pillow + exifread)
-     ou via metadado pareado .json do Takeout (fallback).
-  3. Clusteriza fotos em "viagens candidatas" via DBSCAN espaço-temporal.
-  4. Para cada cluster, sugere um trip-id via reverse geocoding (Nominatim).
-  5. Compara contra data/trips.json — propõe MERGE com viagem existente OU
-     CREATE de nova viagem.
-  6. Salva proposals.json para revisão humana (NÃO modifica trips.json).
+Dois modos de operação, detectados automaticamente a partir do conteúdo
+de /media-import/:
+
+  Modo `cluster` (legado) — quando /media-import/ contém ARQUIVOS soltos.
+    1. Varre /media-import/ recursivamente.
+    2. Extrai EXIF/Takeout-JSON.
+    3. Clusteriza via DBSCAN espaço-temporal.
+    4. Match contra trips.json + reverse geocoding.
+
+  Modo `album` (recomendado) — quando /media-import/ contém SUBPASTAS.
+    Cada subpasta = uma viagem. Nome da subpasta = sugestão de trip-id.
+    1. Para cada subpasta /<trip-id>/, lê todas as fotos/vídeos.
+    2. Pula DBSCAN — tudo ali é uma viagem só.
+    3. Extrai data range, centro geográfico, contagem.
+    4. Match em trips.json por: (a) trip-id direto, (b) ano+país,
+       (c) ano + lat/lon próximo (haversine ≤ 300 km).
+    5. Output em proposals.json no mesmo formato (clusters[]).
 
 Por que NÃO usa Google Photos Library API: deprecada em 31/mar/2025
 (escopos photoslibrary.readonly retornam 403). Takeout (ZIP de download
@@ -19,6 +27,7 @@ manual) é a única forma estável e gratuita.
 Uso:
   python scripts/ingest_takeout.py [--input PATH] [--output PATH] [--dry-run]
   python scripts/ingest_takeout.py --input /tmp/Takeout/Google\\ Photos/
+  python scripts/ingest_takeout.py --mode album  # força modo álbum
 
 Saída padrão: ./proposals.json (gitignored).
 """
@@ -58,6 +67,7 @@ DEFAULTS = {
     "eps_km": 500.0,
     "min_samples": 5,
     "merge_threshold_days": 7,  # match com trip existente se start/end estão a <=7d
+    "album_match_km": 300.0,    # match por lat/lon: até 300 km do centro da trip
 }
 
 
@@ -392,6 +402,82 @@ def _iso_to_epoch(iso: str) -> float:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Captions automáticas (cidade · data) com cache de reverse geocoding
+# ─────────────────────────────────────────────────────────────────────────────
+
+MONTHS_PT = ["", "jan", "fev", "mar", "abr", "mai", "jun",
+             "jul", "ago", "set", "out", "nov", "dez"]
+
+
+def _format_date_pt(ts: float | None) -> str | None:
+    """Formata epoch → 'DD MMM YYYY' em pt-BR. Ex.: '15 out 2023'."""
+    if not ts:
+        return None
+    try:
+        dt = datetime.utcfromtimestamp(float(ts))
+    except (OverflowError, OSError, ValueError):
+        return None
+    return f"{dt.day:02d} {MONTHS_PT[dt.month]} {dt.year}"
+
+
+def _round_coord(v: float, precision: float = 0.05) -> float:
+    """Arredonda lat/lon p/ usar como chave de cache (~5 km a latitudes médias)."""
+    return round(v / precision) * precision
+
+
+def generate_captions(
+    items: list[MediaItem],
+    geocode_fn=None,
+    fallback_place: str | None = None,
+) -> dict[str, str]:
+    """
+    Gera caption automática "Cidade · DD MMM YYYY" para cada item.
+
+    - Mapeia path → caption.
+    - Reverse geocode é cacheado por (lat, lon) arredondado a ~5 km, então
+      um álbum com 30 fotos no mesmo bairro faz só 1 request ao Nominatim.
+    - Em álbuns multi-cidade (Tokyo+Kyoto na mesma viagem), cada foto pega
+      a cidade certa via seu próprio GPS — não o centro do álbum.
+    - Se geocode_fn=None (ex.: CI com --no-geocode), pula geocoding e
+      cai em fallback_place ou só data.
+    - Se reverse geocoding falhar para uma coordenada, cacheia None e
+      reutiliza fallback_place para os próximos itens daquele cluster.
+    """
+    cache: dict[tuple[float, float], str | None] = {}
+    out: dict[str, str] = {}
+
+    for it in items:
+        date_str = _format_date_pt(it.timestamp)
+        place: str | None = None
+
+        if it.has_gps() and geocode_fn is not None:
+            key = (_round_coord(it.lat), _round_coord(it.lon))
+            if key in cache:
+                place = cache[key]
+            else:
+                try:
+                    geo = geocode_fn(it.lat, it.lon)
+                    place = (geo or {}).get("place")
+                    cache[key] = place
+                    time.sleep(1.1)  # rate-limit Nominatim
+                except Exception:
+                    cache[key] = None
+
+        if not place:
+            place = fallback_place
+
+        if place and date_str:
+            out[it.path] = f"{place} · {date_str}"
+        elif date_str:
+            out[it.path] = date_str
+        elif place:
+            out[it.path] = place
+        # Se não tem nem data nem lugar, omite (apply mantém caption None).
+
+    return out
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Reverse geocoding + trip ID + match contra trips.json
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -471,6 +557,140 @@ def match_existing_trip(cluster: Cluster, trips: list[dict], threshold_days: int
     return None
 
 
+def match_existing_trip_album(
+    cluster: Cluster,
+    trips: list[dict],
+    *,
+    album_match_km: float = DEFAULTS["album_match_km"],
+) -> str | None:
+    """
+    Match para modo álbum, mais lenientes que cluster — testa três estratégias
+    em ordem de confiança:
+      (a) trip-id direto: cluster.suggested_trip_id == trip.id
+      (b) ano (start_date) + país (case-insensitive substring)
+      (c) ano + lat/lon próximos (haversine ≤ album_match_km)
+    Devolve trip.id se houver match; senão None.
+    """
+    sid = cluster.suggested_trip_id
+    if sid:
+        for t in trips:
+            if t.get("id") == sid:
+                return sid
+
+    year = int(cluster.start_date[:4]) if cluster.start_date else None
+    if not year:
+        return None
+
+    # (b) ano + país
+    if cluster.country:
+        for t in trips:
+            ty = t.get("year")
+            if ty != year:
+                continue
+            tc = t.get("country") or ""
+            if not tc:
+                continue
+            if (cluster.country.lower() in tc.lower()
+                    or tc.lower() in cluster.country.lower()):
+                return t["id"]
+
+    # (c) ano + proximidade geográfica
+    if cluster.center_lat is not None and cluster.center_lon is not None:
+        for t in trips:
+            if t.get("year") != year:
+                continue
+            tlat, tlon = t.get("lat"), t.get("lon")
+            if tlat is None or tlon is None:
+                continue
+            if haversine_km(cluster.center_lat, cluster.center_lon,
+                            float(tlat), float(tlon)) <= album_match_km:
+                return t["id"]
+
+    return None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Modo álbum-por-álbum
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _is_junk_dir(name: str) -> bool:
+    """
+    Subpastas que devem ser ignoradas na detecção de modo e no scan:
+      - __MACOSX (criado por unzip de ZIPs do Finder no macOS)
+      - Dotfiles (.DS_Store por exemplo aparece como arquivo, mas também
+        guardamos contra subpastas tipo .Spotlight-V100, .Trashes, .git)
+    """
+    return name.startswith(".") or name == "__MACOSX"
+
+
+def detect_mode(input_dir: Path) -> str:
+    """
+    Inspeciona input_dir e retorna 'album' se contém subpastas (cada uma uma
+    viagem) ou 'cluster' se contém arquivos soltos na raiz.
+
+    Heurística:
+      - Se há ao menos uma subpasta legítima E nenhum arquivo de mídia na
+        raiz → album.
+      - Se há arquivos de mídia na raiz → cluster (mesmo se também houver
+        subpastas, prevalece o comportamento legado).
+      - Diretório vazio → cluster (default, pipeline antiga lida com isso).
+      - Subpastas __MACOSX/.dotfiles são ignoradas na contagem.
+    """
+    if not input_dir.exists():
+        return "cluster"
+    root_media = any(
+        p.is_file() and p.suffix.lower() in MEDIA_EXTS
+        for p in input_dir.iterdir()
+    )
+    if root_media:
+        return "cluster"
+    has_subdir = any(p.is_dir() and not _is_junk_dir(p.name)
+                     for p in input_dir.iterdir())
+    return "album" if has_subdir else "cluster"
+
+
+def scan_album_mode(input_dir: Path) -> list[tuple[str, list[MediaItem]]]:
+    """
+    Para cada subpasta de input_dir, devolve (trip_id_sugerido, items[]).
+    O trip_id sugerido é o slug do nome da pasta (preservando ano se já houver).
+    Subpastas __MACOSX/.dotfiles são puladas silenciosamente.
+    """
+    out: list[tuple[str, list[MediaItem]]] = []
+    if not input_dir.exists():
+        return out
+    for sub in sorted(input_dir.iterdir()):
+        if not sub.is_dir():
+            continue
+        if _is_junk_dir(sub.name):
+            continue
+        items = scan_media(sub)
+        if not items:
+            print(f"  ⚠ subpasta {sub.name} sem mídia — pulando", file=sys.stderr)
+            continue
+        out.append((_album_trip_id(sub.name), items))
+    return out
+
+
+def _album_trip_id(folder_name: str) -> str:
+    """
+    Converte 'Foz do Iguaçu 2021' → 'foz-do-iguacu-2021'.
+    Se a pasta já tem ano embutido, preserva. Sem ano? deixa sem ano.
+    """
+    return slugify(folder_name)
+
+
+def build_album_cluster(trip_id: str, items: list[MediaItem], idx: int) -> Cluster:
+    """
+    Constrói um Cluster a partir de uma subpasta — sem DBSCAN. Tudo dentro
+    é considerado uma viagem só. Itens sem GPS são incluídos; centro é a
+    média dos que têm GPS (se houver).
+    """
+    cl = _make_cluster(items, idx=idx)
+    cl.id = f"album-{idx}"
+    cl.suggested_trip_id = trip_id
+    return cl
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Pipeline principal
 # ─────────────────────────────────────────────────────────────────────────────
@@ -482,8 +702,14 @@ def load_trips(path: Path) -> list[dict]:
         return []
 
 
-def serialize_cluster(cl: Cluster) -> dict:
-    """Pronto p/ JSON. Lista de items é resumida (paths apenas)."""
+def serialize_cluster(cl: Cluster, captions: dict[str, str] | None = None) -> dict:
+    """
+    Pronto p/ JSON. Lista de items é resumida (paths apenas).
+
+    captions: mapa path → caption_str (de generate_captions). Quando
+    presente, cada item ganha `caption` + `caption_auto: true`.
+    """
+    captions = captions or {}
     return {
         "id": cl.id,
         "action": cl.action,  # "create" | "merge" | "orphan"
@@ -505,58 +731,86 @@ def serialize_cluster(cl: Cluster) -> dict:
                 "lat": it.lat,
                 "lon": it.lon,
                 "source": it.source,
+                "caption": captions.get(it.path),
+                "caption_auto": True if captions.get(it.path) else None,
             }
             for it in cl.items
         ],
     }
 
 
+def _geocode_cluster(cl: Cluster) -> None:
+    """Reverse-geocoda o centro do cluster e popula place/country/country_code."""
+    if cl.center_lat is None or cl.center_lon is None:
+        return
+    try:
+        geo = reverse_geocode(cl.center_lat, cl.center_lon)
+        cl.place = geo.get("place")
+        cl.country = geo.get("country")
+        cl.country_code = geo.get("country_code")
+        time.sleep(1.1)  # rate limit Nominatim
+    except Exception as e:
+        print(f"  geocoding falhou: {e}", file=sys.stderr)
+
+
 def run(input_dir: Path, output_path: Path, trips: list[dict], *,
+        mode: str = "auto",
         eps_days: float = DEFAULTS["eps_days"],
         eps_km: float = DEFAULTS["eps_km"],
         min_samples: int = DEFAULTS["min_samples"],
         threshold_days: int = DEFAULTS["merge_threshold_days"],
+        album_match_km: float = DEFAULTS["album_match_km"],
         geocode: bool = True,
         dry_run: bool = False) -> dict:
-    """API programática (usada também pelos testes). Retorna o payload final."""
-    print(f"→ Escaneando {input_dir}…", file=sys.stderr)
-    items = scan_media(input_dir)
-    print(f"  {len(items)} arquivo(s) de mídia encontrados.", file=sys.stderr)
+    """
+    API programática (usada também pelos testes). Retorna o payload final.
 
-    print("→ Clusterizando…", file=sys.stderr)
-    clusters = cluster_items(items, eps_days=eps_days, eps_km=eps_km, min_samples=min_samples)
-    print(f"  {len(clusters)} cluster(s) detectado(s).", file=sys.stderr)
+    mode='auto'    → detect_mode(input_dir)
+    mode='cluster' → DBSCAN clássico
+    mode='album'   → uma viagem por subpasta
+    """
+    resolved_mode = detect_mode(input_dir) if mode == "auto" else mode
+    print(f"→ Modo: {resolved_mode}", file=sys.stderr)
 
+    if resolved_mode == "album":
+        clusters, total_items = _run_album(
+            input_dir, trips, geocode=geocode,
+            album_match_km=album_match_km,
+            threshold_days=threshold_days,
+        )
+    else:
+        clusters, total_items = _run_cluster(
+            input_dir, trips, geocode=geocode,
+            eps_days=eps_days, eps_km=eps_km,
+            min_samples=min_samples, threshold_days=threshold_days,
+        )
+
+    # Gera captions per-photo. Em CI (--no-geocode), cai pra cluster.place
+    # ou só data. Em uso local com geocode, cada foto pega sua própria
+    # cidade (álbum Tokyo+Kyoto vira "Tokyo · DD" / "Kyoto · DD" por foto).
+    geocode_fn = reverse_geocode if geocode else None
+    captions_by_cluster: dict[str, dict[str, str]] = {}
     for cl in clusters:
         if cl.action == "orphan":
-            cl.suggested_trip_id = None
             continue
-        if geocode and cl.center_lat is not None and cl.center_lon is not None:
-            print(f"→ Reverse geocoding {cl.id}…", file=sys.stderr)
-            try:
-                geo = reverse_geocode(cl.center_lat, cl.center_lon)
-                cl.place = geo.get("place")
-                cl.country = geo.get("country")
-                cl.country_code = geo.get("country_code")
-                time.sleep(1.1)  # rate limit Nominatim
-            except Exception as e:
-                print(f"  geocoding falhou: {e}", file=sys.stderr)
-        cl.suggested_trip_id = suggest_trip_id(cl.place, cl.start_date)
-        match = match_existing_trip(cl, trips, threshold_days)
-        if match:
-            cl.action = "merge"
-            cl.merge_with = match
+        captions_by_cluster[cl.id] = generate_captions(
+            cl.items, geocode_fn=geocode_fn, fallback_place=cl.place,
+        )
 
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "input_dir": str(input_dir),
+        "mode": resolved_mode,
         "params": {
             "eps_days": eps_days, "eps_km": eps_km,
-            "min_samples": min_samples, "merge_threshold_days": threshold_days,
+            "min_samples": min_samples,
+            "merge_threshold_days": threshold_days,
+            "album_match_km": album_match_km,
         },
-        "clusters": [serialize_cluster(cl) for cl in clusters],
+        "clusters": [serialize_cluster(cl, captions_by_cluster.get(cl.id))
+                     for cl in clusters],
         "summary": {
-            "total_items": len(items),
+            "total_items": total_items,
             "clusters": len(clusters),
             "create": sum(1 for c in clusters if c.action == "create"),
             "merge": sum(1 for c in clusters if c.action == "merge"),
@@ -569,13 +823,77 @@ def run(input_dir: Path, output_path: Path, trips: list[dict], *,
     return payload
 
 
+def _run_cluster(input_dir, trips, *, geocode, eps_days, eps_km,
+                 min_samples, threshold_days):
+    print(f"→ Escaneando {input_dir}…", file=sys.stderr)
+    items = scan_media(input_dir)
+    print(f"  {len(items)} arquivo(s) de mídia encontrados.", file=sys.stderr)
+
+    print("→ Clusterizando (DBSCAN)…", file=sys.stderr)
+    clusters = cluster_items(items, eps_days=eps_days, eps_km=eps_km,
+                             min_samples=min_samples)
+    print(f"  {len(clusters)} cluster(s) detectado(s).", file=sys.stderr)
+
+    for cl in clusters:
+        if cl.action == "orphan":
+            cl.suggested_trip_id = None
+            continue
+        if geocode:
+            print(f"→ Reverse geocoding {cl.id}…", file=sys.stderr)
+            _geocode_cluster(cl)
+        cl.suggested_trip_id = suggest_trip_id(cl.place, cl.start_date)
+        match = match_existing_trip(cl, trips, threshold_days)
+        if match:
+            cl.action = "merge"
+            cl.merge_with = match
+    return clusters, len(items)
+
+
+def _run_album(input_dir, trips, *, geocode, album_match_km, threshold_days):
+    print(f"→ Escaneando subpastas em {input_dir}…", file=sys.stderr)
+    albums = scan_album_mode(input_dir)
+    print(f"  {len(albums)} álbum(ns) detectado(s).", file=sys.stderr)
+
+    clusters: list[Cluster] = []
+    total_items = 0
+    for idx, (trip_id, items) in enumerate(albums):
+        total_items += len(items)
+        cl = build_album_cluster(trip_id, items, idx=idx)
+        print(f"  album-{idx}: {trip_id} → {len(items)} item(s) "
+              f"(fotos={cl.photos}, vídeos={cl.videos})", file=sys.stderr)
+        if geocode:
+            print(f"→ Reverse geocoding {cl.id}…", file=sys.stderr)
+            _geocode_cluster(cl)
+        # Em modo álbum, suggested_trip_id já veio do nome da pasta — só
+        # acrescentamos o ano se a pasta não tinha e o EXIF revelou.
+        if cl.start_date and not any(ch.isdigit() for ch in trip_id):
+            year = cl.start_date[:4]
+            cl.suggested_trip_id = f"{trip_id}-{year}"
+
+        # Match estendido (3 estratégias).
+        match = match_existing_trip_album(cl, trips, album_match_km=album_match_km)
+        if not match:
+            # Fallback: tenta a lógica clássica (país+datas)
+            match = match_existing_trip(cl, trips, threshold_days)
+        if match:
+            cl.action = "merge"
+            cl.merge_with = match
+        clusters.append(cl)
+
+    return clusters, total_items
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Ingere fotos do Google Takeout em proposals.json.")
     ap.add_argument("--input", type=Path, default=DEFAULT_INPUT, help="Pasta de entrada (default: ./media-import/)")
     ap.add_argument("--output", type=Path, default=DEFAULT_OUTPUT, help="proposals.json de saída (default: ./proposals.json)")
+    ap.add_argument("--mode", choices=("auto", "album", "cluster"), default="auto",
+                    help="auto = detecta pelo conteúdo; album = uma viagem por subpasta; cluster = DBSCAN.")
     ap.add_argument("--eps-days", type=float, default=DEFAULTS["eps_days"])
     ap.add_argument("--eps-km", type=float, default=DEFAULTS["eps_km"])
     ap.add_argument("--min-samples", type=int, default=DEFAULTS["min_samples"])
+    ap.add_argument("--album-match-km", type=float, default=DEFAULTS["album_match_km"],
+                    help="Raio (km) para match por proximidade em modo álbum.")
     ap.add_argument("--no-geocode", action="store_true", help="Pula reverse geocoding (útil em CI)")
     ap.add_argument("--dry-run", action="store_true", help="Não escreve proposals.json")
     args = ap.parse_args(argv)
@@ -587,13 +905,18 @@ def main(argv: list[str] | None = None) -> int:
     trips = load_trips(TRIPS_JSON)
     payload = run(
         args.input, args.output, trips,
+        mode=args.mode,
         eps_days=args.eps_days, eps_km=args.eps_km,
-        min_samples=args.min_samples, geocode=not args.no_geocode,
+        min_samples=args.min_samples,
+        album_match_km=args.album_match_km,
+        geocode=not args.no_geocode,
         dry_run=args.dry_run,
     )
     s = payload["summary"]
-    print(f"\nResumo: {s['total_items']} item(s), {s['clusters']} cluster(s) "
-          f"({s['create']} novos, {s['merge']} merge, {s['orphan']} órfãos).", file=sys.stderr)
+    print(f"\nResumo ({payload['mode']}): {s['total_items']} item(s), "
+          f"{s['clusters']} cluster(s) "
+          f"({s['create']} novos, {s['merge']} merge, {s['orphan']} órfãos).",
+          file=sys.stderr)
     return 0
 
 

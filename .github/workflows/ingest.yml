@@ -2,16 +2,20 @@ name: ingest
 
 # Pipeline de ingestao de fotos do Google Takeout (Fase 3).
 #
-# Dois estagios manuais (workflow_dispatch) — pensados para serem rodados
-# pelo proprio dono do repo apos um Takeout chegar:
+# Dois modos detectados automaticamente:
+#   - album   → media-import/<trip-id>/ (1 subpasta = 1 viagem).
+#   - cluster → media-import/ com arquivos soltos (DBSCAN).
 #
-#   1) detect: roda ingest_takeout.py em /media-import/ e abre um PR com
-#      proposals.json para revisao humana.
-#   2) apply:  apos o PR ser aprovado/editado, roda optimize_media.py +
-#      apply_proposals.py e commita /media/<trip-id>/ + trips.json.
+# Dois estagios:
+#   1) detect: roda ingest_takeout.py em /media-import/, gera previews +
+#      pr-body.md, abre PR `chore/ingest-proposals` para revisao humana.
+#   2) apply (manual):  apos o PR ser aprovado/editado, roda optimize_media
+#      + apply_proposals e commita /media/<trip-id>/ + trips.json.
 #
-# Nada acontece em push automatico — o usuario sempre revisa o proposals.json
-# antes de fotos saiirem otimizadas e trips.json ser tocado.
+# Triggers:
+#   - workflow_dispatch (manual) — sempre disponivel, escolhe stage.
+#   - push em media-import/** — auto-dispara stage=detect.
+#   Nada de auto-merge: o dono revisa o PR antes de aplicar.
 
 on:
   workflow_dispatch:
@@ -27,18 +31,24 @@ on:
         description: "Branch onde proposals.json/_optimized esta (so para stage=apply). Default: chore/ingest-proposals"
         required: false
         default: chore/ingest-proposals
+  push:
+    paths:
+      - "media-import/**"
 
 permissions:
   contents: write
   pull-requests: write
 
 concurrency:
-  group: ingest-${{ github.event.inputs.stage }}
+  group: ingest-${{ github.event.inputs.stage || 'detect' }}
   cancel-in-progress: false
 
 jobs:
   detect:
-    if: github.event.inputs.stage == 'detect'
+    # Roda em push automatico OU workflow_dispatch com stage=detect.
+    if: |
+      github.event_name == 'push' ||
+      github.event.inputs.stage == 'detect'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -67,11 +77,14 @@ jobs:
           fi
 
       - name: Run ingest_takeout.py
+        # Modo auto: detecta album (subpastas) vs cluster (arquivos soltos).
+        # --no-geocode em CI evita rate-limit Nominatim; geocoding pode rodar local.
         run: |
           python scripts/ingest_takeout.py \
             --input media-import \
             --output proposals.json \
-            --no-geocode  # geocoding fora do CI evita rate-limit Nominatim
+            --mode auto \
+            --no-geocode
 
       - name: Show proposals summary
         run: |
@@ -79,14 +92,29 @@ jobs:
           import json
           p = json.load(open('proposals.json'))
           s = p['summary']
+          print(f'Modo: {p.get(\"mode\")}')
           print(f'Clusters detectados: {s[\"clusters\"]}')
           print(f'  create: {s[\"create\"]}')
           print(f'  merge:  {s[\"merge\"]}')
           print(f'  orphan: {s[\"orphan\"]}')
           "
 
-      - name: Force-add gitignored proposals.json
-        run: git add -f proposals.json
+      - name: Build PR preview (thumbs 2×2 + lista de captions)
+        # Gera previews/ingest/<cluster-id>/N.webp e pr-body.md.
+        # Os thumbs entram no commit (add-paths abaixo) e o body do PR usa
+        # raw.githubusercontent.com pra renderizar inline.
+        run: |
+          python scripts/build_pr_preview.py \
+            --proposals proposals.json \
+            --previews-dir previews/ingest \
+            --branch chore/ingest-proposals \
+            --repo "${GITHUB_REPOSITORY}" \
+            --out pr-body.md
+
+      - name: Force-add gitignored proposals.json + previews
+        run: |
+          git add -f proposals.json
+          git add -f previews/ingest/ 2>/dev/null || true
 
       - name: Create PR for human review
         uses: peter-evans/create-pull-request@v6
@@ -95,27 +123,16 @@ jobs:
           branch: chore/ingest-proposals
           delete-branch: false
           title: "chore(ingest): proposals.json gerado — revise antes de aplicar"
-          commit-message: "chore(ingest): proposals.json (auto-gerado pelo workflow ingest)"
-          add-paths: proposals.json
-          body: |
-            **Proposals.json** gerado pelo `ingest_takeout.py`.
-
-            ## Como revisar
-
-            1. Abra `proposals.json` neste PR.
-            2. Para cada cluster, decida:
-               - `action: create` → cria nova viagem (ajuste `suggested_trip_id`, `place`, `country` se quiser).
-               - `action: merge` → anexa em trip existente (confirme `merge_with`).
-               - `action: orphan` → ignorado (mídia sem cluster ou com poucas fotos).
-            3. Edite o JSON diretamente neste PR se precisar (GitHub Web ou local).
-            4. Quando estiver bom, **merge este PR**.
-            5. Rode o workflow `ingest` novamente com `stage=apply` para otimizar mídia + commitar trips.
-
-            ⚠ Este PR não otimiza nada ainda — só propõe. Otimização (WebP, thumbs, EXIF strip) acontece no estágio `apply`.
+          commit-message: "chore(ingest): proposals.json + previews (auto-gerado)"
+          add-paths: |
+            proposals.json
+            previews/ingest/**
+          body-path: pr-body.md
           labels: auto-ingest
 
   apply:
-    if: github.event.inputs.stage == 'apply'
+    # Apply nunca dispara em push — só via workflow_dispatch manual.
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.stage == 'apply'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:

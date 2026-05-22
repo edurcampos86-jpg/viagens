@@ -304,6 +304,10 @@
                 "type": "string",
                 "maxLength": 280
               },
+              "caption_auto": {
+                "type": "boolean",
+                "description": "True quando a caption foi gerada automaticamente pela ingestão (cidade · data). Editar manualmente → mude para false."
+              },
               "date": {
                 "type": "string",
                 "format": "date"

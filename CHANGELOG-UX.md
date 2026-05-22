@@ -464,3 +464,154 @@ limitações, privacidade. Material de referência para reproduzir.
 - ✅ `validate_schemas.py` é o gate antes de qualquer escrita.
 - ✅ Apenas deps gratuitas e open-source.
 - ✅ Testes pytest cobrem clustering, otimização e apply (21/21).
+
+---
+
+# Fase 4 — Modo álbum-por-álbum + legendas híbridas + preview em PR
+
+**Data:** 2026-05-22
+**Branch:** `claude/album-by-album-ingest-6j8Al`
+**Sem deps novas.** Reusa `Pillow`/`exifread`/`scikit-learn` já em `requirements-ingest.txt`.
+
+## Problema
+
+A pipeline de ingestão da Fase 3 só sabia processar Takeouts grandes
+("solte tudo, DBSCAN descobre"). Para o uso real — "tirei foto de uma
+viagem, quero subir esse álbum específico" — o fluxo era acoplado demais.
+Faltava também: legendas amigáveis por foto, preview visual no PR (sem
+abrir cada WebP do Files-changed) e rastreabilidade de descartes.
+
+## Solução
+
+Quatro mudanças complementares, todas opt-in/auto-detect (não quebra
+nada da Fase 3):
+
+### 1. Modo `album` no `ingest_takeout.py`
+
+- `detect_mode(input_dir)`: se `/media-import/` tem subpastas → `album`;
+  se tem arquivos soltos → `cluster` (legado).
+- `scan_album_mode`: cada subpasta vira uma viagem candidata (sem DBSCAN).
+- `match_existing_trip_album`: 3 estratégias antes de criar viagem nova:
+  (a) trip-id direto, (b) ano + país, (c) ano + lat/lon próximos (≤300 km).
+- Default em `--mode auto`; força com `--mode album` ou `--mode cluster`.
+
+### 2. Legendas híbridas (`caption_auto`)
+
+- `optimize_media.make_auto_caption(place, ts)` gera `"Kyoto · 15 out 2023"`
+  (formato pt-BR, com mês abreviado).
+- Cada item otimizado carrega `caption_auto: true` no JSON. Se você editar
+  manualmente, mude para `caption_auto: false` — distinção visual fácil
+  no PR e em admin futuro.
+- Fallback: se reverse-geocoding falhar, usa só a data.
+
+### 3. Priorização com espaçamento temporal + log de descartes
+
+- `prioritize_with_discards`: GPS-primeiro, depois espaçamento temporal
+  uniforme (1 a cada N min — primeiro e último sempre incluídos),
+  cronológico para preencher resto.
+- Cap mantido: 20 fotos + 2 vídeos por viagem.
+- Descartes ficam em `proposals.json._discards` e são logados em
+  `INGEST-LOG.md` com `path`, `type`, `has_gps`, `timestamp`.
+
+### 4. Preview do PR (`scripts/build_pr_preview.py`)
+
+- Para cada cluster não-órfão: thumbs 160×160 WebP em
+  `previews/ingest/<cluster-id>/N.webp` (até 4 imagens representativas).
+- Markdown body (`pr-body.md`) com:
+  - `trip-id` detectado e ação (create/merge)
+  - Período + local + contagem `Detectadas N fotos + M vídeos`
+  - Grid 2×2 inline via `raw.githubusercontent.com`
+  - Lista de captions geradas (até 25/cluster)
+- Workflow `.github/workflows/ingest.yml` agora roda
+  `build_pr_preview.py` e usa `body-path: pr-body.md`.
+
+## Testes
+
+`scripts/test_ingest.py`: 21 testes antigos preservados + **19 novos**:
+
+- `test_detect_mode_*` (3): album, cluster, vazio.
+- `test_scan_album_mode_skips_empty_subdirs`
+- `test_build_album_cluster_no_dbscan_groups_everything`
+- `test_album_match_by_*` (4): id direto, ano+país, proximidade, mismatch.
+- `test_run_album_mode_*` (2): end-to-end + merge com trip existente.
+- `test_make_auto_caption_*` (3): formato pt-BR, fallbacks.
+- `test_prioritize_*` (2): discards + espaçamento temporal.
+- `test_optimize_cluster_emits_caption_auto`
+- `test_optimize_cluster_returns_discards_when_requested`
+- `test_apply_preserves_caption_auto_in_gallery`
+
+**Resultado:** 40/40 pytest passando.
+
+## Compatibilidade
+
+- ✅ Modo `cluster` (Fase 3) intacto — testado e ainda padrão para
+  Takeouts soltos.
+- ✅ Trips existentes (Foz 2021) não são afetadas: nenhum schema mudou,
+  `caption_auto` é campo opcional no `gallery[]`.
+- ✅ `validate_schemas.py` continua sendo o gate antes de qualquer
+  escrita em `trips.json`.
+
+## Não validado nessa branch
+
+- **Lighthouse mobile ≥ 90:** mudanças são só em `scripts/`, `docs/` e
+  `.github/workflows/` — frontend (`index.html`, `assets/`) não foi
+  tocado, então a métrica não muda em relação à medição da Fase 3.
+- **Workflow end-to-end no Actions:** validei localmente
+  (`ingest_takeout.py` + `optimize_media.py` + `build_pr_preview.py` com
+  álbum sintético `kyoto-2023` de 5 fotos). Próxima execução real
+  validará o `peter-evans/create-pull-request` com `body-path` e o
+  rendering dos thumbs via raw URL.
+
+## Patches consolidados de `claude/album-by-album-ingest-dQZe0`
+
+Existia uma branch paralela `claude/album-by-album-ingest-dQZe0`
+implementando a mesma feature por outra sessão. Comparação lado-a-lado
+revelou 4 melhorias funcionais que foram cherry-picked aqui antes do
+merge. A `dQZe0` é deletada do remote ao consolidar.
+
+### Patch 1 — `caption_auto` no schema (commit `f35d3ea`)
+
+**Bug crítico encontrado.** `data/schemas/trip.schema.json` tem
+`additionalProperties: false` em `media.gallery[].items`. Sem declarar
+`caption_auto`, `apply_proposals.py` aborta em `validate_or_die()` no
+modo non-dry-run. Coberto pelo teste de regressão
+`test_apply_with_caption_auto_passes_schema_validation`.
+
+### Patch 2 — Captions per-photo com cache (commit `33edb3d`)
+
+**UX win significativo.** Antes: caption usava `cluster.place` (1 cidade
+por álbum). Álbum Tokyo+Kyoto recebia rótulo único errado. Depois:
+`generate_captions()` em `ingest_takeout.py` faz reverse-geocode por
+foto, com cache por `(lat, lon)` arredondado a ~5 km. Foto em Tokyo vira
+`"Tokyo · DD"`, foto em Kyoto vira `"Kyoto · DD"`. 30 fotos no mesmo
+bairro = 1 chamada ao Nominatim. Responsabilidade movida de
+`optimize_media.py` (errada — não tem GPS contexto) para `ingest_takeout.py`.
+
+### Patch 3 — Push trigger no workflow (commit `711cdc2`)
+
+A spec original pedia "push em `/media-import/` OU `workflow_dispatch`".
+A primeira versão tinha só `workflow_dispatch` — agora `on.push.paths:
+["media-import/**"]` dispara `stage=detect` automaticamente. Job `apply`
+permanece manual via dispatch (sem auto-apply, ever).
+
+### Patch 4 — Filtro `__MACOSX` / dotfiles (commit `aa01ce2`)
+
+`detect_mode()` e `scan_album_mode()` agora ignoram subpastas
+`__MACOSX/` (geradas pelo Finder ao zipar) e qualquer subpasta começando
+com `.` (`.Spotlight-V100`, `.DS_Store`, `.git` etc.). Antes: uma pasta
+com só `__MACOSX/` virava modo `album` com cluster fantasma.
+
+### Testes adicionados pelos patches
+
+49 testes totais (45 anteriores + 4 dos patches):
+
+- `test_apply_with_caption_auto_passes_schema_validation` (patch 1)
+- `test_generate_captions_per_photo_with_cache` (patch 2)
+- `test_generate_captions_falls_back_to_date_when_no_geocode` (patch 2)
+- `test_generate_captions_uses_fallback_place_when_geocode_fails` (patch 2)
+- `test_run_album_mode_emits_per_photo_captions` (patch 2)
+- `test_optimize_cluster_preserves_pre_generated_captions` (patch 2, renomeado)
+- `test_workflow_has_push_trigger_for_media_import` (patch 3)
+- `test_detect_mode_ignores_macosx_and_dotfiles` (patch 4)
+- `test_detect_mode_album_when_macosx_alongside_real_album` (patch 4)
+- `test_scan_album_mode_skips_macosx` (patch 4)
