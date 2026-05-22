@@ -35,7 +35,7 @@ passada com o site rodando.
 Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(qa): …` for criado.
 
 - [x] B1 — Empty states do timeline mencionam `data/trips.json` (jargão)
-- [ ] B2 — Tour não tem focus trap (Tab escapa do balão)
+- [x] B2 — Tour não tem focus trap (Tab escapa do balão)
 - [ ] B3 — Dead code de status `em_planejamento` (não existe em trips.json)
 - [ ] B4 — `tour-balloon` ignora `prefers-reduced-motion` no `scrollIntoView`
 - [x] B5 — Alerta do dashboard cita `documentos.json` (jargão técnico)
@@ -53,7 +53,7 @@ Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(q
 - [ ] B17 — `manifest.theme_color` (#0369a1) destoa do header coral/sun
 - [ ] B18 — Falta `cache-busting` em `assets/app.js` e `assets/styles.css`
 - [ ] B19 — `loading="lazy"` ausente nas imagens dos cards hero do dashboard
-- [ ] B20 — Tour balloon não tem `aria-labelledby` apontando para `<h4>`
+- [x] B20 — Tour balloon não tem `aria-labelledby` apontando para `<h4>`
 - [ ] B21 — `404.html` não tem link de voltar para o site
 
 ---

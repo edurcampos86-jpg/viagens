@@ -3104,7 +3104,7 @@ const TOUR_STEPS = [
   },
 ];
 
-const TourState = { idx: 0, els: null, active: false };
+const TourState = { idx: 0, els: null, active: false, lastFocused: null };
 
 function tourBuildEls() {
   const spotlight = document.createElement('div');
@@ -3119,8 +3119,18 @@ function tourBuildEls() {
   balloon.setAttribute('role', 'dialog');
   balloon.setAttribute('aria-live', 'polite');
   balloon.setAttribute('aria-modal', 'true');
+  balloon.setAttribute('aria-labelledby', 'tour-balloon-title');
   document.body.append(overlay, spotlight, balloon);
   TourState.els = { overlay, spotlight, balloon };
+}
+
+function tourFocusables() {
+  if (!TourState.els) return [];
+  return Array.from(
+    TourState.els.balloon.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+  ).filter((n) => !n.hasAttribute('disabled') && n.offsetParent !== null);
 }
 
 function tourTearDown() {
@@ -3134,6 +3144,11 @@ function tourTearDown() {
     TourState.els = null;
   }
   TourState.active = false;
+  // Devolve o foco para o elemento que abriu o tour.
+  if (TourState.lastFocused && typeof TourState.lastFocused.focus === 'function') {
+    try { TourState.lastFocused.focus(); } catch {}
+  }
+  TourState.lastFocused = null;
 }
 
 function tourEnd({ completed = false } = {}) {
@@ -3221,7 +3236,7 @@ function tourRender() {
   const secondaryLabel = step.secondary || 'Anterior';
   b.innerHTML = `
     ${isFirst ? '' : '<button type="button" class="tour-skip" data-tour-act="skip">Sair do tour ✕</button>'}
-    <h4>${step.title}</h4>
+    <h4 id="tour-balloon-title">${step.title}</h4>
     <p>${step.body}</p>
     <div class="tour-meta">
       <span class="tour-counter">${TourState.idx + 1} de ${total}</span>
@@ -3265,15 +3280,30 @@ function tourPrev() {
   }
 }
 function tourOnKey(e) {
-  if (e.key === 'Escape') { e.preventDefault(); tourEnd({ completed: false }); }
-  else if (e.key === 'ArrowRight') { e.preventDefault(); tourNext(); }
-  else if (e.key === 'ArrowLeft') { e.preventDefault(); tourPrev(); }
+  if (e.key === 'Escape') { e.preventDefault(); tourEnd({ completed: false }); return; }
+  if (e.key === 'ArrowRight') { e.preventDefault(); tourNext(); return; }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); tourPrev(); return; }
+  if (e.key === 'Tab') {
+    const items = tourFocusables();
+    if (!items.length) { e.preventDefault(); return; }
+    const first = items[0];
+    const last = items[items.length - 1];
+    const current = document.activeElement;
+    if (e.shiftKey && (current === first || !items.includes(current))) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && (current === last || !items.includes(current))) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
 }
 function startTour({ force = false } = {}) {
   if (TourState.active) return;
   if (location.hash && location.hash !== '#dashboard' && location.hash !== '#') {
     location.hash = '#dashboard';
   }
+  TourState.lastFocused = document.activeElement;
   setTimeout(() => {
     TourState.idx = 0;
     TourState.active = true;
