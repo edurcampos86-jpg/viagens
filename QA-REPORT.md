@@ -51,7 +51,7 @@ Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(q
 - [x] B15 — falso positivo: `toast._t` referencia a função declarada, é válido
 - [x] B16 — `sw.js` stub não trata erro se `unregister()` falhar
 - [x] B17 — `manifest.theme_color` (#0369a1) destoa do header coral/sun
-- [ ] B18 — Falta `cache-busting` em `assets/app.js` e `assets/styles.css`
+- [x] B18 — Falta `cache-busting` em `assets/app.js` e `assets/styles.css`
 - [ ] B19 — `loading="lazy"` ausente nas imagens dos cards hero do dashboard
 - [x] B20 — Tour balloon não tem `aria-labelledby` apontando para `<h4>`
 - [x] B21 — falso positivo: `404.html` já tem `<a href="./">Voltar ao início</a>`
