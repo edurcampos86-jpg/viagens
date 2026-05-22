@@ -317,3 +317,99 @@ def test_optimize_cluster_end_to_end_with_synthetic_photos(tmp_path):
     assert (trip_dir / "01-thumb.webp").exists()
     # Path retornado é relativo ao repo root
     assert results[0].src.startswith("media/teste-2024/")  # type: ignore[attr-defined]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# apply_proposals — testes de aplicação em trips.json
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _opt(src: str, kind: str = "image") -> dict:
+    return {"type": kind, "src": src, "thumb": src.replace(".webp", "-thumb.webp"),
+            "date": "2024-06-12", "lat": -25.69, "lon": -54.43}
+
+
+def test_apply_creates_new_trip(tmp_path):
+    from apply_proposals import apply
+    proposals = tmp_path / "proposals.json"
+    trips = tmp_path / "trips.json"
+    trips.write_text(json.dumps({"config": {}, "trips": []}))
+    opt = [_opt("media/teste-2024/01.webp"), _opt("media/teste-2024/02.webp")]
+    proposals.write_text(json.dumps({
+        "clusters": [{
+            "id": "cluster-0", "action": "create",
+            "suggested_trip_id": "teste-2024",
+            "place": "Foz do Iguaçu", "country": "Brasil", "country_code": "BR",
+            "start_date": "2024-06-10", "end_date": "2024-06-14",
+            "center_lat": -25.69, "center_lon": -54.43,
+            "items": [{"path": "/tmp/x.jpg", "type": "image"}],
+        }],
+        "_optimized": {"cluster-0": opt},
+    }))
+    res = apply(proposals, trips, dry_run=True)
+    assert res["summary"]["created"] == 1
+    assert res["summary"]["merged"] == 0
+    assert res["summary"]["photos"] == 2
+    # Trip foi adicionada em memória; dry_run não persiste
+    doc = json.loads(trips.read_text())
+    assert len(doc["trips"]) == 0  # dry-run
+
+
+def test_apply_merges_into_existing_trip(tmp_path):
+    from apply_proposals import apply
+    proposals = tmp_path / "proposals.json"
+    trips = tmp_path / "trips.json"
+    trips.write_text(json.dumps({"config": {}, "trips": [
+        {"id": "iguacu-2021", "name": "Foz", "status": "done", "country": "Brasil",
+         "year": 2021, "month": 6, "lat": -25.69, "lon": -54.43,
+         "media": {"gallery": [{"type": "image", "src": "media/iguacu-2021/01.webp"}],
+                   "stats": {"photos": 1, "videos": 0}}}
+    ]}))
+    opt = [_opt("media/iguacu-2021/02.webp"), _opt("media/iguacu-2021/03.webp")]
+    proposals.write_text(json.dumps({
+        "clusters": [{
+            "id": "cluster-0", "action": "merge", "merge_with": "iguacu-2021",
+            "items": [], "start_date": "2021-06-12", "end_date": "2021-06-14",
+        }],
+        "_optimized": {"cluster-0": opt},
+    }))
+    res = apply(proposals, trips, dry_run=False)
+    assert res["summary"]["merged"] == 1
+    doc = json.loads(trips.read_text())
+    trip = doc["trips"][0]
+    # Gallery cresceu de 1 para 3 (sem duplicar)
+    assert len(trip["media"]["gallery"]) == 3
+    assert trip["media"]["stats"]["photos"] == 3
+
+
+def test_apply_skips_orphan(tmp_path):
+    from apply_proposals import apply
+    proposals = tmp_path / "proposals.json"
+    trips = tmp_path / "trips.json"
+    trips.write_text(json.dumps({"trips": []}))
+    proposals.write_text(json.dumps({
+        "clusters": [{"id": "cluster-0", "action": "orphan", "items": []}],
+        "_optimized": {},
+    }))
+    res = apply(proposals, trips, dry_run=True)
+    assert res["summary"]["skipped_orphan"] == 1
+    assert res["summary"]["created"] == 0
+
+
+def test_apply_collision_dedupes_id(tmp_path):
+    """Se o suggested_trip_id já existe, deve sufixar com -dup-N."""
+    from apply_proposals import apply
+    proposals = tmp_path / "proposals.json"
+    trips = tmp_path / "trips.json"
+    trips.write_text(json.dumps({"trips": [
+        {"id": "tokyo-2024", "name": "Tokyo", "status": "done"}
+    ]}))
+    proposals.write_text(json.dumps({
+        "clusters": [{
+            "id": "cluster-0", "action": "create",
+            "suggested_trip_id": "tokyo-2024",
+            "place": "Tokyo", "country": "Japão", "start_date": "2024-09-10",
+        }],
+        "_optimized": {"cluster-0": [_opt("media/tokyo-2024-dup-2/01.webp")]},
+    }))
+    res = apply(proposals, trips, dry_run=True)
+    assert res["details"][0]["trip_id"] == "tokyo-2024-dup-2"
