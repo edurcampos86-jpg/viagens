@@ -1,0 +1,10 @@
+# Dependências da Fase 3 — pipeline de ingestão do Google Takeout.
+# Instale: pip install -r scripts/requirements-ingest.txt
+#
+# Requer também ffmpeg no sistema (apt-get install ffmpeg / brew install ffmpeg)
+# para extrair posters de vídeos e re-encodar quando necessário.
+
+Pillow>=10.0
+exifread>=3.0
+scikit-learn>=1.4
+geopy>=2.4

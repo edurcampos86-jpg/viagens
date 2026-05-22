@@ -21,6 +21,7 @@ secrets.*
 node_modules/
 dist/
 .vite/
+package-lock.json
 
 # OS
 .DS_Store
@@ -37,3 +38,9 @@ Thumbs.db
 
 # Claude Code (preferências pessoais locais — settings compartilhadas vão em .claude/settings.json)
 .claude/settings.local.json
+
+# Ingestão (Fase 3) — fotos brutas do Google Takeout
+# Só vai pro repo o otimizado em /media/<trip-id>/, com EXIF stripado.
+media-import/
+proposals.json
+# INGEST-LOG.md fica tracked (historico do que cada apply rodou)

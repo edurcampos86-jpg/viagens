@@ -1,0 +1,29 @@
+# Git LFS — armazenamento de mídia das viagens.
+# Configurado na Fase 2 do projeto Evolução do site Minhas Viagens.
+#
+# Para que funcione no seu clone local:
+#   1) Instale o git-lfs uma vez: https://git-lfs.com  (Mac: brew install git-lfs)
+#   2) Ative no repo: git lfs install
+#   3) Para arquivos JÁ commitados antes do LFS: git lfs migrate import --include="*.webp,*.jpg,*.jpeg,*.png,*.mp4,*.mov,*.heic"
+#
+# Limites GitHub (planos gratuitos):
+#   - 1 GB de storage total
+#   - 1 GB/mês de bandwidth (download)
+# Acompanhe via: Settings → Billing → Git LFS data.
+
+# Imagens
+*.webp filter=lfs diff=lfs merge=lfs -text
+*.jpg  filter=lfs diff=lfs merge=lfs -text
+*.jpeg filter=lfs diff=lfs merge=lfs -text
+*.png  filter=lfs diff=lfs merge=lfs -text
+*.heic filter=lfs diff=lfs merge=lfs -text
+*.avif filter=lfs diff=lfs merge=lfs -text
+
+# Vídeos
+*.mp4  filter=lfs diff=lfs merge=lfs -text
+*.mov  filter=lfs diff=lfs merge=lfs -text
+*.m4v  filter=lfs diff=lfs merge=lfs -text
+*.webm filter=lfs diff=lfs merge=lfs -text
+
+# SVG e ícones existentes NÃO entram no LFS — são leves e diffáveis.
+icons/*.svg !filter !diff !merge text

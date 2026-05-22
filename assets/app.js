@@ -138,6 +138,25 @@ function formatPtDate(iso) {
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 }
 
+// ── URL helpers ──────────────────────────────────────────────────────
+// Aceita apenas http(s); rejeita javascript:, data:, file: etc.
+function isSafeHttpUrl(value) {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+// Hero/cover de um trip: prioriza imagem propria (trip.gallery[0]); se nao
+// tem, cai em picsum com seed estavel + dimensoes solicitadas pelo chamador.
+function heroImageUrl(trip, w, h) {
+  if (trip.gallery && trip.gallery[0]) return trip.gallery[0];
+  return `https://picsum.photos/seed/${encodeURIComponent(trip.id)}/${w}/${h}`;
+}
+
 // ── Status helpers ───────────────────────────────────────────────────
 function isFutureStatus(s) { return s === 'planned' || s === 'wishlist'; }
 function isPlanningView() {
@@ -293,6 +312,8 @@ function applyTheme() {
   el.darkBtn.setAttribute('aria-pressed', String(state.isDark));
   el.darkIcon.textContent = state.isDark ? '☀' : '☾';
   el.darkLbl.textContent = state.isDark ? 'Claro' : 'Escuro';
+  const metaTheme = document.getElementById('metaThemeColor');
+  if (metaTheme) metaTheme.setAttribute('content', state.isDark ? '#0e1a26' : '#fff8ee');
 }
 function toggleTheme() {
   state.isDark = !state.isDark;
@@ -583,13 +604,13 @@ function updateAdvCount() {
 // ── Stats ────────────────────────────────────────────────────────
 function renderStats(visible) {
   const trips = visible.length;
-  const countries = new Set(visible.map(t => t.name)).size;
-  const continents = new Set(visible.map(t => t.continent)).size;
+  const countries = new Set(visible.map(t => t.country).filter(Boolean)).size;
+  const continents = new Set(visible.map(t => t.continent).filter(Boolean)).size;
   const nights = visible.reduce((s, t) => s + (t.nts || 0), 0);
   const km = visible.reduce((s, t) => s + (t.km || 0), 0);
   const stats = [
     { v: trips, l: 'Viagens' },
-    { v: countries, l: 'Destinos' },
+    { v: countries, l: 'Países' },
     { v: continents, l: 'Continentes' },
     { v: nights, l: 'Noites' },
     { v: km.toLocaleString('pt-BR'), l: 'km voados est.' }
@@ -1019,6 +1040,16 @@ function hydrateCard(node, trip) {
     });
   }
 
+  // Album button — visível quando trip.media existe
+  const albumBtn = node.querySelector('[data-album]');
+  const albumCount = node.querySelector('[data-album-count]');
+  if (trip.media && Array.isArray(trip.media.gallery) && trip.media.gallery.length) {
+    albumBtn.hidden = false;
+    const n = trip.media.gallery.length;
+    if (albumCount) albumCount.textContent = `(${n})`;
+    albumBtn.addEventListener('click', e => { e.stopPropagation(); openAlbum(trip); });
+  }
+
   // Status promotion button
   const promoBtn = node.querySelector('[data-promote]');
   const promoLbl = node.querySelector('[data-promote-label]');
@@ -1049,7 +1080,6 @@ function statusLabel(status) {
   return ({
     done: 'Realizada',
     planned: 'Confirmada',
-    em_planejamento: 'Em planejamento',
     wishlist: 'Wishlist',
   })[status] || status;
 }
@@ -1559,6 +1589,10 @@ function populateInspiration(node, trip) {
   panel.querySelector('[data-ins-add-link]').addEventListener('submit', e => {
     e.preventDefault();
     const [u, t] = e.target.querySelectorAll('input');
+    if (!isSafeHttpUrl(u.value)) {
+      alert('URL invalida. Use um endereco http:// ou https://.');
+      return;
+    }
     const arr = (loadTripState(trip.id).inspirationLinks || links).slice();
     arr.push({ url:u.value, title:t.value });
     saveTripState(trip.id, { inspirationLinks: arr });
@@ -1567,6 +1601,10 @@ function populateInspiration(node, trip) {
   panel.querySelector('[data-ins-add-img]').addEventListener('submit', e => {
     e.preventDefault();
     const u = e.target.querySelector('input');
+    if (!isSafeHttpUrl(u.value)) {
+      alert('URL invalida. Use um endereco http:// ou https://.');
+      return;
+    }
     const arr = (loadTripState(trip.id).inspirationImages || images).slice();
     arr.push(u.value);
     saveTripState(trip.id, { inspirationImages: arr });
@@ -1989,7 +2027,7 @@ function renderDashboard() {
   const done = trips.filter(t => t.status === 'done')
     .sort((a,b) => (b.year - a.year) || (b.month - a.month));
   const futuras = trips
-    .filter(t => ['planned', 'em_planejamento'].includes(t.status))
+    .filter(t => t.status === 'planned')
     .filter(t => { const d = daysTo(t); return d != null && d >= 0; })
     .sort((a,b) => daysTo(a) - daysTo(b));
 
@@ -1998,8 +2036,10 @@ function renderDashboard() {
   if (futuras.length) {
     const t = futuras[0];
     heroEl.hidden = false;
-    const imgUrl = (t.gallery && t.gallery[0]) || `https://picsum.photos/seed/${encodeURIComponent(t.id)}/1800/1000`;
-    $('#dashHeroBg').style.backgroundImage = `url(${imgUrl})`;
+    const imgUrl = heroImageUrl(t, 1800, 1000);
+    const imgSmall = heroImageUrl(t, 800, 450);
+    const bg = $('#dashHeroBg');
+    bg.style.backgroundImage = `url(${window.matchMedia('(max-width: 720px)').matches ? imgSmall : imgUrl})`;
     $('#dashHeroEyebrow').textContent = CONTINENT_NAMES[t.continent] || '';
     $('#dashHeroName').textContent = t.name;
     $('#dashHeroDates').textContent = fmtTripDates(t);
@@ -2035,7 +2075,8 @@ function renderDashboard() {
   if (done.length) {
     lastSec.hidden = false;
     const t = done[0];
-    const imgUrl = (t.gallery && t.gallery[0]) || `https://picsum.photos/seed/${encodeURIComponent(t.id)}/1000/1200`;
+    const isMobile = window.matchMedia('(max-width: 720px)').matches;
+    const imgUrl = heroImageUrl(t, isMobile ? 600 : 1000, isMobile ? 720 : 1200);
     $('#dashLastImg').style.backgroundImage = `url(${imgUrl})`;
     $('#dashLastKicker').textContent = CONTINENT_NAMES[t.continent] || '';
     $('#dashLastName').textContent = t.name;
@@ -2073,9 +2114,8 @@ function renderDashAlerts(trips, futuras) {
     }
   }
 
-  // Viagens em_planejamento sem hospedagem
-  const semHotel = futuras.filter(t => t.status === 'em_planejamento'
-    && (!t.hospedagem || t.hospedagem.length === 0));
+  // Viagens planejadas sem hospedagem confirmada
+  const semHotel = futuras.filter(t => !t.hospedagem || t.hospedagem.length === 0);
   for (const t of semHotel) {
     const d = daysToTrip(t);
     alerts.push({
@@ -2089,7 +2129,7 @@ function renderDashAlerts(trips, futuras) {
   if (futuras.some(t => t.country && t.country !== 'Brasil')) {
     alerts.push({
       type: 'info', ic: '🛂',
-      html: 'Validade do passaporte ainda não cadastrada em <strong>documentos.json</strong> — necessária para o Auditor.',
+      html: 'Validade do passaporte ainda não cadastrada — necessária para liberar o Auditor de viagens internacionais.',
     });
   }
 
@@ -2121,8 +2161,6 @@ function daysToTrip(t) {
 
 function renderDashKanban(trips) {
   const confirmadas = trips.filter(t => t.status === 'planned')
-    .sort((a,b) => (daysToTrip(a) ?? 9e9) - (daysToTrip(b) ?? 9e9));
-  const planejando  = trips.filter(t => t.status === 'em_planejamento')
     .sort((a,b) => (daysToTrip(a) ?? 9e9) - (daysToTrip(b) ?? 9e9));
   const wish        = trips.filter(t => t.status === 'wishlist');
 
@@ -2162,9 +2200,8 @@ function renderDashKanban(trips) {
   `;
 
   $('#dashKanban').innerHTML =
-    col('Confirmadas',    'confirmed', '✓', confirmadas) +
-    col('Em planejamento','planning',  '◐', planejando) +
-    col('Wishlist',       'wish',      '★', wish);
+    col('Confirmadas', 'confirmed', '✓', confirmadas) +
+    col('Wishlist',    'wish',      '★', wish);
 }
 
 // ── Modo Memória (Fase 4a) ───────────────────────────────────────
@@ -2286,7 +2323,6 @@ function fmtNumBR(n) { return new Intl.NumberFormat('pt-BR').format(n); }
 function renderPlanejamento() {
   const trips = state.trips || [];
   const wish        = trips.filter(t => t.status === 'wishlist');
-  const planning    = trips.filter(t => t.status === 'em_planejamento');
   const planned     = trips.filter(t => t.status === 'planned');
 
   // Próximas: planned + daysUntil <= 90 (e >= 0)
@@ -2298,21 +2334,20 @@ function renderPlanejamento() {
 
   // Meta no header
   const meta = $('#planjMeta');
-  const total = wish.length + planning.length + planned.length;
+  const total = wish.length + planned.length;
   if (meta) meta.textContent =
-    `${total} viagens no horizonte · ${proximas.length} próximas · ${confirmadas.length} confirmadas · ${planning.length} em planejamento · ${wish.length} wishlist`;
+    `${total} viagens no horizonte · ${proximas.length} próximas · ${confirmadas.length} confirmadas · ${wish.length} wishlist`;
 
   // Summary strip — próximo deadline + alertas críticos
-  renderPlanjSummary(proximas, confirmadas, planning);
+  renderPlanjSummary(proximas, confirmadas, []);
 
   // Kanban
   const kanban = $('#planjKanban');
   if (kanban) {
     kanban.innerHTML =
-      planjCol('Próximas',         'imminent',  '⚡', proximas) +
-      planjCol('Confirmadas',      'confirmed', '✓', confirmadas) +
-      planjCol('Em planejamento',  'planning',  '◐', planning.sort((a, b) => (daysToTrip(a) ?? 9e9) - (daysToTrip(b) ?? 9e9))) +
-      planjCol('Wishlist',         'wish',      '★', wish);
+      planjCol('Próximas',    'imminent',  '⚡', proximas) +
+      planjCol('Confirmadas', 'confirmed', '✓', confirmadas) +
+      planjCol('Wishlist',    'wish',      '★', wish);
 
     // Animar progress bars
     setTimeout(() => {
@@ -2353,7 +2388,7 @@ function planjCard(t) {
   const decisoes = (t.decisoes_pendentes || []).length;
   if (decisoes) badges.push(`<span class="planj-badge alert">⚠ ${decisoes} decis${decisoes === 1 ? 'ão' : 'ões'}</span>`);
 
-  if (t.status === 'em_planejamento' && (!t.hospedagem || t.hospedagem.length === 0))
+  if (t.status === 'planned' && (!t.hospedagem || t.hospedagem.length === 0))
     badges.push('<span class="planj-badge warn">🏨 Sem hotel</span>');
   else if (t.hospedagem && t.hospedagem.length > 0)
     badges.push(`<span class="planj-badge ok">🏨 ${t.hospedagem.length}</span>`);
@@ -2366,9 +2401,9 @@ function planjCard(t) {
     ? `${formatIsoBR(t.startDate)} → ${formatIsoBR(t.endDate)}`
     : (t.label || '');
 
-  const targets = ['planned', 'em_planejamento', 'wishlist'].filter(s => s !== t.status);
+  const targets = ['planned', 'wishlist'].filter(s => s !== t.status);
   const menuItems = targets.map(s => {
-    const ic = s === 'planned' ? '✓' : s === 'em_planejamento' ? '◐' : '★';
+    const ic = s === 'planned' ? '✓' : '★';
     return `<button class="planj-action-btn" data-action="move" data-target="${s}" data-trip-id="${t.id}">${ic} Mover para ${statusLabel(s)}</button>`;
   }).join('');
 
@@ -2983,6 +3018,10 @@ function renderPlanInspire(trip) {
   if (fL) fL.addEventListener('submit', e => {
     e.preventDefault();
     const [u, t] = e.target.querySelectorAll('input');
+    if (!isSafeHttpUrl(u.value)) {
+      alert('URL invalida. Use um endereco http:// ou https://.');
+      return;
+    }
     const arr = (loadTripState(trip.id).inspirationLinks || []).slice();
     arr.push({ url: u.value, title: t.value });
     saveTripState(trip.id, { inspirationLinks: arr });
@@ -2992,6 +3031,10 @@ function renderPlanInspire(trip) {
   if (fI) fI.addEventListener('submit', e => {
     e.preventDefault();
     const u = e.target.querySelector('input');
+    if (!isSafeHttpUrl(u.value)) {
+      alert('URL invalida. Use um endereco http:// ou https://.');
+      return;
+    }
     const arr = (loadTripState(trip.id).inspirationImages || []).slice();
     arr.push(u.value);
     saveTripState(trip.id, { inspirationImages: arr });
@@ -3104,7 +3147,7 @@ const TOUR_STEPS = [
   },
 ];
 
-const TourState = { idx: 0, els: null, active: false };
+const TourState = { idx: 0, els: null, active: false, lastFocused: null };
 
 function tourBuildEls() {
   const spotlight = document.createElement('div');
@@ -3119,8 +3162,18 @@ function tourBuildEls() {
   balloon.setAttribute('role', 'dialog');
   balloon.setAttribute('aria-live', 'polite');
   balloon.setAttribute('aria-modal', 'true');
+  balloon.setAttribute('aria-labelledby', 'tour-balloon-title');
   document.body.append(overlay, spotlight, balloon);
   TourState.els = { overlay, spotlight, balloon };
+}
+
+function tourFocusables() {
+  if (!TourState.els) return [];
+  return Array.from(
+    TourState.els.balloon.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+  ).filter((n) => !n.hasAttribute('disabled') && n.offsetParent !== null);
 }
 
 function tourTearDown() {
@@ -3134,6 +3187,11 @@ function tourTearDown() {
     TourState.els = null;
   }
   TourState.active = false;
+  // Devolve o foco para o elemento que abriu o tour.
+  if (TourState.lastFocused && typeof TourState.lastFocused.focus === 'function') {
+    try { TourState.lastFocused.focus(); } catch {}
+  }
+  TourState.lastFocused = null;
 }
 
 function tourEnd({ completed = false } = {}) {
@@ -3182,6 +3240,7 @@ function tourPositionSpotlight(rect) {
   s.style.height = `${rect.height + pad * 2}px`;
 }
 
+let _tourScrolling = false;
 function tourReposition() {
   if (!TourState.active || !TourState.els) return;
   const step = TOUR_STEPS[TourState.idx];
@@ -3201,8 +3260,14 @@ function tourReposition() {
   }
   const rect = target.getBoundingClientRect();
   if (rect.bottom < 0 || rect.top > window.innerHeight) {
-    target.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    requestAnimationFrame(() => requestAnimationFrame(tourReposition));
+    // Evita loops: enquanto um scroll programatico esta em andamento,
+    // ignora chamadas reentrante (o smooth scroll dispara o evento 'scroll'
+    // varias vezes ate concluir).
+    if (_tourScrolling) return;
+    _tourScrolling = true;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
+    setTimeout(() => { _tourScrolling = false; tourReposition(); }, reduceMotion ? 50 : 400);
     return;
   }
   TourState.els.overlay.hidden = true;
@@ -3219,10 +3284,15 @@ function tourRender() {
   const isLast = !!step.final;
   const primaryLabel = step.primary || (isLast ? 'Concluir' : 'Próximo');
   const secondaryLabel = step.secondary || 'Anterior';
+  const progressPct = Math.round(((TourState.idx + 1) / total) * 100);
   b.innerHTML = `
     ${isFirst ? '' : '<button type="button" class="tour-skip" data-tour-act="skip">Sair do tour ✕</button>'}
-    <h4>${step.title}</h4>
+    <h4 id="tour-balloon-title">${step.title}</h4>
     <p>${step.body}</p>
+    <div class="tour-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+      aria-valuenow="${progressPct}" aria-label="Progresso do tour">
+      <div class="tour-progress-fill" style="width:${progressPct}%"></div>
+    </div>
     <div class="tour-meta">
       <span class="tour-counter">${TourState.idx + 1} de ${total}</span>
       <div class="tour-btns">
@@ -3265,15 +3335,40 @@ function tourPrev() {
   }
 }
 function tourOnKey(e) {
-  if (e.key === 'Escape') { e.preventDefault(); tourEnd({ completed: false }); }
-  else if (e.key === 'ArrowRight') { e.preventDefault(); tourNext(); }
-  else if (e.key === 'ArrowLeft') { e.preventDefault(); tourPrev(); }
+  if (e.key === 'Escape') { e.preventDefault(); tourEnd({ completed: false }); return; }
+  if (e.key === 'ArrowRight') { e.preventDefault(); tourNext(); return; }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); tourPrev(); return; }
+  if (e.key === 'Enter') {
+    // Quando o foco esta num botao do balao, o browser ja aciona via clique
+    // sintetico — nao interfere. Quando o foco esta fora (ex.: usuario clicou
+    // no spotlight), Enter avanca para o proximo passo (primario).
+    if (!TourState.els?.balloon.contains(document.activeElement)) {
+      e.preventDefault();
+      tourNext();
+    }
+    return;
+  }
+  if (e.key === 'Tab') {
+    const items = tourFocusables();
+    if (!items.length) { e.preventDefault(); return; }
+    const first = items[0];
+    const last = items[items.length - 1];
+    const current = document.activeElement;
+    if (e.shiftKey && (current === first || !items.includes(current))) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && (current === last || !items.includes(current))) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
 }
 function startTour({ force = false } = {}) {
   if (TourState.active) return;
   if (location.hash && location.hash !== '#dashboard' && location.hash !== '#') {
     location.hash = '#dashboard';
   }
+  TourState.lastFocused = document.activeElement;
   setTimeout(() => {
     TourState.idx = 0;
     TourState.active = true;
@@ -3342,6 +3437,191 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { passive: true });
   document.addEventListener('scroll', hide, { passive: true, capture: true });
 })();
+
+// ── Álbum dinâmico (Fase 2) ──────────────────────────────────────
+// API: openAlbum(trip) — abre o dialog #albumDialog com cover + grid.
+// Click em item → openLightbox(trip, idx). Teclado, swipe e foco geridos.
+
+const AlbumState = { trip: null, idx: 0, lastFocused: null };
+
+function openAlbum(trip) {
+  if (!trip?.media?.gallery?.length) return;
+  const dlg = document.getElementById('albumDialog');
+  if (!dlg) return;
+  AlbumState.trip = trip;
+  AlbumState.lastFocused = document.activeElement;
+
+  const title = document.getElementById('albumTitle');
+  title.textContent = `🖼 Álbum — ${trip.name}`;
+
+  const body = document.getElementById('albumBody');
+  const cover = trip.media.cover || trip.media.gallery[0]?.src;
+  const stats = trip.media.stats || {
+    photos: trip.media.gallery.filter(m => m.type === 'image').length,
+    videos: trip.media.gallery.filter(m => m.type === 'video').length,
+  };
+
+  body.innerHTML = `
+    ${cover ? `<div class="album-cover" style="background-image:url(${escapeAttr(cover)})">
+      <div class="album-cover-overlay">
+        <div class="album-cover-meta">
+          <span class="album-cover-place">${escapeHtml(trip.sub || trip.country || '')}</span>
+          <span class="album-cover-stats">📸 ${stats.photos || 0}${stats.videos ? ` · 🎬 ${stats.videos}` : ''}</span>
+        </div>
+      </div>
+    </div>` : ''}
+    ${trip.memory ? `<p class="album-memory">${escapeHtml(trip.memory)}</p>` : ''}
+    <div class="album-grid" role="list" aria-label="Fotos da viagem">
+      ${trip.media.gallery.map((m, i) => renderAlbumItem(m, i, trip)).join('')}
+    </div>
+    ${typeof trip.lat === 'number' && typeof trip.lon === 'number' ? `
+      <div class="album-map-section">
+        <h4>📍 No mapa</h4>
+        <div class="album-mini-map" id="albumMiniMap"></div>
+      </div>` : ''}
+  `;
+
+  // Wire grid clicks
+  body.querySelectorAll('[data-album-idx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.albumIdx, 10);
+      openLightbox(trip, idx);
+    });
+  });
+
+  // Wire close
+  const closeBtn = dlg.querySelector('.album-close');
+  if (closeBtn && !closeBtn._wired) {
+    closeBtn._wired = true;
+    closeBtn.addEventListener('click', () => dlg.close());
+  }
+  // Click no backdrop fecha
+  if (!dlg._backdropWired) {
+    dlg._backdropWired = true;
+    dlg.addEventListener('click', (e) => {
+      const sheet = dlg.querySelector('.album-sheet');
+      if (!sheet) return;
+      const r = sheet.getBoundingClientRect();
+      const inside = e.clientX >= r.left && e.clientX <= r.right
+                  && e.clientY >= r.top  && e.clientY <= r.bottom;
+      if (!inside) dlg.close();
+    });
+    dlg.addEventListener('close', () => {
+      if (AlbumState.lastFocused?.focus) {
+        try { AlbumState.lastFocused.focus(); } catch {}
+      }
+    });
+  }
+
+  if (typeof dlg.showModal === 'function') dlg.showModal();
+  else dlg.setAttribute('open', '');
+
+  // Mini-mapa (Leaflet) — opcional, se trip tem lat/lon
+  if (typeof trip.lat === 'number' && typeof trip.lon === 'number' && typeof L !== 'undefined') {
+    setTimeout(() => initAlbumMiniMap(trip), 50);
+  }
+}
+
+function renderAlbumItem(m, i, trip) {
+  const src = m.thumb || m.src;
+  const isVideo = m.type === 'video';
+  const ariaLbl = m.caption
+    ? escapeAttr(`${isVideo ? 'Vídeo' : 'Foto'} ${i + 1} — ${m.caption}`)
+    : `${isVideo ? 'Vídeo' : 'Foto'} ${i + 1} de ${trip.media.gallery.length}`;
+  return `
+    <button type="button" class="album-item ${isVideo ? 'is-video' : ''}" data-album-idx="${i}"
+            role="listitem" aria-label="${ariaLbl}">
+      <img src="${escapeAttr(src)}" alt="${escapeAttr(m.caption || '')}" loading="lazy" decoding="async"/>
+      ${isVideo ? '<span class="album-play" aria-hidden="true">▶</span>' : ''}
+      ${m.caption ? `<span class="album-cap">${escapeHtml(m.caption)}</span>` : ''}
+    </button>
+  `;
+}
+
+let _albumMap = null;
+function initAlbumMiniMap(trip) {
+  const host = document.getElementById('albumMiniMap');
+  if (!host) return;
+  if (_albumMap) { try { _albumMap.remove(); } catch {} _albumMap = null; }
+  _albumMap = L.map(host, { zoomControl: false, scrollWheelZoom: false, dragging: false, doubleClickZoom: false });
+  _albumMap.setView([trip.lat, trip.lon], 5);
+  L.tileLayer(state.isDark ? TILES.dark : TILES.light, { attribution: '', maxZoom: 18 }).addTo(_albumMap);
+  L.circleMarker([trip.lat, trip.lon], {
+    radius: 9, fillColor: trip.col || '#ff5c3d', fillOpacity: 0.9,
+    color: '#fff', weight: 2, opacity: 1,
+  }).addTo(_albumMap);
+}
+
+// ── Lightbox ─────────────────────────────────────────────────────
+function openLightbox(trip, startIdx = 0) {
+  const dlg = document.getElementById('lightboxDialog');
+  if (!dlg) return;
+  AlbumState.trip = trip;
+  AlbumState.idx = Math.max(0, Math.min(startIdx, trip.media.gallery.length - 1));
+  if (!dlg._wired) {
+    dlg._wired = true;
+    dlg.querySelector('.lb-close').addEventListener('click', () => dlg.close());
+    dlg.querySelector('.lb-prev').addEventListener('click', () => lightboxStep(-1));
+    dlg.querySelector('.lb-next').addEventListener('click', () => lightboxStep(1));
+    dlg.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); lightboxStep(-1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); lightboxStep(1); }
+    });
+    // Swipe touch
+    let tx0 = null;
+    dlg.addEventListener('touchstart', (e) => { tx0 = e.touches[0]?.clientX ?? null; }, { passive: true });
+    dlg.addEventListener('touchend', (e) => {
+      if (tx0 == null) return;
+      const dx = (e.changedTouches[0]?.clientX ?? tx0) - tx0;
+      if (Math.abs(dx) > 50) lightboxStep(dx < 0 ? 1 : -1);
+      tx0 = null;
+    });
+  }
+  renderLightbox();
+  if (typeof dlg.showModal === 'function') dlg.showModal();
+}
+
+function lightboxStep(delta) {
+  if (!AlbumState.trip) return;
+  const n = AlbumState.trip.media.gallery.length;
+  AlbumState.idx = (AlbumState.idx + delta + n) % n;
+  renderLightbox();
+}
+
+function renderLightbox() {
+  const trip = AlbumState.trip;
+  if (!trip) return;
+  const m = trip.media.gallery[AlbumState.idx];
+  const total = trip.media.gallery.length;
+  const mediaBox = document.getElementById('lbMedia');
+  const counter = document.getElementById('lbCounter');
+  const text = document.getElementById('lbText');
+  counter.textContent = `${AlbumState.idx + 1} / ${total}`;
+  text.textContent = m.caption || '';
+  if (m.type === 'video') {
+    mediaBox.innerHTML = `
+      <video controls preload="metadata" ${m.poster ? `poster="${escapeAttr(m.poster)}"` : ''}>
+        <source src="${escapeAttr(m.src)}"/>
+        Seu navegador não suporta vídeo HTML5.
+      </video>`;
+  } else {
+    mediaBox.innerHTML = `<img src="${escapeAttr(m.src)}" alt="${escapeAttr(m.caption || '')}" decoding="async"/>`;
+  }
+  // Preload da proxima
+  if (total > 1) {
+    const next = trip.media.gallery[(AlbumState.idx + 1) % total];
+    if (next?.type === 'image') {
+      const im = new Image();
+      im.src = next.src;
+    }
+  }
+}
+
+function escapeAttr(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
 // ── Go! ──────────────────────────────────────────────────────────
 boot().then(() => maybeStartTourFirstVisit()).catch(() => maybeStartTourFirstVisit());

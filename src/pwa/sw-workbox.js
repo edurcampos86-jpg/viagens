@@ -21,18 +21,27 @@ if (!self.workbox) {
   workbox.setConfig({ debug: false });
 
   const { routing, strategies, expiration, precaching } = workbox;
-  const VERSION = 'viagens-v2-pwa-1';
+  // Bump VERSION em cada deploy que muda assets/* ou index.html — Workbox
+  // entao expira a entrada precacheada antiga e baixa a nova. Faz o papel
+  // do cache-busting via query string sem precisar de build.
+  const VERSION = 'viagens-v2-pwa-2';
 
-  // Precache do app shell mínimo
+  // Precache do app shell completo (HTML + CSS + JS criticos com revision)
   precaching.precacheAndRoute([
     { url: '/', revision: VERSION },
     { url: '/index.html', revision: VERSION },
     { url: '/manifest.webmanifest', revision: VERSION },
     { url: '/icons/icon-192.svg', revision: VERSION },
     { url: '/icons/icon-512.svg', revision: VERSION },
+    { url: '/assets/app.js', revision: VERSION },
+    { url: '/assets/styles.css', revision: VERSION },
+    { url: '/assets/sync-button.js', revision: VERSION },
+    { url: '/src/main.js', revision: VERSION },
   ]);
 
-  // CSS/JS do app: StaleWhileRevalidate (releases novos chegam rápido)
+  // CSS/JS adicionais (chunks dinamicos, src/components/*) caem aqui.
+  // O precache acima ja cuida do shell critico; aqui StaleWhileRevalidate
+  // mantem o resto rapido.
   routing.registerRoute(
     ({ request, url }) =>
       (request.destination === 'script' || request.destination === 'style') &&
