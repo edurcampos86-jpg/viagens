@@ -293,6 +293,8 @@ function applyTheme() {
   el.darkBtn.setAttribute('aria-pressed', String(state.isDark));
   el.darkIcon.textContent = state.isDark ? '☀' : '☾';
   el.darkLbl.textContent = state.isDark ? 'Claro' : 'Escuro';
+  const metaTheme = document.getElementById('metaThemeColor');
+  if (metaTheme) metaTheme.setAttribute('content', state.isDark ? '#0e1a26' : '#fff8ee');
 }
 function toggleTheme() {
   state.isDark = !state.isDark;

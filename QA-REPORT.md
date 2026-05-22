@@ -39,7 +39,7 @@ Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(q
 - [ ] B3 — Dead code de status `em_planejamento` (não existe em trips.json)
 - [x] B4 — `tour-balloon` ignora `prefers-reduced-motion` no `scrollIntoView`
 - [x] B5 — Alerta do dashboard cita `documentos.json` (jargão técnico)
-- [ ] B6 — `meta[name=theme-color]` não acompanha toggle manual de tema
+- [x] B6 — `meta[name=theme-color]` não acompanha toggle manual de tema
 - [x] B7 — Tour não tem barra de progresso visual (só textual)
 - [ ] B8 — Sem `<link rel="preload">` em `data/trips.json` (FCP cai)
 - [ ] B9 — `renderStats` usa `t.name` em vez de `t.country` p/ contar "Destinos"
