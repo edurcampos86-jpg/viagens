@@ -21,6 +21,7 @@ secrets.*
 node_modules/
 dist/
 .vite/
+package-lock.json
 
 # OS
 .DS_Store
