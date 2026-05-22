@@ -376,3 +376,91 @@ aceita tanto URLs absolutas quanto paths relativos.
 - ✅ Acessível (`role=list`, `aria-label` nos botões nav, focus return).
 - ✅ Tema escuro/claro funciona via `var()` em todos os componentes.
 - ✅ Performance: thumbs separados, `loading="lazy"`, preload da próxima.
+
+---
+
+# CHANGELOG — Fase 3 — Pipeline de ingestão Google Takeout
+
+**Data:** 2026-05-22
+**Branch:** `claude/minhas-viagens-evolution-Xpi9h`
+**Commits:** 5 (deps + 3 scripts + workflow + docs)
+**Dependências novas:** `Pillow`, `exifread`, `scikit-learn`, `geopy` (Python) + `ffmpeg` (sistema)
+**Testes:** 21/21 pytest verdes (cluster, otimização, apply)
+
+## O problema
+
+Em 31/mar/2025 o Google deprecou a Google Photos Library API. Apps que
+usavam `photoslibrary.readonly` agora recebem 403. A única forma estável
+de acessar fotos históricas é via Google Takeout (ZIP de download manual).
+
+## Solução — 3 scripts + 1 workflow + 1 doc
+
+### `scripts/ingest_takeout.py`
+
+- Varre `media-import/` (gitignored).
+- Lê EXIF (Pillow + exifread) e cai em sidecar JSON `.json` do Takeout
+  como fallback.
+- **DBSCAN espaço-temporal:** features normalizadas por `eps_days=2` e
+  `eps_km=500`, métrica Chebyshev. Cada cluster = candidato a viagem.
+- Reverse geocoding via Nominatim (gratuito, rate-limit 1 req/s).
+- **Match contra trips.json existente:** mesmo país + datas próximas
+  (threshold 7 dias) → propõe `merge`. Senão `create`. Fotos sem
+  GPS + sem timestamp → `orphan` (revisão manual).
+- Saída: `proposals.json` (gitignored). Nunca toca `trips.json`.
+
+### `scripts/optimize_media.py`
+
+- WebP qualidade 80, max 1920px (fotos).
+- Thumbs WebP qualidade 70, max 320px.
+- Vídeos: poster em `t=1s` via ffmpeg, re-encoda h264 720p CRF 26 se >10MB.
+- **EXIF strip total:** orientação aplicada antes, depois removida.
+  ffmpeg `-map_metadata -1` zera metadados de container.
+- Cap por trip: 20 fotos + 2 vídeos, priorizando GPS > cronologia.
+- Output em `media/<trip-id>/cover.webp` + `NN.webp` + `NN-thumb.webp`
+  (LFS configurado na Fase 2).
+
+### `scripts/apply_proposals.py`
+
+- Lê `proposals.json` (com chave `_optimized` adicionada pelo passo
+  anterior).
+- `action=create` → adiciona trip nova com `id/name/dates/country/lat/lon`
+  + bloco `media` populado.
+- `action=merge` → anexa `media.gallery[]`, sem duplicar (filtra por
+  `src`), recalcula `stats`.
+- `action=orphan` → pula.
+- Roda `validate_schemas.py` antes de salvar — falha aborta sem persistir.
+- Colisão de ID → sufixa `-dup-N`.
+- Gera `INGEST-LOG.md` em Markdown.
+
+### `.github/workflows/ingest.yml`
+
+Manual via `workflow_dispatch`, dois estágios:
+
+- **stage=detect:** `ingest_takeout.py --no-geocode` → abre PR
+  `chore/ingest-proposals` com `proposals.json` para revisão humana.
+- **stage=apply:** após o usuário aprovar o PR, roda `optimize_media.py`
+  + `apply_proposals.py` e commita `media/` + `trips.json` + `INGEST-LOG.md`.
+
+Human-in-the-loop garantido em todos os caminhos.
+
+### `docs/INGESTAO.md`
+
+Walk-through completo: como solicitar Takeout no Google, colocar em
+`media-import/`, rodar local OU via Actions, parâmetros de cluster,
+limitações, privacidade. Material de referência para reproduzir.
+
+## Privacidade
+
+- Fotos brutas ficam em `media-import/` (gitignored).
+- Fotos otimizadas que vão pro repo **público** têm EXIF stripado:
+  sem GPS, sem timestamp, sem modelo de câmera.
+- GPS útil para o mapa fica no `trips.json` no nível da **viagem**, não
+  da foto individual.
+
+## Princípios respeitados
+
+- ✅ Nada acontece sem `workflow_dispatch` manual ou execução local.
+- ✅ Toda mudança em `trips.json` passa por revisão humana de `proposals.json`.
+- ✅ `validate_schemas.py` é o gate antes de qualquer escrita.
+- ✅ Apenas deps gratuitas e open-source.
+- ✅ Testes pytest cobrem clustering, otimização e apply (21/21).

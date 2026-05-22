@@ -89,6 +89,14 @@ Detalhes em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) e [`docs/PRD-viagens-
 
 Para destravar Gmail + monitor de preços + agentes Claude, siga [`docs/DEPLOY.md`](docs/DEPLOY.md) — checklist manual. Quem prefere delegar a um agente, [`docs/COWORK-PROMPT.md`](docs/COWORK-PROMPT.md) tem o prompt pronto.
 
+## Ingestão de fotos via Google Takeout
+
+Pipeline em Python (Fase 3) detecta viagens a partir de um Takeout do
+Google Photos via clusterização espaço-temporal e popula `trips.json`
++ `/media/<trip-id>/` automaticamente — sempre com revisão humana.
+
+Walkthrough completo em [`docs/INGESTAO.md`](docs/INGESTAO.md).
+
 ## Stack
 
 | Camada | Tech |
