@@ -36,7 +36,7 @@ Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(q
 
 - [x] B1 — Empty states do timeline mencionam `data/trips.json` (jargão)
 - [x] B2 — Tour não tem focus trap (Tab escapa do balão)
-- [ ] B3 — Dead code de status `em_planejamento` (não existe em trips.json)
+- [x] B3 — Dead code de status `em_planejamento` (não existe em trips.json)
 - [x] B4 — `tour-balloon` ignora `prefers-reduced-motion` no `scrollIntoView`
 - [x] B5 — Alerta do dashboard cita `documentos.json` (jargão técnico)
 - [x] B6 — `meta[name=theme-color]` não acompanha toggle manual de tema

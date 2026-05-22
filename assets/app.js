@@ -1051,7 +1051,6 @@ function statusLabel(status) {
   return ({
     done: 'Realizada',
     planned: 'Confirmada',
-    em_planejamento: 'Em planejamento',
     wishlist: 'Wishlist',
   })[status] || status;
 }
@@ -1991,7 +1990,7 @@ function renderDashboard() {
   const done = trips.filter(t => t.status === 'done')
     .sort((a,b) => (b.year - a.year) || (b.month - a.month));
   const futuras = trips
-    .filter(t => ['planned', 'em_planejamento'].includes(t.status))
+    .filter(t => t.status === 'planned')
     .filter(t => { const d = daysTo(t); return d != null && d >= 0; })
     .sort((a,b) => daysTo(a) - daysTo(b));
 
@@ -2075,9 +2074,8 @@ function renderDashAlerts(trips, futuras) {
     }
   }
 
-  // Viagens em_planejamento sem hospedagem
-  const semHotel = futuras.filter(t => t.status === 'em_planejamento'
-    && (!t.hospedagem || t.hospedagem.length === 0));
+  // Viagens planejadas sem hospedagem confirmada
+  const semHotel = futuras.filter(t => !t.hospedagem || t.hospedagem.length === 0);
   for (const t of semHotel) {
     const d = daysToTrip(t);
     alerts.push({
@@ -2124,8 +2122,6 @@ function daysToTrip(t) {
 function renderDashKanban(trips) {
   const confirmadas = trips.filter(t => t.status === 'planned')
     .sort((a,b) => (daysToTrip(a) ?? 9e9) - (daysToTrip(b) ?? 9e9));
-  const planejando  = trips.filter(t => t.status === 'em_planejamento')
-    .sort((a,b) => (daysToTrip(a) ?? 9e9) - (daysToTrip(b) ?? 9e9));
   const wish        = trips.filter(t => t.status === 'wishlist');
 
   const cd = t => {
@@ -2164,9 +2160,8 @@ function renderDashKanban(trips) {
   `;
 
   $('#dashKanban').innerHTML =
-    col('Confirmadas',    'confirmed', '✓', confirmadas) +
-    col('Em planejamento','planning',  '◐', planejando) +
-    col('Wishlist',       'wish',      '★', wish);
+    col('Confirmadas', 'confirmed', '✓', confirmadas) +
+    col('Wishlist',    'wish',      '★', wish);
 }
 
 // ── Modo Memória (Fase 4a) ───────────────────────────────────────
@@ -2288,7 +2283,6 @@ function fmtNumBR(n) { return new Intl.NumberFormat('pt-BR').format(n); }
 function renderPlanejamento() {
   const trips = state.trips || [];
   const wish        = trips.filter(t => t.status === 'wishlist');
-  const planning    = trips.filter(t => t.status === 'em_planejamento');
   const planned     = trips.filter(t => t.status === 'planned');
 
   // Próximas: planned + daysUntil <= 90 (e >= 0)
@@ -2300,21 +2294,20 @@ function renderPlanejamento() {
 
   // Meta no header
   const meta = $('#planjMeta');
-  const total = wish.length + planning.length + planned.length;
+  const total = wish.length + planned.length;
   if (meta) meta.textContent =
-    `${total} viagens no horizonte · ${proximas.length} próximas · ${confirmadas.length} confirmadas · ${planning.length} em planejamento · ${wish.length} wishlist`;
+    `${total} viagens no horizonte · ${proximas.length} próximas · ${confirmadas.length} confirmadas · ${wish.length} wishlist`;
 
   // Summary strip — próximo deadline + alertas críticos
-  renderPlanjSummary(proximas, confirmadas, planning);
+  renderPlanjSummary(proximas, confirmadas, []);
 
   // Kanban
   const kanban = $('#planjKanban');
   if (kanban) {
     kanban.innerHTML =
-      planjCol('Próximas',         'imminent',  '⚡', proximas) +
-      planjCol('Confirmadas',      'confirmed', '✓', confirmadas) +
-      planjCol('Em planejamento',  'planning',  '◐', planning.sort((a, b) => (daysToTrip(a) ?? 9e9) - (daysToTrip(b) ?? 9e9))) +
-      planjCol('Wishlist',         'wish',      '★', wish);
+      planjCol('Próximas',    'imminent',  '⚡', proximas) +
+      planjCol('Confirmadas', 'confirmed', '✓', confirmadas) +
+      planjCol('Wishlist',    'wish',      '★', wish);
 
     // Animar progress bars
     setTimeout(() => {
@@ -2355,7 +2348,7 @@ function planjCard(t) {
   const decisoes = (t.decisoes_pendentes || []).length;
   if (decisoes) badges.push(`<span class="planj-badge alert">⚠ ${decisoes} decis${decisoes === 1 ? 'ão' : 'ões'}</span>`);
 
-  if (t.status === 'em_planejamento' && (!t.hospedagem || t.hospedagem.length === 0))
+  if (t.status === 'planned' && (!t.hospedagem || t.hospedagem.length === 0))
     badges.push('<span class="planj-badge warn">🏨 Sem hotel</span>');
   else if (t.hospedagem && t.hospedagem.length > 0)
     badges.push(`<span class="planj-badge ok">🏨 ${t.hospedagem.length}</span>`);
@@ -2368,9 +2361,9 @@ function planjCard(t) {
     ? `${formatIsoBR(t.startDate)} → ${formatIsoBR(t.endDate)}`
     : (t.label || '');
 
-  const targets = ['planned', 'em_planejamento', 'wishlist'].filter(s => s !== t.status);
+  const targets = ['planned', 'wishlist'].filter(s => s !== t.status);
   const menuItems = targets.map(s => {
-    const ic = s === 'planned' ? '✓' : s === 'em_planejamento' ? '◐' : '★';
+    const ic = s === 'planned' ? '✓' : '★';
     return `<button class="planj-action-btn" data-action="move" data-target="${s}" data-trip-id="${t.id}">${ic} Mover para ${statusLabel(s)}</button>`;
   }).join('');
 
