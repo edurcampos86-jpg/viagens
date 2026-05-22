@@ -485,6 +485,9 @@
         <div class="tabs" role="tablist" aria-label="Detalhes da viagem" data-tabs></div>
         <div class="tab-panels" data-panels></div>
         <div class="card-actions">
+          <button class="link-btn album-btn" data-album hidden aria-label="Abrir álbum da viagem" data-tooltip="Veja todas as fotos da viagem em tela cheia">
+            <span aria-hidden="true">🖼</span> Álbum <span class="album-count" data-album-count></span>
+          </button>
           <button class="share-btn" data-share>
             <span aria-hidden="true">📤</span> Compartilhar
           </button>
@@ -574,6 +577,31 @@
       </details>
     </div>
   </form>
+</dialog>
+
+<!-- ALBUM DIALOG (Fase 2 — álbum dinâmico) -->
+<dialog id="albumDialog" class="album-dialog" aria-labelledby="albumTitle">
+  <div class="album-sheet">
+    <header class="album-head">
+      <h3 id="albumTitle" class="album-title"></h3>
+      <button type="button" class="album-close" aria-label="Fechar álbum">×</button>
+    </header>
+    <div class="album-body" id="albumBody"></div>
+  </div>
+</dialog>
+
+<!-- LIGHTBOX (Fase 2 — viewer de foto individual em tela cheia) -->
+<dialog id="lightboxDialog" class="lightbox-dialog" aria-label="Foto em tela cheia">
+  <button type="button" class="lb-close" aria-label="Fechar foto">×</button>
+  <button type="button" class="lb-nav lb-prev" aria-label="Foto anterior">‹</button>
+  <button type="button" class="lb-nav lb-next" aria-label="Próxima foto">›</button>
+  <figure class="lb-figure">
+    <div class="lb-media" id="lbMedia"></div>
+    <figcaption class="lb-caption">
+      <span class="lb-counter" id="lbCounter"></span>
+      <span class="lb-text" id="lbText"></span>
+    </figcaption>
+  </figure>
 </dialog>
 
 <!-- HELP DIALOG (Fase 5 — Como usar este site) -->

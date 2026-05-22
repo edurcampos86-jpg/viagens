@@ -1040,6 +1040,16 @@ function hydrateCard(node, trip) {
     });
   }
 
+  // Album button — visível quando trip.media existe
+  const albumBtn = node.querySelector('[data-album]');
+  const albumCount = node.querySelector('[data-album-count]');
+  if (trip.media && Array.isArray(trip.media.gallery) && trip.media.gallery.length) {
+    albumBtn.hidden = false;
+    const n = trip.media.gallery.length;
+    if (albumCount) albumCount.textContent = `(${n})`;
+    albumBtn.addEventListener('click', e => { e.stopPropagation(); openAlbum(trip); });
+  }
+
   // Status promotion button
   const promoBtn = node.querySelector('[data-promote]');
   const promoLbl = node.querySelector('[data-promote-label]');
@@ -3427,6 +3437,191 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { passive: true });
   document.addEventListener('scroll', hide, { passive: true, capture: true });
 })();
+
+// ── Álbum dinâmico (Fase 2) ──────────────────────────────────────
+// API: openAlbum(trip) — abre o dialog #albumDialog com cover + grid.
+// Click em item → openLightbox(trip, idx). Teclado, swipe e foco geridos.
+
+const AlbumState = { trip: null, idx: 0, lastFocused: null };
+
+function openAlbum(trip) {
+  if (!trip?.media?.gallery?.length) return;
+  const dlg = document.getElementById('albumDialog');
+  if (!dlg) return;
+  AlbumState.trip = trip;
+  AlbumState.lastFocused = document.activeElement;
+
+  const title = document.getElementById('albumTitle');
+  title.textContent = `🖼 Álbum — ${trip.name}`;
+
+  const body = document.getElementById('albumBody');
+  const cover = trip.media.cover || trip.media.gallery[0]?.src;
+  const stats = trip.media.stats || {
+    photos: trip.media.gallery.filter(m => m.type === 'image').length,
+    videos: trip.media.gallery.filter(m => m.type === 'video').length,
+  };
+
+  body.innerHTML = `
+    ${cover ? `<div class="album-cover" style="background-image:url(${escapeAttr(cover)})">
+      <div class="album-cover-overlay">
+        <div class="album-cover-meta">
+          <span class="album-cover-place">${escapeHtml(trip.sub || trip.country || '')}</span>
+          <span class="album-cover-stats">📸 ${stats.photos || 0}${stats.videos ? ` · 🎬 ${stats.videos}` : ''}</span>
+        </div>
+      </div>
+    </div>` : ''}
+    ${trip.memory ? `<p class="album-memory">${escapeHtml(trip.memory)}</p>` : ''}
+    <div class="album-grid" role="list" aria-label="Fotos da viagem">
+      ${trip.media.gallery.map((m, i) => renderAlbumItem(m, i, trip)).join('')}
+    </div>
+    ${typeof trip.lat === 'number' && typeof trip.lon === 'number' ? `
+      <div class="album-map-section">
+        <h4>📍 No mapa</h4>
+        <div class="album-mini-map" id="albumMiniMap"></div>
+      </div>` : ''}
+  `;
+
+  // Wire grid clicks
+  body.querySelectorAll('[data-album-idx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.albumIdx, 10);
+      openLightbox(trip, idx);
+    });
+  });
+
+  // Wire close
+  const closeBtn = dlg.querySelector('.album-close');
+  if (closeBtn && !closeBtn._wired) {
+    closeBtn._wired = true;
+    closeBtn.addEventListener('click', () => dlg.close());
+  }
+  // Click no backdrop fecha
+  if (!dlg._backdropWired) {
+    dlg._backdropWired = true;
+    dlg.addEventListener('click', (e) => {
+      const sheet = dlg.querySelector('.album-sheet');
+      if (!sheet) return;
+      const r = sheet.getBoundingClientRect();
+      const inside = e.clientX >= r.left && e.clientX <= r.right
+                  && e.clientY >= r.top  && e.clientY <= r.bottom;
+      if (!inside) dlg.close();
+    });
+    dlg.addEventListener('close', () => {
+      if (AlbumState.lastFocused?.focus) {
+        try { AlbumState.lastFocused.focus(); } catch {}
+      }
+    });
+  }
+
+  if (typeof dlg.showModal === 'function') dlg.showModal();
+  else dlg.setAttribute('open', '');
+
+  // Mini-mapa (Leaflet) — opcional, se trip tem lat/lon
+  if (typeof trip.lat === 'number' && typeof trip.lon === 'number' && typeof L !== 'undefined') {
+    setTimeout(() => initAlbumMiniMap(trip), 50);
+  }
+}
+
+function renderAlbumItem(m, i, trip) {
+  const src = m.thumb || m.src;
+  const isVideo = m.type === 'video';
+  const ariaLbl = m.caption
+    ? escapeAttr(`${isVideo ? 'Vídeo' : 'Foto'} ${i + 1} — ${m.caption}`)
+    : `${isVideo ? 'Vídeo' : 'Foto'} ${i + 1} de ${trip.media.gallery.length}`;
+  return `
+    <button type="button" class="album-item ${isVideo ? 'is-video' : ''}" data-album-idx="${i}"
+            role="listitem" aria-label="${ariaLbl}">
+      <img src="${escapeAttr(src)}" alt="${escapeAttr(m.caption || '')}" loading="lazy" decoding="async"/>
+      ${isVideo ? '<span class="album-play" aria-hidden="true">▶</span>' : ''}
+      ${m.caption ? `<span class="album-cap">${escapeHtml(m.caption)}</span>` : ''}
+    </button>
+  `;
+}
+
+let _albumMap = null;
+function initAlbumMiniMap(trip) {
+  const host = document.getElementById('albumMiniMap');
+  if (!host) return;
+  if (_albumMap) { try { _albumMap.remove(); } catch {} _albumMap = null; }
+  _albumMap = L.map(host, { zoomControl: false, scrollWheelZoom: false, dragging: false, doubleClickZoom: false });
+  _albumMap.setView([trip.lat, trip.lon], 5);
+  L.tileLayer(state.isDark ? TILES.dark : TILES.light, { attribution: '', maxZoom: 18 }).addTo(_albumMap);
+  L.circleMarker([trip.lat, trip.lon], {
+    radius: 9, fillColor: trip.col || '#ff5c3d', fillOpacity: 0.9,
+    color: '#fff', weight: 2, opacity: 1,
+  }).addTo(_albumMap);
+}
+
+// ── Lightbox ─────────────────────────────────────────────────────
+function openLightbox(trip, startIdx = 0) {
+  const dlg = document.getElementById('lightboxDialog');
+  if (!dlg) return;
+  AlbumState.trip = trip;
+  AlbumState.idx = Math.max(0, Math.min(startIdx, trip.media.gallery.length - 1));
+  if (!dlg._wired) {
+    dlg._wired = true;
+    dlg.querySelector('.lb-close').addEventListener('click', () => dlg.close());
+    dlg.querySelector('.lb-prev').addEventListener('click', () => lightboxStep(-1));
+    dlg.querySelector('.lb-next').addEventListener('click', () => lightboxStep(1));
+    dlg.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); lightboxStep(-1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); lightboxStep(1); }
+    });
+    // Swipe touch
+    let tx0 = null;
+    dlg.addEventListener('touchstart', (e) => { tx0 = e.touches[0]?.clientX ?? null; }, { passive: true });
+    dlg.addEventListener('touchend', (e) => {
+      if (tx0 == null) return;
+      const dx = (e.changedTouches[0]?.clientX ?? tx0) - tx0;
+      if (Math.abs(dx) > 50) lightboxStep(dx < 0 ? 1 : -1);
+      tx0 = null;
+    });
+  }
+  renderLightbox();
+  if (typeof dlg.showModal === 'function') dlg.showModal();
+}
+
+function lightboxStep(delta) {
+  if (!AlbumState.trip) return;
+  const n = AlbumState.trip.media.gallery.length;
+  AlbumState.idx = (AlbumState.idx + delta + n) % n;
+  renderLightbox();
+}
+
+function renderLightbox() {
+  const trip = AlbumState.trip;
+  if (!trip) return;
+  const m = trip.media.gallery[AlbumState.idx];
+  const total = trip.media.gallery.length;
+  const mediaBox = document.getElementById('lbMedia');
+  const counter = document.getElementById('lbCounter');
+  const text = document.getElementById('lbText');
+  counter.textContent = `${AlbumState.idx + 1} / ${total}`;
+  text.textContent = m.caption || '';
+  if (m.type === 'video') {
+    mediaBox.innerHTML = `
+      <video controls preload="metadata" ${m.poster ? `poster="${escapeAttr(m.poster)}"` : ''}>
+        <source src="${escapeAttr(m.src)}"/>
+        Seu navegador não suporta vídeo HTML5.
+      </video>`;
+  } else {
+    mediaBox.innerHTML = `<img src="${escapeAttr(m.src)}" alt="${escapeAttr(m.caption || '')}" decoding="async"/>`;
+  }
+  // Preload da proxima
+  if (total > 1) {
+    const next = trip.media.gallery[(AlbumState.idx + 1) % total];
+    if (next?.type === 'image') {
+      const im = new Image();
+      im.src = next.src;
+    }
+  }
+}
+
+function escapeAttr(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
 // ── Go! ──────────────────────────────────────────────────────────
 boot().then(() => maybeStartTourFirstVisit()).catch(() => maybeStartTourFirstVisit());
