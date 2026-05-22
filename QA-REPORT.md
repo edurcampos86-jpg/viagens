@@ -47,14 +47,14 @@ Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(q
 - [x] B11 — Tour não confirma com Enter explicitamente (depende do `focus()`)
 - [x] B12 — `tourReposition` pode entrar em loop se elemento sai da viewport
 - [x] B13 — `<noscript>` mostra texto técnico mencionando `data/trips.json`
-- [ ] B14 — Inspiração permite URLs externas sem validar (XSS leve em `src`)
+- [x] B14 — Inspiração permite URLs externas sem validar (XSS leve em `src`)
 - [x] B15 — falso positivo: `toast._t` referencia a função declarada, é válido
 - [x] B16 — `sw.js` stub não trata erro se `unregister()` falhar
 - [x] B17 — `manifest.theme_color` (#0369a1) destoa do header coral/sun
 - [ ] B18 — Falta `cache-busting` em `assets/app.js` e `assets/styles.css`
 - [ ] B19 — `loading="lazy"` ausente nas imagens dos cards hero do dashboard
 - [x] B20 — Tour balloon não tem `aria-labelledby` apontando para `<h4>`
-- [ ] B21 — `404.html` não tem link de voltar para o site
+- [x] B21 — falso positivo: `404.html` já tem `<a href="./">Voltar ao início</a>`
 
 ---
 
@@ -372,12 +372,11 @@ Achados:
 - **Esperado:** "Para a melhor experiência, habilite JavaScript. Você
   pode também navegar pelo perfil em [link]."
 
-### B21 — `404.html` é minimalista demais
-- **Severidade:** Baixo
-- **File:** `404.html`
-- **Problema:** Página de erro sem link para a home; usuário precisa
-  editar URL manualmente.
-- **Esperado:** Adicionar `<a href="/">Voltar ao início</a>`.
+### B21 — `404.html` é minimalista demais — FALSO POSITIVO
+- **Severidade:** nenhuma
+- **File:** `404.html:23`
+- **Verificação:** Já existe `<a href="./">Voltar ao início</a>`.
+  Item retirado do plano.
 
 ---
 

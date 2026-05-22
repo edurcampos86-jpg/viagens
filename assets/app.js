@@ -138,6 +138,18 @@ function formatPtDate(iso) {
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 }
 
+// ── URL helpers ──────────────────────────────────────────────────────
+// Aceita apenas http(s); rejeita javascript:, data:, file: etc.
+function isSafeHttpUrl(value) {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 // ── Status helpers ───────────────────────────────────────────────────
 function isFutureStatus(s) { return s === 'planned' || s === 'wishlist'; }
 function isPlanningView() {
@@ -1560,6 +1572,10 @@ function populateInspiration(node, trip) {
   panel.querySelector('[data-ins-add-link]').addEventListener('submit', e => {
     e.preventDefault();
     const [u, t] = e.target.querySelectorAll('input');
+    if (!isSafeHttpUrl(u.value)) {
+      alert('URL invalida. Use um endereco http:// ou https://.');
+      return;
+    }
     const arr = (loadTripState(trip.id).inspirationLinks || links).slice();
     arr.push({ url:u.value, title:t.value });
     saveTripState(trip.id, { inspirationLinks: arr });
@@ -1568,6 +1584,10 @@ function populateInspiration(node, trip) {
   panel.querySelector('[data-ins-add-img]').addEventListener('submit', e => {
     e.preventDefault();
     const u = e.target.querySelector('input');
+    if (!isSafeHttpUrl(u.value)) {
+      alert('URL invalida. Use um endereco http:// ou https://.');
+      return;
+    }
     const arr = (loadTripState(trip.id).inspirationImages || images).slice();
     arr.push(u.value);
     saveTripState(trip.id, { inspirationImages: arr });
@@ -2978,6 +2998,10 @@ function renderPlanInspire(trip) {
   if (fL) fL.addEventListener('submit', e => {
     e.preventDefault();
     const [u, t] = e.target.querySelectorAll('input');
+    if (!isSafeHttpUrl(u.value)) {
+      alert('URL invalida. Use um endereco http:// ou https://.');
+      return;
+    }
     const arr = (loadTripState(trip.id).inspirationLinks || []).slice();
     arr.push({ url: u.value, title: t.value });
     saveTripState(trip.id, { inspirationLinks: arr });
@@ -2987,6 +3011,10 @@ function renderPlanInspire(trip) {
   if (fI) fI.addEventListener('submit', e => {
     e.preventDefault();
     const u = e.target.querySelector('input');
+    if (!isSafeHttpUrl(u.value)) {
+      alert('URL invalida. Use um endereco http:// ou https://.');
+      return;
+    }
     const arr = (loadTripState(trip.id).inspirationImages || []).slice();
     arr.push(u.value);
     saveTripState(trip.id, { inspirationImages: arr });
