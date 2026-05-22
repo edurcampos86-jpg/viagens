@@ -48,7 +48,7 @@ Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(q
 - [x] B12 — `tourReposition` pode entrar em loop se elemento sai da viewport
 - [x] B13 — `<noscript>` mostra texto técnico mencionando `data/trips.json`
 - [ ] B14 — Inspiração permite URLs externas sem validar (XSS leve em `src`)
-- [ ] B15 — `share-toast` usa `_t` em variável local `toast` indefinida (bug latente)
+- [x] B15 — falso positivo: `toast._t` referencia a função declarada, é válido
 - [ ] B16 — `sw.js` stub não trata erro se `unregister()` falhar
 - [ ] B17 — `manifest.theme_color` (#0369a1) destoa do header coral/sun
 - [ ] B18 — Falta `cache-busting` em `assets/app.js` e `assets/styles.css`
@@ -256,24 +256,14 @@ para confirmar.)
 
 ## 9. Compartilhamento
 
-### B15 — `setTimeout` salvo na variável errada
-- **Severidade:** Médio
-- **File:** `assets/app.js:1974–1975`
-- **Problema:**
-  ```js
-  if (toast._t) clearTimeout(toast._t);
-  toast._t = setTimeout(() => el.shareToast.classList.remove('show'), 2200);
-  ```
-  `toast` é o **parâmetro da função** (string da mensagem), não o
-  elemento. `toast._t` cria propriedade num primitivo (silenciosamente
-  ignorado em strict). Resultado: dois toasts em sequência podem
-  sobrepor; o segundo `clearTimeout(undefined)` é noop, mas o timer
-  do primeiro continua e pode esconder o segundo antes do tempo.
-- **Esperado:**
-  ```js
-  if (el.shareToast._t) clearTimeout(el.shareToast._t);
-  el.shareToast._t = setTimeout(...);
-  ```
+### B15 — `setTimeout` salvo na variável errada — FALSO POSITIVO
+- **Severidade:** Médio (na verdade: nenhuma)
+- **File:** `assets/app.js:1972–1977`
+- **Verificação:** A função é `function toast(msg)`, declaração nomeada.
+  Dentro do corpo, `toast` referencia a **própria função** (funções
+  em JS são objetos), e `toast._t` adiciona uma propriedade ao
+  objeto-função. Funcionamento correto e idiomático. Item retirado
+  do plano de fixes.
 
 ## 10. Exportar edições
 
