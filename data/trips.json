@@ -60,16 +60,18 @@
       },
       "checklist": [],
       "media": {
-        "cover": "media/iguacu-2021/02.webp",
+        "cover": "media/iguacu-2021/04.webp",
         "gallery": [
+          { "type": "image", "src": "media/iguacu-2021/04.webp", "thumb": "media/iguacu-2021/04-thumb.webp", "caption": "Vista panorâmica das cataratas — calçadão do lado brasileiro", "width": 1440, "height": 1920 },
           { "type": "image", "src": "media/iguacu-2021/02.webp", "thumb": "media/iguacu-2021/02-thumb.webp", "caption": "De braços abertos diante das cataratas", "width": 1440, "height": 1920 },
           { "type": "image", "src": "media/iguacu-2021/01.webp", "thumb": "media/iguacu-2021/01-thumb.webp", "caption": "Pose espontânea no mirante das quedas", "width": 1440, "height": 1920 },
+          { "type": "image", "src": "media/iguacu-2021/03.webp", "thumb": "media/iguacu-2021/03-thumb.webp", "caption": "Garotada no mirante — energia das cataratas", "width": 1440, "height": 1920 },
           { "type": "video", "src": "media/iguacu-2021/video-02.mp4", "poster": "media/iguacu-2021/video-02-poster.webp", "caption": "Vista aérea das cataratas — voo de drone", "date": "2021-06-13", "duration": 10 },
           { "type": "video", "src": "media/iguacu-2021/video-03.mp4", "poster": "media/iguacu-2021/video-03-poster.webp", "caption": "Panorâmica das quedas no lado brasileiro", "date": "2021-06-12" },
           { "type": "video", "src": "media/iguacu-2021/video-01.mp4", "poster": "media/iguacu-2021/video-01-poster.webp", "caption": "Salto vertical das cataratas", "date": "2021-06-26", "duration": 4 },
           { "type": "video", "src": "media/iguacu-2021/video-04.mp4", "poster": "media/iguacu-2021/video-04-poster.webp", "caption": "Clipe rápido do passeio", "date": "2021-06-26", "duration": 3 }
         ],
-        "stats": { "photos": 2, "videos": 4 }
+        "stats": { "photos": 4, "videos": 4 }
       },
       "created_at": "2021-06-01T00:00:00Z",
       "updated_at": "2026-05-22T00:00:00Z",
