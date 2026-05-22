@@ -34,7 +34,7 @@ passada com o site rodando.
 
 Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(qa): …` for criado.
 
-- [ ] B1 — Empty states do timeline mencionam `data/trips.json` (jargão)
+- [x] B1 — Empty states do timeline mencionam `data/trips.json` (jargão)
 - [ ] B2 — Tour não tem focus trap (Tab escapa do balão)
 - [ ] B3 — Dead code de status `em_planejamento` (não existe em trips.json)
 - [ ] B4 — `tour-balloon` ignora `prefers-reduced-motion` no `scrollIntoView`
@@ -46,7 +46,7 @@ Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(q
 - [ ] B10 — Hero background carrega imagem 1800x1000 em mobile sem responsive
 - [ ] B11 — Tour não confirma com Enter explicitamente (depende do `focus()`)
 - [ ] B12 — `tourReposition` pode entrar em loop se elemento sai da viewport
-- [ ] B13 — `<noscript>` mostra texto técnico mencionando `data/trips.json`
+- [x] B13 — `<noscript>` mostra texto técnico mencionando `data/trips.json`
 - [ ] B14 — Inspiração permite URLs externas sem validar (XSS leve em `src`)
 - [ ] B15 — `share-toast` usa `_t` em variável local `toast` indefinida (bug latente)
 - [ ] B16 — `sw.js` stub não trata erro se `unregister()` falhar
