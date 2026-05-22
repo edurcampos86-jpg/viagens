@@ -693,6 +693,28 @@ def test_generate_captions_uses_fallback_place_when_geocode_fails():
     assert captions["/x.jpg"] == "Japão · 15 out 2023"
 
 
+def test_workflow_has_push_trigger_for_media_import():
+    """
+    Regressão: workflow precisa disparar automaticamente em push pra
+    media-import/**, não apenas workflow_dispatch.
+    """
+    yaml = pytest.importorskip("yaml")
+    wf_path = REPO_ROOT_TESTS / ".github" / "workflows" / "ingest.yml"
+    wf = yaml.safe_load(wf_path.read_text())
+    # PyYAML parseia 'on' como True (boolean YAML); aceita ambos.
+    triggers = wf.get("on") or wf.get(True)
+    assert "push" in triggers
+    assert "media-import/**" in triggers["push"]["paths"]
+    # Detect roda em push OU dispatch=detect.
+    detect_if = wf["jobs"]["detect"]["if"]
+    assert "push" in detect_if
+    assert "detect" in detect_if
+    # Apply só em dispatch (nunca em push automático).
+    apply_if = wf["jobs"]["apply"]["if"]
+    assert "workflow_dispatch" in apply_if
+    assert "apply" in apply_if
+
+
 def test_run_album_mode_emits_per_photo_captions(tmp_path):
     """
     Pipeline real: run() em modo álbum injeta captions per-photo no

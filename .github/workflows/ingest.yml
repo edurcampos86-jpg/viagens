@@ -2,16 +2,20 @@ name: ingest
 
 # Pipeline de ingestao de fotos do Google Takeout (Fase 3).
 #
-# Dois estagios manuais (workflow_dispatch) — pensados para serem rodados
-# pelo proprio dono do repo apos um Takeout chegar:
+# Dois modos detectados automaticamente:
+#   - album   → media-import/<trip-id>/ (1 subpasta = 1 viagem).
+#   - cluster → media-import/ com arquivos soltos (DBSCAN).
 #
-#   1) detect: roda ingest_takeout.py em /media-import/ e abre um PR com
-#      proposals.json para revisao humana.
-#   2) apply:  apos o PR ser aprovado/editado, roda optimize_media.py +
-#      apply_proposals.py e commita /media/<trip-id>/ + trips.json.
+# Dois estagios:
+#   1) detect: roda ingest_takeout.py em /media-import/, gera previews +
+#      pr-body.md, abre PR `chore/ingest-proposals` para revisao humana.
+#   2) apply (manual):  apos o PR ser aprovado/editado, roda optimize_media
+#      + apply_proposals e commita /media/<trip-id>/ + trips.json.
 #
-# Nada acontece em push automatico — o usuario sempre revisa o proposals.json
-# antes de fotos saiirem otimizadas e trips.json ser tocado.
+# Triggers:
+#   - workflow_dispatch (manual) — sempre disponivel, escolhe stage.
+#   - push em media-import/** — auto-dispara stage=detect.
+#   Nada de auto-merge: o dono revisa o PR antes de aplicar.
 
 on:
   workflow_dispatch:
@@ -27,18 +31,24 @@ on:
         description: "Branch onde proposals.json/_optimized esta (so para stage=apply). Default: chore/ingest-proposals"
         required: false
         default: chore/ingest-proposals
+  push:
+    paths:
+      - "media-import/**"
 
 permissions:
   contents: write
   pull-requests: write
 
 concurrency:
-  group: ingest-${{ github.event.inputs.stage }}
+  group: ingest-${{ github.event.inputs.stage || 'detect' }}
   cancel-in-progress: false
 
 jobs:
   detect:
-    if: github.event.inputs.stage == 'detect'
+    # Roda em push automatico OU workflow_dispatch com stage=detect.
+    if: |
+      github.event_name == 'push' ||
+      github.event.inputs.stage == 'detect'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -121,7 +131,8 @@ jobs:
           labels: auto-ingest
 
   apply:
-    if: github.event.inputs.stage == 'apply'
+    # Apply nunca dispara em push — só via workflow_dispatch manual.
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.stage == 'apply'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
