@@ -41,7 +41,7 @@ Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(q
 - [x] B5 — Alerta do dashboard cita `documentos.json` (jargão técnico)
 - [x] B6 — `meta[name=theme-color]` não acompanha toggle manual de tema
 - [x] B7 — Tour não tem barra de progresso visual (só textual)
-- [ ] B8 — Sem `<link rel="preload">` em `data/trips.json` (FCP cai)
+- [x] B8 — Sem `<link rel="preload">` em `data/trips.json` (FCP cai)
 - [ ] B9 — `renderStats` usa `t.name` em vez de `t.country` p/ contar "Destinos"
 - [ ] B10 — Hero background carrega imagem 1800x1000 em mobile sem responsive
 - [x] B11 — Tour não confirma com Enter explicitamente (depende do `focus()`)
