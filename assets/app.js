@@ -3289,6 +3289,16 @@ function tourOnKey(e) {
   if (e.key === 'Escape') { e.preventDefault(); tourEnd({ completed: false }); return; }
   if (e.key === 'ArrowRight') { e.preventDefault(); tourNext(); return; }
   if (e.key === 'ArrowLeft') { e.preventDefault(); tourPrev(); return; }
+  if (e.key === 'Enter') {
+    // Quando o foco esta num botao do balao, o browser ja aciona via clique
+    // sintetico — nao interfere. Quando o foco esta fora (ex.: usuario clicou
+    // no spotlight), Enter avanca para o proximo passo (primario).
+    if (!TourState.els?.balloon.contains(document.activeElement)) {
+      e.preventDefault();
+      tourNext();
+    }
+    return;
+  }
   if (e.key === 'Tab') {
     const items = tourFocusables();
     if (!items.length) { e.preventDefault(); return; }
