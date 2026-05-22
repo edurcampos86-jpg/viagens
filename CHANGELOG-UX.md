@@ -273,3 +273,106 @@ priorizar:
 - **0 linhas removidas** de lógica existente.
 - **0 dependências externas adicionadas.**
 - **0 erros de console esperados.**
+
+---
+
+# CHANGELOG — Evolução do site (Fase 2 — álbum dinâmico)
+
+**Data:** 2026-05-22
+**Branch:** `claude/minhas-viagens-evolution-Xpi9h`
+**Commits:** 4 (schema + LFS + dados + UI)
+**Dependências novas:** Git LFS (config; instala fora do repo)
+
+## Fase 2 — Álbum dinâmico nos cards
+
+**Problema:** os cards de viagem não tinham forma de revisitar as
+memórias visuais — só `memory` textual + thumbnail genérica picsum no
+hero do card.
+
+**Solução:** novo campo opcional `media` em cada trip + UI de álbum
+em dialog fullscreen com cover, grid responsivo e lightbox.
+
+### Schema (`data/schemas/trip.schema.json`)
+
+Campo `media` novo, opcional, retrocompatível:
+
+```jsonc
+"media": {
+  "cover": "media/<trip-id>/cover.webp",          // ou URL absoluta
+  "gallery": [
+    {
+      "type": "image",                             // ou "video"
+      "src":     "media/<trip-id>/01.webp",
+      "thumb":   "media/<trip-id>/01-thumb.webp",
+      "caption": "Cataratas ao amanhecer",
+      "date":    "2021-06-15",
+      "lat": -25.6953, "lon": -54.4367,
+      "duration": 45                               // só para video
+    }
+  ],
+  "stats": { "photos": 18, "videos": 2 }
+}
+```
+
+Limites: até 30 itens em `gallery` (hard cap no schema). Para vídeos,
+`type: "video"` + `poster` recomendado.
+
+### Validação
+
+Estende `scripts/validate_schemas.py` (já existente) e o workflow
+`.github/workflows/validate-schemas.yml` cobre o novo campo
+automaticamente em cada PR.
+
+### UI do álbum
+
+- **Botão** `🖼 Álbum (N)` em `card-actions`, visível apenas quando
+  `trip.media` existe; oculto para viagens sem.
+- **Dialog `#albumDialog`** com:
+  - Cover hero (clamp 180–320px) + overlay com país/cidade + stats.
+  - `<p class="album-memory">` em destaque tipográfico.
+  - Grid responsivo (3/2/1 colunas) com thumbnails `loading="lazy"`.
+  - Mini-mapa Leaflet no rodapé quando `trip.lat/lon` existem.
+- **Dialog `#lightboxDialog`** com:
+  - Foto em fullscreen, max-height `calc(100vh - 100px)`.
+  - Navegação por setas (`←/→`), botões e swipe touch (>50px).
+  - `ESC` fecha (nativo `<dialog>`).
+  - Contador `N/total` + caption.
+  - Preload da próxima foto via `new Image()`.
+  - Vídeos: `<video controls preload="metadata" poster=...>`.
+- Foco retorna ao botão que abriu o álbum (`dialog.addEventListener('close', ...)`).
+- `prefers-reduced-motion`: transitions zeradas.
+
+### Git LFS (`.gitattributes`)
+
+Configurado para `*.webp`, `*.jpg`, `*.jpeg`, `*.png`, `*.heic`, `*.avif`,
+`*.mp4`, `*.mov`, `*.m4v`, `*.webm`. SVGs de `icons/` ficam fora.
+Instalação requerida (uma única vez por clone): `git lfs install`.
+
+Limites GitHub gratuito: 1 GB storage + 1 GB/mês bandwidth. Suficiente
+para um portfolio pessoal de ~14 anos × ~20 fotos otimizadas por viagem.
+
+### Estrutura
+
+```
+media/
+├── README.md                  # workflow manual + preview da Fase 3
+├── iguacu-2021/               # vazio até fotos reais chegarem
+└── atacama-2021/              # idem
+```
+
+### Dados iniciais
+
+`iguacu-2021` e `atacama-2021` em `data/trips.json` ganharam bloco
+`media` com 6 e 7 fotos respectivamente, usando URLs `picsum.photos`
+com seeds estáveis (`iguacu-cover`, `iguacu-01`, etc.) como placeholders.
+Quando fotos reais chegarem, basta trocar URLs no JSON — o código
+aceita tanto URLs absolutas quanto paths relativos.
+
+### Princípios respeitados
+
+- ✅ Retrocompatível: viagens sem `media` continuam funcionando idênticas.
+- ✅ Sem dependências JS novas — `<dialog>` nativo, Leaflet já carregado.
+- ✅ Responsivo (3/2/1 colunas; lightbox adaptado).
+- ✅ Acessível (`role=list`, `aria-label` nos botões nav, focus return).
+- ✅ Tema escuro/claro funciona via `var()` em todos os componentes.
+- ✅ Performance: thumbs separados, `loading="lazy"`, preload da próxima.
