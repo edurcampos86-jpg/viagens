@@ -585,13 +585,13 @@ function updateAdvCount() {
 // ── Stats ────────────────────────────────────────────────────────
 function renderStats(visible) {
   const trips = visible.length;
-  const countries = new Set(visible.map(t => t.name)).size;
-  const continents = new Set(visible.map(t => t.continent)).size;
+  const countries = new Set(visible.map(t => t.country).filter(Boolean)).size;
+  const continents = new Set(visible.map(t => t.continent).filter(Boolean)).size;
   const nights = visible.reduce((s, t) => s + (t.nts || 0), 0);
   const km = visible.reduce((s, t) => s + (t.km || 0), 0);
   const stats = [
     { v: trips, l: 'Viagens' },
-    { v: countries, l: 'Destinos' },
+    { v: countries, l: 'Países' },
     { v: continents, l: 'Continentes' },
     { v: nights, l: 'Noites' },
     { v: km.toLocaleString('pt-BR'), l: 'km voados est.' }
