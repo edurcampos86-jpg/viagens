@@ -60,16 +60,14 @@
       },
       "checklist": [],
       "media": {
-        "cover": "https://picsum.photos/seed/iguacu-cover/1600/900",
+        "cover": "media/iguacu-2021/video-02-poster.webp",
         "gallery": [
-          { "type": "image", "src": "https://picsum.photos/seed/iguacu-01/1600/1000", "thumb": "https://picsum.photos/seed/iguacu-01/640/400", "caption": "Cataratas vistas do lado brasileiro", "date": "2021-06-12" },
-          { "type": "image", "src": "https://picsum.photos/seed/iguacu-02/1600/1000", "thumb": "https://picsum.photos/seed/iguacu-02/640/400", "caption": "Garganta do Diabo de perto", "date": "2021-06-13" },
-          { "type": "image", "src": "https://picsum.photos/seed/iguacu-03/1200/1600", "thumb": "https://picsum.photos/seed/iguacu-03/480/640", "caption": "Trilha do Parque das Aves", "date": "2021-06-13" },
-          { "type": "image", "src": "https://picsum.photos/seed/iguacu-04/1600/1000", "thumb": "https://picsum.photos/seed/iguacu-04/640/400", "caption": "Passarela molhada — lado argentino", "date": "2021-06-14" },
-          { "type": "image", "src": "https://picsum.photos/seed/iguacu-05/1600/1000", "thumb": "https://picsum.photos/seed/iguacu-05/640/400", "caption": "Usina de Itaipu — perspectiva colossal", "date": "2021-06-15" },
-          { "type": "image", "src": "https://picsum.photos/seed/iguacu-06/1200/1600", "thumb": "https://picsum.photos/seed/iguacu-06/480/640", "caption": "Tucano no Parque das Aves", "date": "2021-06-13" }
+          { "type": "video", "src": "media/iguacu-2021/video-02.mp4", "poster": "media/iguacu-2021/video-02-poster.webp", "caption": "Vista aérea das cataratas — voo de drone", "date": "2021-06-13", "duration": 10 },
+          { "type": "video", "src": "media/iguacu-2021/video-03.mp4", "poster": "media/iguacu-2021/video-03-poster.webp", "caption": "Panorâmica das quedas no lado brasileiro", "date": "2021-06-12" },
+          { "type": "video", "src": "media/iguacu-2021/video-01.mp4", "poster": "media/iguacu-2021/video-01-poster.webp", "caption": "Salto vertical das cataratas", "date": "2021-06-26", "duration": 4 },
+          { "type": "video", "src": "media/iguacu-2021/video-04.mp4", "poster": "media/iguacu-2021/video-04-poster.webp", "caption": "Clipe rápido do passeio", "date": "2021-06-26", "duration": 3 }
         ],
-        "stats": { "photos": 6, "videos": 0 }
+        "stats": { "photos": 0, "videos": 4 }
       },
       "created_at": "2021-06-01T00:00:00Z",
       "updated_at": "2026-05-22T00:00:00Z",
