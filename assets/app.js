@@ -150,6 +150,13 @@ function isSafeHttpUrl(value) {
   }
 }
 
+// Hero/cover de um trip: prioriza imagem propria (trip.gallery[0]); se nao
+// tem, cai em picsum com seed estavel + dimensoes solicitadas pelo chamador.
+function heroImageUrl(trip, w, h) {
+  if (trip.gallery && trip.gallery[0]) return trip.gallery[0];
+  return `https://picsum.photos/seed/${encodeURIComponent(trip.id)}/${w}/${h}`;
+}
+
 // ── Status helpers ───────────────────────────────────────────────────
 function isFutureStatus(s) { return s === 'planned' || s === 'wishlist'; }
 function isPlanningView() {
@@ -2019,8 +2026,10 @@ function renderDashboard() {
   if (futuras.length) {
     const t = futuras[0];
     heroEl.hidden = false;
-    const imgUrl = (t.gallery && t.gallery[0]) || `https://picsum.photos/seed/${encodeURIComponent(t.id)}/1800/1000`;
-    $('#dashHeroBg').style.backgroundImage = `url(${imgUrl})`;
+    const imgUrl = heroImageUrl(t, 1800, 1000);
+    const imgSmall = heroImageUrl(t, 800, 450);
+    const bg = $('#dashHeroBg');
+    bg.style.backgroundImage = `url(${window.matchMedia('(max-width: 720px)').matches ? imgSmall : imgUrl})`;
     $('#dashHeroEyebrow').textContent = CONTINENT_NAMES[t.continent] || '';
     $('#dashHeroName').textContent = t.name;
     $('#dashHeroDates').textContent = fmtTripDates(t);
@@ -2056,7 +2065,8 @@ function renderDashboard() {
   if (done.length) {
     lastSec.hidden = false;
     const t = done[0];
-    const imgUrl = (t.gallery && t.gallery[0]) || `https://picsum.photos/seed/${encodeURIComponent(t.id)}/1000/1200`;
+    const isMobile = window.matchMedia('(max-width: 720px)').matches;
+    const imgUrl = heroImageUrl(t, isMobile ? 600 : 1000, isMobile ? 720 : 1200);
     $('#dashLastImg').style.backgroundImage = `url(${imgUrl})`;
     $('#dashLastKicker').textContent = CONTINENT_NAMES[t.continent] || '';
     $('#dashLastName').textContent = t.name;

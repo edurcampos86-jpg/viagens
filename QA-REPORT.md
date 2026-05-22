@@ -43,7 +43,7 @@ Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(q
 - [x] B7 — Tour não tem barra de progresso visual (só textual)
 - [x] B8 — Sem `<link rel="preload">` em `data/trips.json` (FCP cai)
 - [x] B9 — `renderStats` usa `t.name` em vez de `t.country` p/ contar "Destinos"
-- [ ] B10 — Hero background carrega imagem 1800x1000 em mobile sem responsive
+- [x] B10 — Hero background carrega imagem 1800x1000 em mobile sem responsive
 - [x] B11 — Tour não confirma com Enter explicitamente (depende do `focus()`)
 - [x] B12 — `tourReposition` pode entrar em loop se elemento sai da viewport
 - [x] B13 — `<noscript>` mostra texto técnico mencionando `data/trips.json`
@@ -52,7 +52,7 @@ Status inicial: nada corrigido. Atualize a checklist conforme cada commit `fix(q
 - [x] B16 — `sw.js` stub não trata erro se `unregister()` falhar
 - [x] B17 — `manifest.theme_color` (#0369a1) destoa do header coral/sun
 - [x] B18 — Falta `cache-busting` em `assets/app.js` e `assets/styles.css`
-- [ ] B19 — `loading="lazy"` ausente nas imagens dos cards hero do dashboard
+- [x] B19 — `loading="lazy"` ausente nas imagens dos cards hero do dashboard
 - [x] B20 — Tour balloon não tem `aria-labelledby` apontando para `<h4>`
 - [x] B21 — falso positivo: `404.html` já tem `<a href="./">Voltar ao início</a>`
 
