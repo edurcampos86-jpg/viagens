@@ -594,7 +594,7 @@ A primeira versão tinha só `workflow_dispatch` — agora `on.push.paths:
 ["media-import/**"]` dispara `stage=detect` automaticamente. Job `apply`
 permanece manual via dispatch (sem auto-apply, ever).
 
-### Patch 4 — Filtro `__MACOSX` / dotfiles (commit `???`)
+### Patch 4 — Filtro `__MACOSX` / dotfiles (commit `aa01ce2`)
 
 `detect_mode()` e `scan_album_mode()` agora ignoram subpastas
 `__MACOSX/` (geradas pelo Finder ao zipar) e qualquer subpasta começando
