@@ -372,13 +372,15 @@ def test_apply_merges_into_existing_trip(tmp_path):
         }],
         "_optimized": {"cluster-0": opt},
     }))
-    res = apply(proposals, trips, dry_run=False)
+    res = apply(proposals, trips, dry_run=False, log_path=tmp_path / "INGEST-LOG.md")
     assert res["summary"]["merged"] == 1
     doc = json.loads(trips.read_text())
     trip = doc["trips"][0]
     # Gallery cresceu de 1 para 3 (sem duplicar)
     assert len(trip["media"]["gallery"]) == 3
     assert trip["media"]["stats"]["photos"] == 3
+    # Log foi escrito no tmp_path (nao polui REPO_ROOT)
+    assert (tmp_path / "INGEST-LOG.md").exists()
 
 
 def test_apply_skips_orphan(tmp_path):

@@ -158,13 +158,19 @@ def write_log(log_path: Path, summary: dict, details: list[dict]) -> None:
     log_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def apply(proposals_path: Path, trips_path: Path, *, dry_run: bool = False) -> dict:
-    """API programática (usada também pelos testes)."""
+def apply(proposals_path: Path, trips_path: Path, *,
+          dry_run: bool = False, log_path: Path | None = None) -> dict:
+    """API programática (usada também pelos testes).
+
+    log_path: se omitido, usa INGEST_LOG global. Testes devem passar
+    um tmp_path para nao poluir o repo root.
+    """
     proposals = load_json(proposals_path)
     trips_doc = load_json(trips_path)
     trips_list = trips_doc.get("trips", [])
     by_id = {t["id"]: t for t in trips_list}
     optimized = proposals.get("_optimized") or {}
+    log_target = log_path or INGEST_LOG
 
     summary = {"processed": 0, "created": 0, "merged": 0,
                "skipped_orphan": 0, "photos": 0, "videos": 0,
@@ -217,8 +223,8 @@ def apply(proposals_path: Path, trips_path: Path, *, dry_run: bool = False) -> d
     if not dry_run:
         save_json(trips_path, trips_doc)
         validate_or_die(trips_path)
-        write_log(INGEST_LOG, summary, details)
-        print(f"✓ {trips_path.name} atualizado; log em {INGEST_LOG.name}",
+        write_log(log_target, summary, details)
+        print(f"✓ {trips_path.name} atualizado; log em {log_target.name}",
               file=sys.stderr)
     return {"summary": summary, "details": details}
 
