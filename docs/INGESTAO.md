@@ -122,6 +122,15 @@ Cada item da galeria carrega um booleano `caption_auto`:
 Isso permite identificar visualmente (no PR ou em um admin futuro) quais
 legendas ainda precisam de carinho.
 
+### Legendas inteligentes (opt-in) — `caption_smart_source`
+
+A flag `--smart-captions` substitui as legendas factuais por legendas
+**emocionais** geradas via Anthropic vision (Claude Haiku 4.5). Cada item
+ganha um campo extra `caption_smart_source` indicando o modelo usado.
+
+Pipeline default continua factual. Para detalhes (ativação, custo, prompt,
+revisão obrigatória), ver [LEGENDAS-INTELIGENTES.md](LEGENDAS-INTELIGENTES.md).
+
 ### Matching contra viagens existentes (sem duplicar)
 
 Em modo álbum, o script tenta 3 estratégias antes de criar viagem nova:

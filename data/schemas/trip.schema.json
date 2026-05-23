@@ -308,6 +308,10 @@
                 "type": "boolean",
                 "description": "True quando a caption foi gerada automaticamente pela ingestão (cidade · data). Editar manualmente → mude para false."
               },
+              "caption_smart_source": {
+                "type": "string",
+                "description": "Modelo Claude usado para gerar legenda emocional (ex.: 'claude-haiku-4-5'). Presente apenas quando --smart-captions foi ativado no pipeline. Coexiste com caption_auto=true; ambas viram false se o usuário editar manualmente."
+              },
               "date": {
                 "type": "string",
                 "format": "date"

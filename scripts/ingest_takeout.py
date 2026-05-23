@@ -702,14 +702,25 @@ def load_trips(path: Path) -> list[dict]:
         return []
 
 
-def serialize_cluster(cl: Cluster, captions: dict[str, str] | None = None) -> dict:
+def serialize_cluster(
+    cl: Cluster,
+    captions: dict[str, str] | None = None,
+    smart_sources: dict[str, str | None] | None = None,
+) -> dict:
     """
     Pronto p/ JSON. Lista de items é resumida (paths apenas).
 
     captions: mapa path → caption_str (de generate_captions). Quando
     presente, cada item ganha `caption` + `caption_auto: true`.
+
+    smart_sources: opcional, mapa path → modelo Claude usado. Quando
+    presente e não-None para o path, item ganha `caption_smart_source`.
+    Pode coexistir com caption_auto: true. Quando o smart caiu em
+    fallback factual, smart_sources[path] é None — comportamento idêntico
+    a apenas `captions`.
     """
     captions = captions or {}
+    smart_sources = smart_sources or {}
     return {
         "id": cl.id,
         "action": cl.action,  # "create" | "merge" | "orphan"
@@ -733,6 +744,7 @@ def serialize_cluster(cl: Cluster, captions: dict[str, str] | None = None) -> di
                 "source": it.source,
                 "caption": captions.get(it.path),
                 "caption_auto": True if captions.get(it.path) else None,
+                "caption_smart_source": smart_sources.get(it.path),
             }
             for it in cl.items
         ],
@@ -761,13 +773,22 @@ def run(input_dir: Path, output_path: Path, trips: list[dict], *,
         threshold_days: int = DEFAULTS["merge_threshold_days"],
         album_match_km: float = DEFAULTS["album_match_km"],
         geocode: bool = True,
-        dry_run: bool = False) -> dict:
+        dry_run: bool = False,
+        smart_captions: bool = False,
+        smart_model: str | None = None,
+        smart_rpm: int | None = None,
+        smart_client: object | None = None) -> dict:
     """
     API programática (usada também pelos testes). Retorna o payload final.
 
     mode='auto'    → detect_mode(input_dir)
     mode='cluster' → DBSCAN clássico
     mode='album'   → uma viagem por subpasta
+
+    smart_captions: quando True, substitui captions factuais pela versão
+    emocional gerada via Anthropic vision (módulo `smart_captions`). Cai
+    no fallback factual em qualquer falha — nunca aborta a ingestão.
+    smart_client é uma porta de injeção para testes (mock).
     """
     resolved_mode = detect_mode(input_dir) if mode == "auto" else mode
     print(f"→ Modo: {resolved_mode}", file=sys.stderr)
@@ -790,11 +811,22 @@ def run(input_dir: Path, output_path: Path, trips: list[dict], *,
     # cidade (álbum Tokyo+Kyoto vira "Tokyo · DD" / "Kyoto · DD" por foto).
     geocode_fn = reverse_geocode if geocode else None
     captions_by_cluster: dict[str, dict[str, str]] = {}
+    smart_sources_by_cluster: dict[str, dict[str, str | None]] = {}
     for cl in clusters:
         if cl.action == "orphan":
             continue
         captions_by_cluster[cl.id] = generate_captions(
             cl.items, geocode_fn=geocode_fn, fallback_place=cl.place,
+        )
+
+    if smart_captions:
+        _apply_smart_captions(
+            clusters, trips,
+            factual_captions=captions_by_cluster,
+            smart_sources=smart_sources_by_cluster,
+            model=smart_model,
+            rpm=smart_rpm,
+            client=smart_client,
         )
 
     payload = {
@@ -806,9 +838,17 @@ def run(input_dir: Path, output_path: Path, trips: list[dict], *,
             "min_samples": min_samples,
             "merge_threshold_days": threshold_days,
             "album_match_km": album_match_km,
+            "smart_captions": smart_captions,
+            "smart_model": smart_model if smart_captions else None,
         },
-        "clusters": [serialize_cluster(cl, captions_by_cluster.get(cl.id))
-                     for cl in clusters],
+        "clusters": [
+            serialize_cluster(
+                cl,
+                captions_by_cluster.get(cl.id),
+                smart_sources_by_cluster.get(cl.id),
+            )
+            for cl in clusters
+        ],
         "summary": {
             "total_items": total_items,
             "clusters": len(clusters),
@@ -821,6 +861,81 @@ def run(input_dir: Path, output_path: Path, trips: list[dict], *,
         output_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
         print(f"✓ proposals.json salvo em {output_path}", file=sys.stderr)
     return payload
+
+
+def _apply_smart_captions(
+    clusters,
+    trips: list[dict],
+    *,
+    factual_captions: dict[str, dict[str, str]],
+    smart_sources: dict[str, dict[str, str | None]],
+    model: str | None,
+    rpm: int | None,
+    client: object | None,
+) -> None:
+    """Substitui in-place as captions factuais pelas smart, populando
+    smart_sources com o modelo (None quando caiu em fallback factual).
+
+    Imports preguiçosos: o módulo `smart_captions` só carrega quando a flag
+    é usada, evitando dependência dura do SDK em testes do pipeline default.
+    """
+    from smart_captions import (  # noqa: WPS433
+        DEFAULT_MODEL,
+        DEFAULT_REQUESTS_PER_MINUTE,
+        TripContext,
+        build_client,
+        generate_smart_captions_batch,
+    )
+
+    use_model = model or DEFAULT_MODEL
+    use_rpm = rpm if rpm and rpm > 0 else DEFAULT_REQUESTS_PER_MINUTE
+    use_client = client or build_client()
+
+    trips_by_id = {t["id"]: t for t in trips}
+
+    for cl in clusters:
+        if cl.action == "orphan":
+            continue
+        ctx_trip = trips_by_id.get(cl.merge_with) if cl.merge_with else None
+        if ctx_trip:
+            context = TripContext(
+                name=ctx_trip.get("name") or cl.id,
+                country=ctx_trip.get("country") or cl.country,
+                highlights=list(ctx_trip.get("highlights") or []),
+                memory=ctx_trip.get("memory") or None,
+            )
+        else:
+            context = TripContext(
+                name=cl.suggested_trip_id or cl.id,
+                country=cl.country,
+            )
+
+        batch_input = [
+            {
+                "path": it.path,
+                "exif": {"date": it.timestamp, "place": cl.place},
+            }
+            for it in cl.items
+        ]
+        fallback = factual_captions.get(cl.id, {})
+        results = generate_smart_captions_batch(
+            batch_input,
+            trip_context=context,
+            fallback_captions=fallback,
+            client=use_client,
+            model=use_model,
+            requests_per_minute=use_rpm,
+        )
+
+        new_captions: dict[str, str] = {}
+        new_sources: dict[str, str | None] = {}
+        for path, res in results.items():
+            if res.caption:
+                new_captions[path] = res.caption
+            new_sources[path] = res.source_model
+
+        factual_captions[cl.id] = new_captions
+        smart_sources[cl.id] = new_sources
 
 
 def _run_cluster(input_dir, trips, *, geocode, eps_days, eps_km,
@@ -896,6 +1011,14 @@ def main(argv: list[str] | None = None) -> int:
                     help="Raio (km) para match por proximidade em modo álbum.")
     ap.add_argument("--no-geocode", action="store_true", help="Pula reverse geocoding (útil em CI)")
     ap.add_argument("--dry-run", action="store_true", help="Não escreve proposals.json")
+    ap.add_argument("--smart-captions", action="store_true",
+                    help="Substitui captions factuais por legendas emocionais via Anthropic API (opt-in).")
+    ap.add_argument("--smart-model", default=None,
+                    help="Modelo Claude para smart-captions (default: claude-haiku-4-5)")
+    ap.add_argument("--smart-rpm", type=int, default=None,
+                    help="Rate limit em requests/min para smart-captions (default: 45)")
+    ap.add_argument("--estimate-cost", action="store_true",
+                    help="Combinada com --smart-captions, conta itens e imprime estimativa de custo SEM chamar a API.")
     args = ap.parse_args(argv)
 
     if not args.input.exists():
@@ -903,6 +1026,33 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     trips = load_trips(TRIPS_JSON)
+
+    # --estimate-cost: só conta e sai (não chama API, não escreve proposals).
+    if args.estimate_cost:
+        if not args.smart_captions:
+            print("✗ --estimate-cost só faz sentido com --smart-captions.", file=sys.stderr)
+            return 2
+        try:
+            from smart_captions import DEFAULT_MODEL, format_cost_report  # noqa: WPS433
+        except ImportError as exc:
+            print(f"✗ Pacote `anthropic` ausente: {exc}", file=sys.stderr)
+            return 2
+        items = scan_media(args.input)
+        n = sum(1 for it in items if it.type == "image")
+        print(format_cost_report(n, args.smart_model or DEFAULT_MODEL))
+        return 0
+
+    if args.smart_captions:
+        try:
+            from smart_captions import get_api_key, SmartCaptionsConfigError  # noqa: WPS433
+            get_api_key()  # falha cedo se ANTHROPIC_API_KEY ausente
+        except SmartCaptionsConfigError as exc:
+            print(f"✗ {exc}", file=sys.stderr)
+            return 2
+        except ImportError as exc:
+            print(f"✗ Pacote `anthropic` ausente: {exc}", file=sys.stderr)
+            return 2
+
     payload = run(
         args.input, args.output, trips,
         mode=args.mode,
@@ -911,6 +1061,9 @@ def main(argv: list[str] | None = None) -> int:
         album_match_km=args.album_match_km,
         geocode=not args.no_geocode,
         dry_run=args.dry_run,
+        smart_captions=args.smart_captions,
+        smart_model=args.smart_model,
+        smart_rpm=args.smart_rpm,
     )
     s = payload["summary"]
     print(f"\nResumo ({payload['mode']}): {s['total_items']} item(s), "
