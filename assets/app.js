@@ -1377,7 +1377,7 @@ function populateChecklist(node, trip) {
   // explicit override: if user un-checks manually, manualChecks wins
   const total = items.length;
   const doneN = items.filter(i => checks[i.id]).length;
-  const pct = Math.round((doneN / total) * 100);
+  const pct = total > 0 ? Math.round((doneN / total) * 100) : 0;
 
   panel.innerHTML = `
     <div class="cl-progress">
@@ -1420,14 +1420,24 @@ function populateChecklist(node, trip) {
     });
   });
 
-  // Despachante Digital — invoca o agente já carregado por src/main.js
-  const dpBtn = panel.querySelector('[data-dp-run]');
-  if (dpBtn) {
-    dpBtn.addEventListener('click', () => {
+  // Despachante Digital — handler na BARRA inteira (hit-area generosa, PR #1.5A)
+  // .dp-btn e .dp-hint têm pointer-events: none no CSS, então o clique sempre cai aqui.
+  const dpBar = panel.querySelector('.dp-bar');
+  if (dpBar) {
+    dpBar.addEventListener('click', () => {
       if (window.viagensV2 && typeof window.viagensV2.openCustoms === 'function') {
         window.viagensV2.openCustoms(trip);
       } else {
         toast('Despachante ainda não carregou. Recarregue a página e tente novamente.');
+      }
+    });
+    // Acessibilidade: permitir ativar via teclado também
+    dpBar.setAttribute('role', 'button');
+    dpBar.setAttribute('tabindex', '0');
+    dpBar.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        dpBar.click();
       }
     });
   }
