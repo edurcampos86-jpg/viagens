@@ -13,8 +13,8 @@
     },
     "status": {
       "type": "string",
-      "enum": ["done", "planned", "wishlist", "em_planejamento"],
-      "description": "done=realizada · planned=confirmada · em_planejamento=ainda definindo · wishlist=sonho sem data firme"
+      "enum": ["done", "planned", "wishlist", "em_planejamento", "draft"],
+      "description": "done=realizada · planned=confirmada · em_planejamento=ainda definindo · wishlist=sonho sem data firme · draft=placeholder a ser desambiguado por pipeline (ex.: rio-multiplo, a explodir em N trips quando Takeout for processado)"
     },
 
     "name": { "type": "string", "minLength": 1 },
