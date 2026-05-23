@@ -129,14 +129,120 @@ python -m pip install pytest pyyaml
 
 ---
 
-## 3. Como rodar os testes
+## 3. Configuração da chave da Anthropic API
+
+A chave da API da Anthropic (`ANTHROPIC_API_KEY`) é necessária para o curador inteligente (`scripts/requirements-curator.txt`) gerar legendas automatizadas na Fase 3 do pipeline. Sem ela, o resto do pipeline (ingestão, validação, build do site) roda normal — só as etapas que chamam o modelo são puladas/falham.
+
+A chave fica como **variável de ambiente do Windows no escopo `User`** — persistente, isolada por perfil, sem precisar de UAC.
+
+### 3.1 Gerar a chave
+
+1. Acesse https://console.anthropic.com → **Settings → API Keys → Create Key**.
+2. Dê um nome (ex.: `viagens-windows-pessoal`) e copie a chave gerada **na hora** — o console só mostra uma vez.
+3. Formato esperado: começa com `sk-ant-api03-`, ~108 caracteres.
+
+### 3.2 Salvar como variável de ambiente
+
+**Não cole a chave direto no PowerShell** (fica no histórico em texto). Salve-a num arquivo temporário fora do repo:
+
+```powershell
+# 1. Cole a chave nesse arquivo (não comitado, fora do repo)
+notepad C:\Users\$env:USERNAME\Dev\anthropic-key.txt
+```
+
+Depois rode:
+
+```powershell
+# 2. Lê do arquivo e salva no escopo User
+$key = (Get-Content "C:\Users\$env:USERNAME\Dev\anthropic-key.txt" -Raw).Trim()
+[Environment]::SetEnvironmentVariable("ANTHROPIC_API_KEY", $key, "User")
+Write-Host "Variavel salva"
+```
+
+```powershell
+# 3. Apaga o arquivo temporário imediatamente
+Remove-Item "C:\Users\$env:USERNAME\Dev\anthropic-key.txt" -Force
+Test-Path "C:\Users\$env:USERNAME\Dev\anthropic-key.txt"  # esperado: False
+```
+
+### 3.3 Validar (sem imprimir a chave inteira)
+
+```powershell
+$saved = [Environment]::GetEnvironmentVariable("ANTHROPIC_API_KEY", "User")
+if ($saved) {
+    $masked = $saved.Substring(0, 12) + "..." + $saved.Substring($saved.Length - 4)
+    Write-Host "OK - Chave: $masked"
+    Write-Host "OK - Tamanho: $($saved.Length) caracteres"
+    Write-Host "OK - Prefixo correto: $($saved.StartsWith('sk-ant-api03-'))"
+}
+```
+
+Esperado: tamanho ~108, prefixo `True`.
+
+### 3.4 Como o Python consome
+
+Em sessões novas do PowerShell, a variável já vem carregada automaticamente (escopo `User` propaga). Para forçar atualização na sessão atual (após salvar):
+
+```powershell
+$env:ANTHROPIC_API_KEY = [Environment]::GetEnvironmentVariable("ANTHROPIC_API_KEY", "User")
+```
+
+No Python (já é o padrão do SDK da Anthropic):
+
+```python
+import os
+from anthropic import Anthropic
+client = Anthropic()  # lê ANTHROPIC_API_KEY do ambiente automaticamente
+# ou explicitamente:
+key = os.environ.get("ANTHROPIC_API_KEY")
+```
+
+Teste rápido:
+
+```powershell
+python -c "import os; k = os.environ.get('ANTHROPIC_API_KEY'); print('OK' if k and k.startswith('sk-ant-api03-') else 'FALHA', '- tamanho:', len(k) if k else 0)"
+```
+
+Esperado: `OK - tamanho: 108`.
+
+### 3.5 Atualizar a chave (rotação)
+
+Mesmo procedimento da 3.2 — gera chave nova no console, salva no `anthropic-key.txt`, roda os 3 blocos, apaga o arquivo. A nova chave sobrescreve a antiga. **Revogue a antiga no console depois de validar a nova.**
+
+### 3.6 Remover a chave
+
+```powershell
+[Environment]::SetEnvironmentVariable("ANTHROPIC_API_KEY", $null, "User")
+# Confirmar:
+[Environment]::GetEnvironmentVariable("ANTHROPIC_API_KEY", "User")  # esperado: vazio
+```
+
+### 3.7 Segurança — o que NUNCA fazer
+
+- **NUNCA** comite a chave em arquivo (`.env`, `.py`, `.md`, `.json` — nenhum).
+- **NUNCA** cole a chave em chat, e-mail, issue, PR, screenshot.
+- **NUNCA** coloque a chave hard-coded em código-fonte — use `os.environ` sempre.
+- **NUNCA** use escopo `Machine` (`SetEnvironmentVariable(..., 'Machine')`) — outros usuários da máquina conseguem ler.
+- Se a chave vazar (commitada por engano, vista por alguém, screenshot público), **revogue imediatamente** no console (Settings → API Keys → Revoke) e gere uma nova. Vazamento de chave gera custo direto no cartão.
+- Se for compartilhar o repo ou colar logs em chats, sempre rode o validador da 3.3 para mascarar antes.
+
+### 3.8 Por que escopo `User`
+
+- **Sem UAC**: escopo `User` não exige elevação — `Machine` exigiria.
+- **Isolamento por perfil**: outro usuário Windows na mesma máquina não enxerga.
+- **Persistência**: sobrevive a reinicialização e a fechar terminal — não precisa exportar a cada sessão como `$env:VAR = ...`.
+- **Compatível com Python/Node/qualquer SDK**: lido como variável de ambiente padrão.
+
+---
+
+## 4. Como rodar os testes
 
 ```powershell
 cd C:\Users\<user>\Dev\viagens
 python -m pytest -v
 ```
 
-Esperado: **~104 testes passam**. Um teste (`test_optimize_cluster_end_to_end_with_synthetic_photos`) falha no Windows por causa de separador de path — ver seção 5 (Troubleshooting).
+Esperado: **~104 testes passam**. Um teste (`test_optimize_cluster_end_to_end_with_synthetic_photos`) falha no Windows por causa de separador de path — ver seção 6 (Troubleshooting).
 
 Schemas:
 
@@ -148,7 +254,7 @@ Esperado: `Tudo válido.`
 
 ---
 
-## 4. Como rodar o pipeline de ingestão
+## 5. Como rodar o pipeline de ingestão
 
 Detalhes completos em [`docs/INGESTAO.md`](INGESTAO.md). Resumo:
 
@@ -168,15 +274,15 @@ python scripts\apply_proposals.py --input .\proposals.json
 
 ---
 
-## 5. Troubleshooting
+## 6. Troubleshooting
 
-### 5.1 `python` abre Microsoft Store
+### 6.1 `python` abre Microsoft Store
 
 Causa: alias `App Execution Alias` do Windows aponta `python.exe` para um stub da Store quando Python real não está instalado.
 
 Solução: depois de `winget install Python.Python.3.11`, o real Python entra no PATH **antes** do stub e isso some sozinho. Se persistir, desative o alias em **Settings → Apps → Advanced app settings → App execution aliases**.
 
-### 5.2 `gh: command not found` depois de instalar
+### 6.2 `gh: command not found` depois de instalar
 
 Causa: PowerShell não recarrega PATH na sessão atual.
 
@@ -186,13 +292,13 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
 ```
 Ou fecha e abre o terminal de novo.
 
-### 5.3 winget trava em "Aguardando conclusão de outra instalação"
+### 6.3 winget trava em "Aguardando conclusão de outra instalação"
 
 Causa: `msiexec` anterior preso esperando prompt UAC (em modo `--silent` o UAC não aparece). Acontece com GitHub CLI MSI.
 
 Solução: usar o **zip portátil do gh CLI** (ver 2.2). Para outras MSIs que travarem, abrir Gerenciador de Tarefas e finalizar processos `msiexec`/`winget` velhos.
 
-### 5.4 `git status` mostra arquivos LFS como modified após clone
+### 6.4 `git status` mostra arquivos LFS como modified após clone
 
 Causa: o repo tem arquivos em `media/iguacu-2021/` que foram commitados como blobs antes do LFS ser ativado. O filtro LFS smudge insiste em convertê-los em pointers, gerando false-positives.
 
@@ -208,7 +314,7 @@ Para reverter quando for editar esses arquivos:
 git update-index --no-skip-worktree <arquivo>
 ```
 
-### 5.5 Teste `test_optimize_cluster_end_to_end_with_synthetic_photos` falha no Windows
+### 6.5 Teste `test_optimize_cluster_end_to_end_with_synthetic_photos` falha no Windows
 
 Causa: o teste compara `OptimizedItem.src` com `"media/teste-2024/"` (forward slash), mas no Windows `pathlib.Path` produz backslashes — `'media\\teste-2024\\01.webp'`. Bug de portabilidade do teste.
 
@@ -216,7 +322,7 @@ Workaround temporário: rodar `pytest -k "not test_optimize_cluster_end_to_end_w
 
 **Possível impacto em produção:** se o `proposals.json` real produzido no Windows também tiver `\` nos paths, o JSON quebra ao ser renderizado no site (browsers esperam `/`). Antes de aplicar um `proposals.json` gerado no Windows, conferir os campos `src`/`thumb`/`poster` e normalizar com `.replace('\\', '/')` se necessário. Fix definitivo no produto: usar `Path.as_posix()` ao serializar paths.
 
-### 5.6 Token do gh CLI sumiu / `gh auth status` diz "not logged in"
+### 6.6 Token do gh CLI sumiu / `gh auth status` diz "not logged in"
 
 Solução:
 ```powershell
@@ -226,7 +332,7 @@ gh auth login
 
 ---
 
-## 6. Apêndice — disco e bandwidth
+## 7. Apêndice — disco e bandwidth
 
 - Clone inicial do repo: **~15 MB** (working tree, sem LFS pull adicional pois objetos LFS estão vazios)
 - Dependências Python instaladas (`scikit-learn` + `numpy` + `scipy` + `anthropic` + Google APIs): **~300 MB**
