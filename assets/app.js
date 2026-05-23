@@ -475,7 +475,13 @@ function clearAll() {
 
 // ── Year slider ──────────────────────────────────────────────────
 function initYearSlider() {
-  const years = state.trips.map(t => t.year);
+  const years = state.trips.map(t => t.year).filter(y => Number.isFinite(y));
+  if (years.length === 0) {
+    // Sem nenhuma trip com ano definido — esconde slider para não cair em NaN.
+    el.yearSlider.disabled = true;
+    el.sliderVal.textContent = '—';
+    return;
+  }
   const min = Math.min(...years);
   const max = Math.max(...years);
   el.yearSlider.min = min;
@@ -493,7 +499,7 @@ function updateSliderPct() {
 
 // ── Year timeline ────────────────────────────────────────────────
 function renderYearTimeline() {
-  const years = [...new Set(state.trips.map(t => t.year))].sort();
+  const years = [...new Set(state.trips.map(t => t.year).filter(y => Number.isFinite(y)))].sort();
   const all = document.createElement('button');
   all.className = 'yl-item active';
   all.dataset.year = 'all';
@@ -1189,30 +1195,60 @@ function expandCard(card, open) {
 }
 
 function populateDiary(node, trip) {
-  const hl = node.querySelector('[data-highlights]');
-  hl.innerHTML = (trip.highlights || []).map(h => `<span class="hl">${escapeHtml(h)}</span>`).join('');
-  node.querySelector('[data-memory]').textContent = trip.memory || '';
+  const panel = node.querySelector('[data-panel="diary"]');
+  if (!panel) return;
+  panel.innerHTML = `
+    <div class="hlights" data-highlights></div>
+    <p class="memory" data-memory></p>
+  `;
+  panel.querySelector('[data-highlights]').innerHTML =
+    (trip.highlights || []).map(h => `<span class="hl">${escapeHtml(h)}</span>`).join('');
+  panel.querySelector('[data-memory]').textContent = trip.memory || '';
 }
 
 function populateLogistics(node, trip) {
+  const panel = node.querySelector('[data-panel="logistics"]');
+  if (!panel) return;
+  panel.innerHTML = `
+    <div class="log-block">
+      <h4 class="log-h">🏨 Hospedagem</h4>
+      <ul class="log-list" data-log-hotels></ul>
+    </div>
+    <div class="log-block">
+      <h4 class="log-h">🍴 Restaurantes</h4>
+      <ul class="log-list" data-log-restaurants></ul>
+    </div>
+    <div class="log-block">
+      <h4 class="log-h">💡 Dicas</h4>
+      <p class="log-tips" data-log-tips></p>
+    </div>
+  `;
   const log = trip.logistics || {};
-  const ulHotels = node.querySelector('[data-log-hotels]');
-  const ulRests = node.querySelector('[data-log-restaurants]');
-  ulHotels.innerHTML = (log.hotels || []).map(h => `<li>${escapeHtml(h)}</li>`).join('') || '<li style="color:var(--text3)">—</li>';
-  ulRests.innerHTML = (log.restaurants || []).map(h => `<li>${escapeHtml(h)}</li>`).join('') || '<li style="color:var(--text3)">—</li>';
-  node.querySelector('[data-log-tips]').textContent = log.tips || '—';
+  panel.querySelector('[data-log-hotels]').innerHTML =
+    (log.hotels || []).map(h => `<li>${escapeHtml(h)}</li>`).join('') || '<li style="color:var(--text3)">—</li>';
+  panel.querySelector('[data-log-restaurants]').innerHTML =
+    (log.restaurants || []).map(h => `<li>${escapeHtml(h)}</li>`).join('') || '<li style="color:var(--text3)">—</li>';
+  panel.querySelector('[data-log-tips]').textContent = log.tips || '—';
 }
 
 function populateCost(node, trip) {
+  const panel = node.querySelector('[data-panel="cost"]');
+  if (!panel) return;
+  panel.innerHTML = `
+    <div class="cost-head">
+      <span class="cost-total-v" data-cost-total>—</span>
+      <span class="cost-curr" data-cost-curr></span>
+    </div>
+    <div class="cost-bars" data-cost-bars></div>
+    <div class="cost-day"><span class="cost-day-lbl">por noite:</span> <span data-cost-day>—</span></div>
+  `;
   const c = trip.cost || {};
   if (!c.total) {
-    node.querySelector('[data-cost-total]').textContent = '—';
-    node.querySelector('[data-cost-bars]').innerHTML = '<p style="color:var(--text3);font-size:.8rem">Sem dados de custo registrados.</p>';
-    node.querySelector('[data-cost-curr]').textContent = '';
-    node.querySelector('[data-cost-day]').textContent = '—';
+    panel.querySelector('[data-cost-bars]').innerHTML =
+      '<p style="color:var(--text3);font-size:.8rem">Sem dados de custo registrados.</p>';
     return;
   }
-  node.querySelector('[data-cost-total]').textContent = formatMoney(c.total, c.currency);
+  panel.querySelector('[data-cost-total]').textContent = formatMoney(c.total, c.currency);
   const breakdown = c.breakdown || {};
   const max = Math.max(...Object.values(breakdown), 1);
   const labels = { voos: '✈ Voos', hospedagem: '🏨 Hospedagem', passeios: '🎟 Passeios', comida: '🍴 Comida' };
@@ -1224,14 +1260,20 @@ function populateCost(node, trip) {
       <span class="cost-bar-v">${formatMoney(v, c.currency)}</span>
     </div>`;
   }).join('');
-  node.querySelector('[data-cost-bars]').innerHTML = bars;
-  node.querySelector('[data-cost-curr]').textContent = c.currency || 'BRL';
-  node.querySelector('[data-cost-day]').textContent = formatMoney(Math.round(c.total / (trip.nts || 1)), c.currency);
+  panel.querySelector('[data-cost-bars]').innerHTML = bars;
+  panel.querySelector('[data-cost-curr]').textContent = c.currency || 'BRL';
+  panel.querySelector('[data-cost-day]').textContent = formatMoney(Math.round(c.total / (trip.nts || 1)), c.currency);
 }
 
 function populateGallery(node, trip) {
-  const gal = node.querySelector('[data-gallery]');
-  const empty = node.querySelector('[data-gallery-empty]');
+  const panel = node.querySelector('[data-panel="gallery"]');
+  if (!panel) return;
+  panel.innerHTML = `
+    <div class="gallery" data-gallery></div>
+    <p class="gallery-empty" data-gallery-empty hidden style="color:var(--text3);font-size:.85rem">Sem fotos por enquanto.</p>
+  `;
+  const gal = panel.querySelector('[data-gallery]');
+  const empty = panel.querySelector('[data-gallery-empty]');
   const photos = trip.gallery || [];
   if (photos.length === 0) {
     gal.hidden = true;
@@ -2264,13 +2306,23 @@ function renderMemTimeline(done) {
   const container = $('#memTimeline');
   if (!container) return;
 
+  const NO_YEAR = '__noyear';
   const porAno = {};
-  for (const t of done) (porAno[t.year] ||= []).push(t);
-  const anos = Object.keys(porAno).map(Number).sort((a, b) => b - a);
+  for (const t of done) {
+    const k = Number.isFinite(t.year) ? t.year : NO_YEAR;
+    (porAno[k] ||= []).push(t);
+  }
+  // Anos numéricos em ordem decrescente; bucket "Sem data" sempre por último.
+  const anos = Object.keys(porAno).sort((a, b) => {
+    if (a === NO_YEAR) return 1;
+    if (b === NO_YEAR) return -1;
+    return Number(b) - Number(a);
+  });
 
   let altCount = 0;
   container.innerHTML = anos.map(ano => {
     const ents = porAno[ano];
+    const isNoYear = ano === NO_YEAR;
     const entriesHtml = ents.map(t => {
       const side = altCount++ % 2 === 0 ? 'right' : 'left';
       const imgUrl = (t.gallery && t.gallery[0])
@@ -2293,9 +2345,9 @@ function renderMemTimeline(done) {
       `;
     }).join('');
     return `
-      <div class="mem-year-block">
+      <div class="mem-year-block${isNoYear ? ' mem-year-block-noyear' : ''}">
         <div class="mem-year-marker">
-          <span class="mem-year-n">${ano}</span>
+          <span class="mem-year-n">${isNoYear ? 'Sem data' : ano}</span>
           <div class="mem-year-narrative">${yearNarrative(ano, ents)}</div>
         </div>
         ${entriesHtml}
@@ -2529,6 +2581,27 @@ function showView(name) {
   if (el.memoriaView)       el.memoriaView.hidden       = name !== 'memoria';
   if (el.planejamentoView)  el.planejamentoView.hidden  = name !== 'planejamento';
   // planPage controlled by openPlanPage/closePlanPage
+
+  // Leaflet snapshota dimensões do container no momento de L.map(); como o
+  // #map vive dentro de #timelineView (que nasce hidden=true), o mapa fica
+  // 0×0 até o usuário navegar para a timeline. Sem invalidateSize, o
+  // markerCluster não materializa os pins no DOM. Disparamos via RAF para
+  // garantir que o reflow do `hidden=false` já aconteceu antes.
+  if (name === 'timeline' && map) {
+    // RAF garante que o reflow do hidden=false já aplicou antes de medirmos.
+    // Depois do invalidateSize, re-rodamos render() para que os pins sejam
+    // adicionados ao markerCluster com o mapa já no tamanho correto — sem
+    // isso o cluster fica em limbo (markers internos mas não materializados
+    // no DOM porque foram inseridos quando o container era 0×0).
+    requestAnimationFrame(() => {
+      try {
+        map.invalidateSize();
+        render();
+      } catch (e) {
+        console.error('[showView] invalidateSize/render falhou:', e);
+      }
+    });
+  }
 }
 
 function applyHash() {
@@ -3624,4 +3697,6 @@ function escapeAttr(s) {
 }
 
 // ── Go! ──────────────────────────────────────────────────────────
-boot().then(() => maybeStartTourFirstVisit()).catch(() => maybeStartTourFirstVisit());
+boot()
+  .catch(e => console.error('[boot] falhou:', e))
+  .finally(() => maybeStartTourFirstVisit());
