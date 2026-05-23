@@ -108,6 +108,23 @@ def test_clean_caption_strips_quotes_and_prefixes():
     assert sc._clean_caption("Cores\nvivas em\n  Bangkok") == "Cores vivas em Bangkok"
 
 
+def test_system_prompt_v2_contains_calibration_keywords():
+    """V2 do system prompt cobre: anti-anglicismo, detalhe único, contexto
+    inter-batch e veto a clichês motivacionais."""
+    prompt = sc.SYSTEM_PROMPT
+    # Anti-anglicismo (problema 2 da calibração)
+    assert "anglicismo" in prompt.lower()
+    assert "roar" in prompt and "rugido" in prompt
+    # Detalhe único da foto (problema 3)
+    assert "detalhe visual ÚNICO" in prompt or "detalhe único" in prompt.lower()
+    # Contexto inter-batch (problema 1)
+    assert "CAPTIONS_JÁ_GERADAS" in prompt
+    # Anti-clichê motivacional
+    assert "força bruta" in prompt
+    # Pessoa: 3ª pessoa ou impessoal
+    assert "3ª pessoa" in prompt or "impessoal" in prompt
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. API key gating
 # ─────────────────────────────────────────────────────────────────────────────
@@ -227,6 +244,45 @@ def test_batch_falls_back_when_one_item_fails(tmp_path):
     assert results[str(p_bad)].caption == "Local · 02 jan 2024"
     assert results[str(p_bad)].source_model is None
     assert results[str(p_bad)].error is not None
+
+
+def test_batch_passes_previous_captions_to_next_call(tmp_path):
+    """Cada chamada dentro do mesmo batch deve receber as captions já geradas
+    como `previous_captions`, garantindo que o modelo veja o contexto do álbum."""
+    paths = [_write_dummy_image(tmp_path / f"{i}.webp") for i in range(3)]
+    client = _mock_client_returning([
+        "Primeira observação calma.",
+        "Segundo ângulo, gente molhada.",
+        "Terceiro: arco-íris cortando a vastidão.",
+    ])
+
+    captured_user_texts: list[str] = []
+    original_create = client.messages.create
+
+    def spy(**kwargs):
+        for part in kwargs["messages"][0]["content"]:
+            if part.get("type") == "text":
+                captured_user_texts.append(part["text"])
+        return original_create(**kwargs)
+
+    client.messages.create = spy
+
+    sc.generate_smart_captions_batch(
+        [{"path": str(p)} for p in paths],
+        client=client,
+        requests_per_minute=600,
+        sleep_fn=lambda _s: None,
+    )
+
+    # 1ª chamada: sem previous_captions no prompt
+    assert "CAPTIONS_JÁ_GERADAS" not in captured_user_texts[0]
+    # 2ª chamada: vê a 1ª caption
+    assert "CAPTIONS_JÁ_GERADAS" in captured_user_texts[1]
+    assert "Primeira observação calma." in captured_user_texts[1]
+    # 3ª chamada: vê as duas anteriores
+    assert "CAPTIONS_JÁ_GERADAS" in captured_user_texts[2]
+    assert "Primeira observação calma." in captured_user_texts[2]
+    assert "Segundo ângulo, gente molhada." in captured_user_texts[2]
 
 
 def test_batch_skips_items_without_path(tmp_path):
@@ -360,6 +416,105 @@ def test_apply_smart_captions_fallback_when_api_fails():
     assert factual[cl.id]["b.webp"] == "Foz · 13 jun"  # ← fallback factual
     assert smart_sources[cl.id]["a.webp"] == "claude-haiku-4-5"
     assert smart_sources[cl.id]["b.webp"] is None  # ← marcador de fallback
+
+
+def test_apply_smart_captions_skips_when_manual_caption_exists():
+    """Caption já presente em trip.media.gallery sem caption_auto=True é
+    manual: smart pula a foto, preserva a caption, marca preserved_manual."""
+    from ingest_takeout import _apply_smart_captions
+
+    cl = _make_synthetic_cluster([
+        ("input/iguacu-2021/01.webp", "2021-06-12"),  # tem caption manual
+        ("input/iguacu-2021/02.webp", "2021-06-13"),  # sem caption manual
+    ])
+    factual = {cl.id: {
+        "input/iguacu-2021/01.webp": "Foz · 12 jun",
+        "input/iguacu-2021/02.webp": "Foz · 13 jun",
+    }}
+    smart_sources: dict[str, dict[str, str | None]] = {}
+    preserved: dict[str, dict[str, bool]] = {}
+
+    trips = [{
+        "id": "iguacu-2021",
+        "name": "Foz do Iguaçu",
+        "media": {
+            "gallery": [
+                # 01.webp: caption manual (sem caption_auto)
+                {"src": "media/iguacu-2021/01.webp",
+                 "caption": "Pose espontânea no mirante das quedas"},
+                # 02.webp existe na gallery mas sem caption → não bloqueia
+                {"src": "media/iguacu-2021/02.webp", "caption": None},
+            ],
+        },
+    }]
+
+    with patch.object(sc, "generate_smart_caption") as mock_gen:
+        mock_gen.side_effect = ["Spray gelado e gente pequena."]
+        _apply_smart_captions(
+            [cl], trips=trips,
+            factual_captions=factual,
+            smart_sources=smart_sources,
+            preserved_manual=preserved,
+            model="claude-haiku-4-5",
+            rpm=600,
+            client=MagicMock(),
+        )
+
+    # 01.webp: caption manual preservada, API não foi chamada para ela
+    assert factual[cl.id]["input/iguacu-2021/01.webp"] == \
+        "Pose espontânea no mirante das quedas"
+    assert smart_sources[cl.id]["input/iguacu-2021/01.webp"] is None
+    assert preserved[cl.id]["input/iguacu-2021/01.webp"] is True
+
+    # 02.webp: smart rodou normal
+    assert factual[cl.id]["input/iguacu-2021/02.webp"] == "Spray gelado e gente pequena."
+    assert smart_sources[cl.id]["input/iguacu-2021/02.webp"] == "claude-haiku-4-5"
+    assert preserved[cl.id]["input/iguacu-2021/02.webp"] is False
+
+    # API chamada apenas uma vez (não para 01)
+    assert mock_gen.call_count == 1
+
+
+def test_apply_smart_captions_overwrites_when_caption_auto_is_true():
+    """Caption gerada automaticamente (caption_auto=True) NÃO é manual e
+    pode ser sobrescrita pelo smart na próxima rodada."""
+    from ingest_takeout import _apply_smart_captions
+
+    cl = _make_synthetic_cluster([("input/iguacu-2021/01.webp", "2021-06-12")])
+    factual = {cl.id: {"input/iguacu-2021/01.webp": "Foz · 12 jun"}}
+    smart_sources: dict[str, dict[str, str | None]] = {}
+    preserved: dict[str, dict[str, bool]] = {}
+
+    trips = [{
+        "id": "iguacu-2021",
+        "name": "Foz do Iguaçu",
+        "media": {
+            "gallery": [
+                # Caption gerada anteriormente pelo pipeline (caption_auto=True)
+                {"src": "media/iguacu-2021/01.webp",
+                 "caption": "Foz do Iguaçu · 12 jun 2021",
+                 "caption_auto": True},
+            ],
+        },
+    }]
+
+    with patch.object(sc, "generate_smart_caption") as mock_gen:
+        mock_gen.side_effect = ["Trovão azul no horizonte."]
+        _apply_smart_captions(
+            [cl], trips=trips,
+            factual_captions=factual,
+            smart_sources=smart_sources,
+            preserved_manual=preserved,
+            model="claude-haiku-4-5",
+            rpm=600,
+            client=MagicMock(),
+        )
+
+    # Sobrescrita: smart rodou e bateu por cima da caption_auto anterior
+    assert factual[cl.id]["input/iguacu-2021/01.webp"] == "Trovão azul no horizonte."
+    assert smart_sources[cl.id]["input/iguacu-2021/01.webp"] == "claude-haiku-4-5"
+    assert preserved[cl.id]["input/iguacu-2021/01.webp"] is False
+    assert mock_gen.call_count == 1
 
 
 def test_apply_smart_captions_skips_orphan_cluster():

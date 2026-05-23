@@ -77,6 +77,21 @@ Cada item ganha o campo `caption_smart_source`:
 - `caption_smart_source` indica o modelo. **Ausente/None** = foi a versão factual (default ou fallback).
 - Editar manualmente → mude **ambos** os campos: `caption_auto: false`, remove `caption_smart_source`.
 
+## Precedência de captions
+
+Quando o pipeline encontra um item que **já existe** em `trip.media.gallery`, a precedência é estrita:
+
+1. **Manual** — caption escrita à mão no `trips.json`. Identificada por:
+   - `caption` presente E não vazia
+   - `caption_auto` ausente, `null`, ou explicitamente `false`
+   - **Nunca é sobrescrita.** O pipeline pula a chamada à API, preserva o texto manual, e marca o item no `proposals.json` com `preserved_manual_caption: true`. O `caption_smart_source` fica `null` (caption não veio do modelo).
+2. **Smart** — `caption_auto: true` + `caption_smart_source: "<modelo>"`. Pode ser sobrescrita por uma nova rodada de `--smart-captions` (releitura/recalibração).
+3. **Factual** — `caption_auto: true` sem `caption_smart_source`. Fallback do pipeline padrão; também pode ser sobrescrita.
+
+Match entre cluster e gallery é feito por **basename do arquivo** (ex.: `01.webp`). O `src` da gallery (`media/<trip>/01.webp`) e o `path` do cluster (`media-import/<trip>/01.webp`) coincidem nesse basename.
+
+**Implicação prática.** Rodar `--smart-captions` várias vezes na mesma viagem é seguro: tudo que você já editou à mão fica intocado. Se quiser **forçar** uma nova rodada do smart em uma caption específica, edite o item na `gallery` para colocar `caption_auto: true` (ou remova o campo `caption` totalmente) antes de rodar de novo.
+
 ## Exemplo lado-a-lado
 
 3 fotos da Foz do Iguaçu:
