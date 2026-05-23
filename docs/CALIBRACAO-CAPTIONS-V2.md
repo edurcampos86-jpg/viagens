@@ -84,6 +84,27 @@ python scripts/ingest_takeout.py --mode album --smart-captions
 | Suite Python | 125 passed (1 falha pré-existente, sem relação: `test_optimize_cluster_end_to_end_with_synthetic_photos` falha por path separator do Windows também em `main`) |
 | Testes de `smart_captions` | **21/21 verdes** (19 originais + 2 novos: `test_system_prompt_v2_contains_calibration_keywords`, `test_batch_passes_previous_captions_to_next_call`) |
 
+## Proteção adicional (commit subsequente)
+
+Durante o smoke test V2 ficou evidente que as 5 fotos do Foz já tinham **captions manuais** em `trip.media.gallery` no `trips.json` (sem `caption_auto: true`) — e foram **silenciosamente sobrescritas** tanto pelo smart V1 quanto pelo V2. Esse é um defeito antigo (existe desde o PR [#38](https://github.com/anthropics/viagens/pull/38)), não introduzido pela calibração V2.
+
+Para fechar essa lacuna foi adicionada uma camada de precedência em `_apply_smart_captions`:
+
+| Origem | Quando entra | Sobrescrita por smart? |
+|---|---|---|
+| **Manual** (gallery item sem `caption_auto`) | Curadoria do Eduardo | **Não** — pula a API |
+| **Smart** (`caption_auto: true` + `caption_smart_source`) | Rodada anterior do `--smart-captions` | Sim |
+| **Factual** (`caption_auto: true` sem source) | Pipeline padrão | Sim |
+
+Implementação:
+- Match por basename do arquivo (denominador comum entre `gallery.src` e `cluster.path`).
+- API só é chamada para items sem manual; cliente Anthropic é construído lazy (não toca `ANTHROPIC_API_KEY` se todos os items do cluster já têm manual).
+- Items preservados ganham `preserved_manual_caption: true` no `proposals.json`, `caption_auto: false` e `caption_smart_source: null`.
+
+Cobertura nos testes: `test_apply_smart_captions_skips_when_manual_caption_exists` (manual vence) e `test_apply_smart_captions_overwrites_when_caption_auto_is_true` (smart vence quando a anterior também é auto).
+
+Detalhes na seção "Precedência de captions" de [LEGENDAS-INTELIGENTES.md](LEGENDAS-INTELIGENTES.md).
+
 ## Recomendação técnica
 
 **🟢 Smart V2 pronta para uso real em álbuns pequenos-médios (até ~50 fotos por álbum).** Os 3 problemas reportados foram resolvidos (anglicismos, detalhe icônico) ou substancialmente atenuados (repetição). Antes de rodar contra o catálogo inteiro (840 fotos, ~$0.67), recomendo:

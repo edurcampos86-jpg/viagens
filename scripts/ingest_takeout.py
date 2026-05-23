@@ -706,6 +706,7 @@ def serialize_cluster(
     cl: Cluster,
     captions: dict[str, str] | None = None,
     smart_sources: dict[str, str | None] | None = None,
+    preserved_manual: dict[str, bool] | None = None,
 ) -> dict:
     """
     Pronto p/ JSON. Lista de items é resumida (paths apenas).
@@ -718,9 +719,33 @@ def serialize_cluster(
     Pode coexistir com caption_auto: true. Quando o smart caiu em
     fallback factual, smart_sources[path] é None — comportamento idêntico
     a apenas `captions`.
+
+    preserved_manual: opcional, mapa path → bool. Quando True, indica que
+    a caption deste item veio de uma caption manual já existente em
+    trip.media.gallery e foi PRESERVADA (smart não rodou). Nesse caso
+    `caption_auto` sai False (curadoria manual) e o item ganha
+    `preserved_manual_caption: true`.
     """
     captions = captions or {}
     smart_sources = smart_sources or {}
+    preserved_manual = preserved_manual or {}
+    def _item(it):
+        cap = captions.get(it.path)
+        is_preserved = bool(preserved_manual.get(it.path))
+        return {
+            "path": it.path,
+            "type": it.type,
+            "timestamp": it.timestamp,
+            "lat": it.lat,
+            "lon": it.lon,
+            "source": it.source,
+            "caption": cap,
+            # caption_auto=False quando preservamos uma caption manual;
+            # True para qualquer outra caption gerada (factual ou smart).
+            "caption_auto": False if (is_preserved and cap) else (True if cap else None),
+            "caption_smart_source": smart_sources.get(it.path),
+            "preserved_manual_caption": True if is_preserved else None,
+        }
     return {
         "id": cl.id,
         "action": cl.action,  # "create" | "merge" | "orphan"
@@ -734,20 +759,7 @@ def serialize_cluster(
         "center_lat": cl.center_lat,
         "center_lon": cl.center_lon,
         "stats": {"photos": cl.photos, "videos": cl.videos, "total": len(cl.items)},
-        "items": [
-            {
-                "path": it.path,
-                "type": it.type,
-                "timestamp": it.timestamp,
-                "lat": it.lat,
-                "lon": it.lon,
-                "source": it.source,
-                "caption": captions.get(it.path),
-                "caption_auto": True if captions.get(it.path) else None,
-                "caption_smart_source": smart_sources.get(it.path),
-            }
-            for it in cl.items
-        ],
+        "items": [_item(it) for it in cl.items],
     }
 
 
@@ -812,6 +824,7 @@ def run(input_dir: Path, output_path: Path, trips: list[dict], *,
     geocode_fn = reverse_geocode if geocode else None
     captions_by_cluster: dict[str, dict[str, str]] = {}
     smart_sources_by_cluster: dict[str, dict[str, str | None]] = {}
+    preserved_manual_by_cluster: dict[str, dict[str, bool]] = {}
     for cl in clusters:
         if cl.action == "orphan":
             continue
@@ -824,6 +837,7 @@ def run(input_dir: Path, output_path: Path, trips: list[dict], *,
             clusters, trips,
             factual_captions=captions_by_cluster,
             smart_sources=smart_sources_by_cluster,
+            preserved_manual=preserved_manual_by_cluster,
             model=smart_model,
             rpm=smart_rpm,
             client=smart_client,
@@ -846,6 +860,7 @@ def run(input_dir: Path, output_path: Path, trips: list[dict], *,
                 cl,
                 captions_by_cluster.get(cl.id),
                 smart_sources_by_cluster.get(cl.id),
+                preserved_manual_by_cluster.get(cl.id),
             )
             for cl in clusters
         ],
@@ -869,12 +884,21 @@ def _apply_smart_captions(
     *,
     factual_captions: dict[str, dict[str, str]],
     smart_sources: dict[str, dict[str, str | None]],
+    preserved_manual: dict[str, dict[str, bool]] | None = None,
     model: str | None,
     rpm: int | None,
     client: object | None,
 ) -> None:
     """Substitui in-place as captions factuais pelas smart, populando
     smart_sources com o modelo (None quando caiu em fallback factual).
+
+    Precedência: **manual > smart > factual**. Antes de chamar a API,
+    cruza `cluster.items` com `trip.media.gallery` (match por basename
+    do arquivo). Para cada foto cuja gallery já tem `caption` e
+    `caption_auto != True`, a chamada à API é PULADA, a caption manual
+    é preservada em `factual_captions[cluster_id][path]`, e
+    `preserved_manual[cluster_id][path] = True` (rastreado no proposals.json
+    como `preserved_manual_caption: true`).
 
     Imports preguiçosos: o módulo `smart_captions` só carrega quando a flag
     é usada, evitando dependência dura do SDK em testes do pipeline default.
@@ -889,7 +913,10 @@ def _apply_smart_captions(
 
     use_model = model or DEFAULT_MODEL
     use_rpm = rpm if rpm and rpm > 0 else DEFAULT_REQUESTS_PER_MINUTE
-    use_client = client or build_client()
+    use_client: object | None = client  # init lazy: só criamos cliente real
+    # se houver algum item que vai realmente chamar a API
+    if preserved_manual is None:
+        preserved_manual = {}
 
     trips_by_id = {t["id"]: t for t in trips}
 
@@ -910,32 +937,68 @@ def _apply_smart_captions(
                 country=cl.country,
             )
 
-        batch_input = [
-            {
-                "path": it.path,
-                "exif": {"date": it.timestamp, "place": cl.place},
-            }
-            for it in cl.items
-        ]
-        fallback = factual_captions.get(cl.id, {})
-        results = generate_smart_captions_batch(
-            batch_input,
-            trip_context=context,
-            fallback_captions=fallback,
-            client=use_client,
-            model=use_model,
-            requests_per_minute=use_rpm,
-        )
+        # ── Detecção de captions manuais já existentes ─────────────────
+        # Match por basename do arquivo (gallery.src é "media/<trip>/01.webp",
+        # cluster.path é "<input>/<trip>/01.webp"; basename é o denominador
+        # comum). Só conta como "manual" se houver caption e caption_auto
+        # NÃO for True (default em gallery é ausente/None → considera manual).
+        manual_by_basename: dict[str, str] = {}
+        if ctx_trip:
+            existing_gallery = (ctx_trip.get("media") or {}).get("gallery") or []
+            for g in existing_gallery:
+                src = g.get("src")
+                cap = g.get("caption")
+                if not src or not cap:
+                    continue
+                if g.get("caption_auto") is True:
+                    continue  # gerada automaticamente → pode sobrescrever
+                manual_by_basename[Path(src).name] = cap
 
+        # ── Separar items: protegidos (manual) vs candidatos a smart ──
+        items_for_api: list[dict] = []
+        manual_results: dict[str, str] = {}
+        for it in cl.items:
+            basename = Path(it.path).name
+            if basename in manual_by_basename:
+                manual_results[it.path] = manual_by_basename[basename]
+            else:
+                items_for_api.append({
+                    "path": it.path,
+                    "exif": {"date": it.timestamp, "place": cl.place},
+                })
+
+        # ── Chamada à API só para items sem caption manual ─────────────
+        fallback = factual_captions.get(cl.id, {})
+        results: dict[str, object] = {}
+        if items_for_api:
+            if use_client is None:
+                use_client = build_client()
+            results = generate_smart_captions_batch(
+                items_for_api,
+                trip_context=context,
+                fallback_captions=fallback,
+                client=use_client,
+                model=use_model,
+                requests_per_minute=use_rpm,
+            )
+
+        # ── Merge: manuais preservados + resultados da API ─────────────
         new_captions: dict[str, str] = {}
         new_sources: dict[str, str | None] = {}
+        new_preserved: dict[str, bool] = {}
+        for path, cap in manual_results.items():
+            new_captions[path] = cap
+            new_sources[path] = None  # sem modelo: caption é manual
+            new_preserved[path] = True
         for path, res in results.items():
             if res.caption:
                 new_captions[path] = res.caption
             new_sources[path] = res.source_model
+            new_preserved[path] = False
 
         factual_captions[cl.id] = new_captions
         smart_sources[cl.id] = new_sources
+        preserved_manual[cl.id] = new_preserved
 
 
 def _run_cluster(input_dir, trips, *, geocode, eps_days, eps_km,
