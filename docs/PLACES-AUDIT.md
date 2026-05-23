@@ -4,6 +4,19 @@
 > Fonte: revisão manual de https://photos.google.com/places em 2026-05-22.
 > Drafts geocodificados em: [`docs/drafts-from-places-audit.json`](drafts-from-places-audit.json).
 > Inventário atual: [`docs/INVENTARIO-ATUAL.md`](INVENTARIO-ATUAL.md).
+>
+> **Atualização 2026-05-23 — Eduardo revisou as 18 perguntas.** Status de cada draft consolidado abaixo.
+
+## Status da revisão (resumo)
+
+| Categoria | Quantidade | Destino |
+|---|---|---|
+| Removidos (duplicata/não-viagem) | 4 | `salvador`, `honolulu`, `orlando`, `vila-remedios` (não entram em `trips.json`) |
+| Promovidos como `done` (marcantes) | 4 | `natal-micareta`, `canoa-quebrada-reveillon-cardume`, `florianopolis-micareta`, `mucuge-aniversario` |
+| Promovidos como `done` (agregadores) | 4 | `brasilia-recorrente`, `nordeste-litoral-recorrente`, `aracaju-familia`, `campos-jordao-recorrente` |
+| Placeholder a explodir (`draft`) | 1 | `rio-multiplo` (será dividido em N quando Takeout do Rio for processado) |
+| `wishlist` (nunca foi) | 1 | `lencois-maranhenses-wishlist` |
+| Trips fantasma do briefing | 6 | Investigação em [`TRIPS-FANTASMA-INVESTIGAR.md`](TRIPS-FANTASMA-INVESTIGAR.md) |
 
 ## Como ler este documento
 
@@ -46,17 +59,17 @@ Resumo: **19 drafts** (4 internacionais + 15 nacionais), sendo **8 com conflito 
 
 ### Internacionais
 
-1. **Honolulu** — É a mesma viagem que `havai-2024`, ou foi outra viagem ao Havaí? Se foi a mesma, removo o draft. Se é outra, qual ano / com quem / motivo?
+1. ✅ **Honolulu** — = `havai-2024`. Draft removido.
 
-2. **Nova York (690 fotos no Lugares)** — Sua trip `ny-2022` cobre **quantas** dessas fotos? Você foi a NY 1, 2 ou 3 vezes? Se mais de uma, em quais períodos (mes/ano)?
+2. **Nova York (690 fotos no Lugares)** — Sua trip `ny-2022` cobre **quantas** dessas fotos? Você foi a NY 1, 2 ou 3 vezes? Se mais de uma, em quais períodos (mes/ano)? *(Pendente — tratada via placeholder em fase futura.)*
 
-3. **Orlando** — É parte da viagem `florida-2022` (Disney/Universal incluídos) ou foi outra ocasião? Se for parte da `florida-2022`, apago o draft.
+3. ✅ **Orlando** — parte de `florida-2022`. Draft removido.
 
-4. **Vila dos Remédios (Fernando de Noronha)** — Confirma que é só `noronha-2024`? Se sim, removo o draft.
+4. ✅ **Vila dos Remédios (Fernando de Noronha)** — = `noronha-2024`. Draft removido.
 
 ### Nacionais — domicílio
 
-5. **Salvador** — Cadastrar como viagem ou é sua **cidade de residência atual**? Se for residência, marco como `home_base` (campo novo) ou simplesmente removo o draft. Sua escolha.
+5. ✅ **Salvador** — é cidade de residência atual. Draft removido (não vira trip).
 
 ### Nacionais — conflitos com trip existente
 

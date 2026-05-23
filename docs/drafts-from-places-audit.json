@@ -2,21 +2,8 @@
   "audit_date": "2026-05-22",
   "source": "https://photos.google.com/places (auditoria manual)",
   "geocode_source": "Nominatim/OpenStreetMap via geopy",
-  "drafts_count": 19,
+  "drafts_count": 15,
   "drafts": [
-    {
-      "id": "honolulu-draft",
-      "name": "Honolulu",
-      "sub": "Havaí · Estados Unidos",
-      "status": "draft",
-      "continent": "Americas",
-      "country": "Estados Unidos",
-      "year": null,
-      "lat": 21.304547,
-      "lon": -157.855676,
-      "emoji": "🌺",
-      "_audit_notes": "Detectada em Lugares do Google Photos durante auditoria de 2026-05-22 · ano desconhecido (preencher após confirmação) · possível conflito com: havai-2024"
-    },
     {
       "id": "ny-extra-draft",
       "name": "Nova York (viagens adicionais)",
@@ -29,45 +16,6 @@
       "lon": -73.9855319,
       "emoji": "🗽",
       "_audit_notes": "Detectada em Lugares do Google Photos durante auditoria de 2026-05-22 · ano desconhecido (preencher após confirmação) · possível conflito com: ny-2022 (690 fotos no Lugares sugere mais de uma viagem)"
-    },
-    {
-      "id": "orlando-draft",
-      "name": "Orlando",
-      "sub": "Flórida · Estados Unidos",
-      "status": "draft",
-      "continent": "Americas",
-      "country": "Estados Unidos",
-      "year": null,
-      "lat": 28.5421218,
-      "lon": -81.379045,
-      "emoji": "🎢",
-      "_audit_notes": "Detectada em Lugares do Google Photos durante auditoria de 2026-05-22 · ano desconhecido (preencher após confirmação) · possível conflito com: florida-2022 (verificar se é a mesma)"
-    },
-    {
-      "id": "vila-remedios-draft",
-      "name": "Vila dos Remédios",
-      "sub": "Fernando de Noronha · Brasil",
-      "status": "draft",
-      "continent": "Americas",
-      "country": "Brasil",
-      "year": null,
-      "lat": -3.8421858,
-      "lon": -32.4111387,
-      "emoji": "🐬",
-      "_audit_notes": "Detectada em Lugares do Google Photos durante auditoria de 2026-05-22 · ano desconhecido (preencher após confirmação) · possível conflito com: noronha-2024 (provavelmente a mesma viagem)"
-    },
-    {
-      "id": "salvador-draft",
-      "name": "Salvador",
-      "sub": "Bahia · Brasil",
-      "status": "draft",
-      "continent": "Americas",
-      "country": "Brasil",
-      "year": null,
-      "lat": -12.9822499,
-      "lon": -38.4812772,
-      "emoji": "🏙️",
-      "_audit_notes": "Detectada em Lugares do Google Photos durante auditoria de 2026-05-22 · ano desconhecido (preencher após confirmação) · possível conflito com: Pode ser residência atual — confirmar"
     },
     {
       "id": "rio-extra-draft",
@@ -251,5 +199,12 @@
       "emoji": "⛰️",
       "_audit_notes": "Detectada em Lugares do Google Photos durante auditoria de 2026-05-22 · ano desconhecido (preencher após confirmação)"
     }
-  ]
+  ],
+  "removed_after_review": [
+    "honolulu-draft",
+    "orlando-draft",
+    "salvador-draft",
+    "vila-remedios-draft"
+  ],
+  "review_date": "2026-05-23"
 }
