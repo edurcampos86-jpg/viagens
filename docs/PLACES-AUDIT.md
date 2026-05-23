@@ -25,9 +25,9 @@
 3. A seção "Perguntas para Eduardo" lista o que precisa ser respondido antes de promover qualquer draft.
 4. Em **Fase 2** monto a matriz operacional já considerando suas respostas.
 
-## Achado relevante antes de começar
+## Achado relevante (corrigido em 2026-05-23)
 
-Durante a leitura de `data/trips.json` descobri que **nenhuma trip tem `media.photos` populado** — incluindo `iguacu-2021` (Foz do Iguaçu), que o briefing inicial dava como "JÁ POPULADA com 5 fotos". Pode ser que o populado esteja num branch local não-mergeado, ou o briefing estava desatualizado. **Confirmar.**
+> ⚠️ Na primeira leitura registrei "nenhuma trip tem `media.photos` populado". Era falso positivo: meu inventário filtrava o campo `media.photos` (que não existe no schema) em vez de `media.gallery`. O briefing inicial estava correto: **`iguacu-2021` já tem 5 fotos + 4 vídeos populados** (todas com captions específicas escritas à mão), e `atacama-2021` tem cover+galeria com placeholders externos. As demais 50 trips seguem sem mídia, esperando o pipeline álbum-por-álbum (Fase 2 da curadoria).
 
 ## Drafts geocodificados
 

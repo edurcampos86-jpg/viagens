@@ -1,15 +1,17 @@
 # Inventário atual — `data/trips.json`
 
-> Gerado em 2026-05-22 durante auditoria de Lugares × trips.json (branch `claude/reconciliacao-lugares-api-2026`).
+> Gerado em 2026-05-22, revisado em 2026-05-23 após consolidação da auditoria de Lugares (branch `claude/reconciliacao-lugares-api-2026`).
+> Detecção de mídia agora consulta `media.gallery[]` (campo correto do schema).
 
 ## Resumo
 
-- **Total de trips:** 42
-- **`done`:** 33
+- **Total de trips:** 52
+- **`done`:** 41
 - **`planned`:** 6
-- **`draft`:** 0
-- **`wishlist`:** 3
-- **Trips com `media.photos` populado:** 0 / 42
+- **`em_planejamento`:** 0
+- **`draft`:** 1
+- **`wishlist`:** 4
+- **Trips com `media.gallery` populado:** 2 / 52
 
 ## Lista completa por ano
 
@@ -17,8 +19,8 @@
 
 | trip-id | nome | status | mídia |
 |---|---|---|---|
-| `iguacu-2021` | Foz do Iguaçu | `done` | ❌ |
-| `atacama-2021` | Deserto do Atacama | `done` | ❌ |
+| `iguacu-2021` | Foz do Iguaçu | `done` | ✅ (9) |
+| `atacama-2021` | Deserto do Atacama | `done` | ✅ (7) |
 | `argentina-2021` | Argentina | `done` | ❌ |
 
 ### 2022
@@ -95,7 +97,23 @@
 | `patagonia-wishlist` | Patagônia — Torres del Paine | `wishlist` | ❌ |
 | `maldivas-luademel-wishlist` | Maldivas — Lua de Mel | `wishlist` | ❌ |
 
+### Sem ano definido
+
+| trip-id | nome | status | mídia |
+|---|---|---|---|
+| `natal-micareta` | Natal · Micareta | `done` | ❌ |
+| `canoa-quebrada-reveillon-cardume` | Canoa Quebrada · Réveillon Cardume | `done` | ❌ |
+| `florianopolis-micareta` | Florianópolis · Micareta | `done` | ❌ |
+| `mucuge-aniversario` | Chapada Diamantina · Aniversário | `done` | ❌ |
+| `brasilia-recorrente` | Brasília · Visitas recorrentes | `done` | ❌ |
+| `nordeste-litoral-recorrente` | Litoral do Nordeste · Visitas recorrentes | `done` | ❌ |
+| `aracaju-familia` | Aracaju · Encontros em família | `done` | ❌ |
+| `campos-jordao-recorrente` | Campos do Jordão · Visitas recorrentes | `done` | ❌ |
+| `rio-multiplo` | Rio de Janeiro · Múltiplas viagens | `draft` | ❌ |
+| `lencois-maranhenses-wishlist` | Lençóis Maranhenses | `wishlist` | ❌ |
+
 ## Observações
 
-- Nenhuma trip está marcada com `status: draft` no momento — o status `draft` será introduzido nesta sessão para viagens detectadas na auditoria de Lugares.
-- A única trip que aparece com mídia populada na imagem mental do projeto (Foz do Iguaçu) consta como `media=❌` aqui — sinal de que a Fase 2 da curadoria ainda não foi executada para nenhuma viagem.
+- Trips com mídia populada: **`iguacu-2021`** (5 fotos + 4 vídeos) e **`atacama-2021`** (cobre+galeria com placeholders externos picsum.photos).
+- Trips marcadas com `status: draft` foram introduzidas nesta consolidação para sinalizar placeholders pendentes de desambiguação por pipeline (ex.: `rio-multiplo`).
+- O contador anterior dizia "0 trips com mídia" porque o gerador filtrava `media.photos` (campo inexistente) em vez de `media.gallery`. Corrigido.
