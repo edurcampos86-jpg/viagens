@@ -3632,3 +3632,62 @@ body.plan-page-open { background: var(--surface2); }
   .lb-prev { left: 6px; }
   .lb-next { right: 6px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* AGENTES — estilos compartilhados                                */
+/* Cada PR de agente novo adiciona seu bloco abaixo desta seção.   */
+/* Convenção: prefixo de classe = 2 letras do agente               */
+/*   .dp-* = Despachante (PR #1)                                   */
+/*   .cn-* = Concierge   (PR #1B — futuro)                         */
+/*   .cr-* = Cronista    (PR #1C — futuro)                         */
+/*   .im-* = Importador  (PR #2  — futuro)                         */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* 🛂 Despachante Digital (PR #1) */
+.dp-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+.dp-btn {
+  font: inherit;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #0f172a;
+  background: #0f172a;
+  color: #fff;
+  cursor: pointer;
+  transition: transform .08s ease, opacity .15s ease;
+}
+.dp-btn:hover {
+  opacity: .9;
+}
+.dp-btn:active {
+  transform: translateY(1px);
+}
+.dp-hint {
+  font-size: 12px;
+  color: #64748b;
+  flex: 1 1 200px;
+}
+@media (prefers-color-scheme: dark) {
+  .dp-bar {
+    background: rgba(255,255,255,.05);
+    border-color: rgba(255,255,255,.12);
+  }
+  .dp-btn {
+    border-color: #f1f5f9;
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+  .dp-hint {
+    color: #94a3b8;
+  }
+}

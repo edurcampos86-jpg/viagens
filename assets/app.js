@@ -1384,6 +1384,12 @@ function populateChecklist(node, trip) {
       <div class="cl-progress-bar"><div class="cl-progress-fill" style="width:${pct}%"></div></div>
       <span class="cl-progress-lbl">${doneN}/${total} concluídos · ${pct}%</span>
     </div>
+    <div class="dp-bar">
+      <button type="button" class="dp-btn" data-dp-run aria-label="Rodar Despachante Digital nesta viagem">
+        🛂 Rodar Despachante Digital
+      </button>
+      <span class="dp-hint">Verifica passaporte, visto, vacinas, voltagem e direção</span>
+    </div>
     <ul class="cl-list">
       ${items.map(it => {
         const checked = !!checks[it.id];
@@ -1413,6 +1419,18 @@ function populateChecklist(node, trip) {
       populateChecklist(node, trip); // re-render progress
     });
   });
+
+  // Despachante Digital — invoca o agente já carregado por src/main.js
+  const dpBtn = panel.querySelector('[data-dp-run]');
+  if (dpBtn) {
+    dpBtn.addEventListener('click', () => {
+      if (window.viagensV2 && typeof window.viagensV2.openCustoms === 'function') {
+        window.viagensV2.openCustoms(trip);
+      } else {
+        toast('Despachante ainda não carregou. Recarregue a página e tente novamente.');
+      }
+    });
+  }
 }
 
 function populateReservations(node, trip) {
