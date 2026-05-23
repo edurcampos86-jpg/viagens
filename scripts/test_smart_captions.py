@@ -108,6 +108,23 @@ def test_clean_caption_strips_quotes_and_prefixes():
     assert sc._clean_caption("Cores\nvivas em\n  Bangkok") == "Cores vivas em Bangkok"
 
 
+def test_system_prompt_v2_contains_calibration_keywords():
+    """V2 do system prompt cobre: anti-anglicismo, detalhe único, contexto
+    inter-batch e veto a clichês motivacionais."""
+    prompt = sc.SYSTEM_PROMPT
+    # Anti-anglicismo (problema 2 da calibração)
+    assert "anglicismo" in prompt.lower()
+    assert "roar" in prompt and "rugido" in prompt
+    # Detalhe único da foto (problema 3)
+    assert "detalhe visual ÚNICO" in prompt or "detalhe único" in prompt.lower()
+    # Contexto inter-batch (problema 1)
+    assert "CAPTIONS_JÁ_GERADAS" in prompt
+    # Anti-clichê motivacional
+    assert "força bruta" in prompt
+    # Pessoa: 3ª pessoa ou impessoal
+    assert "3ª pessoa" in prompt or "impessoal" in prompt
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. API key gating
 # ─────────────────────────────────────────────────────────────────────────────
@@ -227,6 +244,45 @@ def test_batch_falls_back_when_one_item_fails(tmp_path):
     assert results[str(p_bad)].caption == "Local · 02 jan 2024"
     assert results[str(p_bad)].source_model is None
     assert results[str(p_bad)].error is not None
+
+
+def test_batch_passes_previous_captions_to_next_call(tmp_path):
+    """Cada chamada dentro do mesmo batch deve receber as captions já geradas
+    como `previous_captions`, garantindo que o modelo veja o contexto do álbum."""
+    paths = [_write_dummy_image(tmp_path / f"{i}.webp") for i in range(3)]
+    client = _mock_client_returning([
+        "Primeira observação calma.",
+        "Segundo ângulo, gente molhada.",
+        "Terceiro: arco-íris cortando a vastidão.",
+    ])
+
+    captured_user_texts: list[str] = []
+    original_create = client.messages.create
+
+    def spy(**kwargs):
+        for part in kwargs["messages"][0]["content"]:
+            if part.get("type") == "text":
+                captured_user_texts.append(part["text"])
+        return original_create(**kwargs)
+
+    client.messages.create = spy
+
+    sc.generate_smart_captions_batch(
+        [{"path": str(p)} for p in paths],
+        client=client,
+        requests_per_minute=600,
+        sleep_fn=lambda _s: None,
+    )
+
+    # 1ª chamada: sem previous_captions no prompt
+    assert "CAPTIONS_JÁ_GERADAS" not in captured_user_texts[0]
+    # 2ª chamada: vê a 1ª caption
+    assert "CAPTIONS_JÁ_GERADAS" in captured_user_texts[1]
+    assert "Primeira observação calma." in captured_user_texts[1]
+    # 3ª chamada: vê as duas anteriores
+    assert "CAPTIONS_JÁ_GERADAS" in captured_user_texts[2]
+    assert "Primeira observação calma." in captured_user_texts[2]
+    assert "Segundo ângulo, gente molhada." in captured_user_texts[2]
 
 
 def test_batch_skips_items_without_path(tmp_path):

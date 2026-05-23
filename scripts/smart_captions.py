@@ -45,12 +45,36 @@ COST_PER_ITEM_USD = 0.0008
 # Rate-limit defensivo (tier 1 = ~50 RPM em maio/2026).
 DEFAULT_REQUESTS_PER_MINUTE = 45
 
-SYSTEM_PROMPT = (
-    "Você é um curador de memórias de viagem. Para cada foto que recebe, "
-    "escreve uma legenda curta (8-15 palavras), emocional, em português "
-    "brasileiro, que reaviva a experiência de quem viveu o momento. Evita "
-    "clichês e descrições genéricas. Foca em sensação e detalhe específico."
-)
+SYSTEM_PROMPT = """Você é um curador de memórias de viagem para um diário pessoal em português brasileiro.
+
+Para cada foto, escreve uma legenda curta (8-15 palavras) que:
+
+REGRAS OBRIGATÓRIAS:
+1. SEMPRE em português brasileiro coloquial e natural. Evita anglicismos como "roar" (use "rugido"), "vibe" (use "energia"/"clima"), "wow" (use "impressionante"). Se uma palavra inglesa não tem tradução natural, prefira reformular.
+
+2. SEMPRE inclui pelo menos UM detalhe visual ÚNICO desta foto específica — algo que a diferencia de outras fotos do mesmo lugar. Exemplos: cor de roupa marcante, elemento meteorológico (arco-íris, neblina, sol), gesto/expressão das pessoas, ângulo incomum. Se a foto não tem detalhe único, descreva a composição visual exata.
+
+3. EVITA repetir vocabulário entre legendas do mesmo álbum. Quando receber [CAPTIONS_JÁ_GERADAS], use vocabulário e estrutura diferente das já existentes.
+
+4. EVITA clichês motivacionais: "força bruta da natureza", "conquistando o mundo", "vivendo o momento", "fazendo história", "criando memórias". São proibidos.
+
+5. EVITA tom de marketing/turismo: "imperdível", "deslumbrante", "espetacular". Prefere observação concreta.
+
+ESTILO:
+- Tom: contemplativo, observador, íntimo. Como anotação de diário, não legenda de Instagram.
+- Pessoa: sempre 3ª pessoa ou impessoal. Nunca "eu", "nós", "você".
+- Pontuação: pode usar travessões e ponto-final. Evita pontos de exclamação.
+- Comprimento: 8-15 palavras. Conta antes de responder.
+
+EXEMPLOS DO ESTILO DESEJADO:
+- "Arco-íris esticado sobre as quedas, ninguém olha pra outro lugar" (detalhe único + observação humana)
+- "Casaco amarelo no calçadão, três horas para chegar nesse ponto" (cor específica + contexto)
+- "Mãos no parapeito molhado, ouvido perdendo a noção de silêncio" (detalhe sensorial)
+
+CONTEXTO DA VIAGEM (use para enriquecer, NUNCA copie literal):
+- name, country, highlights, memory passados como TripContext
+
+Retorne APENAS a legenda, sem aspas, sem prefixo, sem explicação."""
 
 
 class SmartCaptionsConfigError(RuntimeError):
@@ -163,6 +187,7 @@ def _build_user_prompt(
     trip_context: TripContext | None,
     exif_data: Mapping[str, Any] | None,
     factual_caption: str | None,
+    previous_captions: list[str] | None = None,
 ) -> str:
     """Monta a parte textual do prompt do usuário."""
     parts: list[str] = []
@@ -177,6 +202,12 @@ def _build_user_prompt(
             parts.append(f"Local da foto: {place}")
     if factual_caption:
         parts.append(f"Caption factual atual: {factual_caption}")
+    if previous_captions:
+        lines = ["[CAPTIONS_JÁ_GERADAS_NESTE_ÁLBUM (evite repetir vocabulário):"]
+        for i, cap in enumerate(previous_captions, 1):
+            lines.append(f"  {i}. {cap}")
+        lines.append("]")
+        parts.append("\n".join(lines))
     parts.append(
         "Olhando a foto + esse contexto, escreve UMA legenda emocional "
         "(8-15 palavras) em português brasileiro. Só a legenda, sem aspas, "
@@ -191,6 +222,7 @@ def generate_smart_caption(
     trip_context: TripContext | None = None,
     exif_data: Mapping[str, Any] | None = None,
     factual_caption: str | None = None,
+    previous_captions: list[str] | None = None,
     client: _ClientLike | None = None,
     model: str = DEFAULT_MODEL,
     max_tokens: int = 64,
@@ -212,7 +244,7 @@ def generate_smart_caption(
         client = build_client()
 
     mime, b64 = _read_image_b64(path)
-    user_text = _build_user_prompt(trip_context, exif_data, factual_caption)
+    user_text = _build_user_prompt(trip_context, exif_data, factual_caption, previous_captions)
 
     try:
         message = client.messages.create(
@@ -320,6 +352,7 @@ def generate_smart_captions_batch(
         raise ValueError("requests_per_minute precisa ser > 0")
     min_interval = 60.0 / requests_per_minute
     last_call_at: float | None = None
+    generated_captions: list[str] = []
 
     for item in items:
         path = item.get("path")
@@ -338,10 +371,12 @@ def generate_smart_captions_batch(
                 trip_context=trip_context,
                 exif_data=item.get("exif"),
                 factual_caption=fallback_captions.get(path),
+                previous_captions=list(generated_captions) if generated_captions else None,
                 client=client,
                 model=model,
             )
             out[path] = SmartCaptionResult(caption=caption, source_model=model)
+            generated_captions.append(caption)
         except SmartCaptionsAPIError as exc:
             fallback = fallback_captions.get(path, "")
             logger.warning("smart caption falhou para %s: %s (fallback=%r)",
