@@ -3707,3 +3707,63 @@ body.plan-page-open { background: var(--surface2); }
     color: #94a3b8;
   }
 }
+
+/* 🍽 Concierge Local (PR #1B) */
+.cn-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  margin: 10px 0 14px;
+}
+.cn-bar-info {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.cn-bar-info strong {
+  display: block;
+  font-size: 14px;
+  color: #78350f;
+  margin-bottom: 4px;
+}
+.cn-bar-hint {
+  font-size: 12px;
+  color: #92400e;
+  line-height: 1.4;
+}
+.cn-bar-btn {
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 18px;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid #78350f;
+  background: #78350f;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity .15s ease, transform .08s ease;
+  white-space: nowrap;
+}
+.cn-bar-btn:hover {
+  opacity: .9;
+}
+.cn-bar-btn:active {
+  transform: translateY(1px);
+}
+@media (prefers-color-scheme: dark) {
+  .cn-bar {
+    background: linear-gradient(135deg, rgba(245,158,11,.15) 0%, rgba(245,158,11,.08) 100%);
+    border-color: rgba(245,158,11,.3);
+  }
+  .cn-bar-info strong { color: #fde68a; }
+  .cn-bar-hint { color: #fcd34d; }
+  .cn-bar-btn {
+    background: #fde68a;
+    color: #78350f;
+    border-color: #fde68a;
+  }
+}

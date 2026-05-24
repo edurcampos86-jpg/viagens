@@ -9,6 +9,7 @@
 
 import { openTripEditor } from './components/trip-editor.js';
 import * as settings from './core/settings.js';
+import * as anthropicKey from './core/anthropic-key.js';
 import { upsertTrip, deleteTripById, commitMessageFor } from './core/trips-api.js';
 import * as customs from './agents/customs.js';
 import * as priceHunter from './agents/price-hunter.js';
@@ -35,7 +36,22 @@ v2.concierge = concierge;
 v2.chronicler = chronicler;
 v2.syncQueue = syncQueue;
 v2.push = push;
-v2['concierge'] = (trip) => concierge.openConciergeModal(trip);
+v2['concierge'] = (trip) => concierge.openConciergeModal(trip, {
+  onSave: async (next) => {
+    if (settings.isUnlocked()) {
+      await upsertTrip({ token: settings.getToken(), trip: next });
+      alert('Itinerário salvo e commitado em trips.json!');
+    } else {
+      const blob = new Blob([JSON.stringify(next, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `trip-${next.id}-itinerario.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      alert('PAT não desbloqueado — rascunho baixado. Aplique manualmente.');
+    }
+  },
+});
 v2['price-hunter'] = (_trip) => priceHunter.openPriceHunterModal();
 v2['customs'] = (trip) => customs.run({ trip }).then((r) => openCustomsForTrip(trip));
 v2['chronicler'] = (trip) => chronicler.openChroniclerModal(trip, {
@@ -276,6 +292,96 @@ function openPATModal() {
   });
 }
 
+function openAnthropicKeyModal() {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `position:fixed;inset:0;background:rgba(15,23,42,.55);
+    display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;`;
+  const modal = document.createElement('div');
+  modal.style.cssText = `background:#fff;color:#0f172a;padding:20px;border-radius:12px;
+    width:min(440px,100%);font:14px Inter,system-ui,sans-serif;
+    box-shadow:0 25px 50px -12px rgba(0,0,0,.35);`;
+  const configured = anthropicKey.isConfigured();
+  modal.innerHTML = `
+    <h2 style="margin:0 0 8px;font-size:16px;font-weight:700;">
+      ${configured ? '🔓 Desbloquear chave Anthropic' : '🔐 Configurar chave Anthropic'}
+    </h2>
+    <p style="margin:0 0 12px;color:#64748b;font-size:13px;">
+      ${configured
+        ? 'Digite sua senha mestra para desbloquear a chave Anthropic configurada.'
+        : 'Cole sua chave Anthropic (sk-ant-…). Cifrada em AES-256 (PBKDF2 200k iter), fica só neste navegador. Usada pelo Concierge (Opus ~$0.30/itinerário).'}
+    </p>
+    ${configured ? '' : `
+    <label style="display:block;margin-bottom:8px;">
+      <span style="display:block;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Chave Anthropic</span>
+      <input id="ak-input" type="password" autocomplete="off" placeholder="sk-ant-…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;"/>
+    </label>
+    `}
+    <label style="display:block;margin-bottom:12px;">
+      <span style="display:block;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Senha mestra</span>
+      <input id="ak-pwd" type="password" autocomplete="off" placeholder="8+ caracteres" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;"/>
+    </label>
+    <div id="ak-err" style="color:#991b1b;background:#fef2f2;border:1px solid #fecaca;padding:6px 10px;border-radius:6px;font-size:13px;margin-bottom:8px;display:none;"></div>
+    <div style="display:flex;gap:8px;justify-content:space-between;">
+      <button id="ak-cancel" type="button" style="font:inherit;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer;">Cancelar</button>
+      <div style="display:flex;gap:8px;">
+        ${configured ? '<button id="ak-clear" type="button" style="font:inherit;padding:8px 12px;border:1px solid #fecaca;color:#b91c1c;background:#fff;border-radius:6px;cursor:pointer;">Limpar</button>' : ''}
+        <button id="ak-submit" type="button" style="font:inherit;padding:8px 14px;border:0;border-radius:6px;background:#0f172a;color:#fff;cursor:pointer;">
+          ${configured ? 'Desbloquear' : 'Salvar'}
+        </button>
+      </div>
+    </div>
+  `;
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  modal.querySelector('#ak-cancel').addEventListener('click', close);
+  const errBox = modal.querySelector('#ak-err');
+  const showErr = (m) => { errBox.textContent = m; errBox.style.display = 'block'; };
+
+  modal.querySelector('#ak-clear')?.addEventListener('click', () => {
+    if (!confirm('Apagar chave Anthropic cifrada deste navegador?')) return;
+    anthropicKey.clear();
+    close();
+    updateAnthropicBadge();
+  });
+
+  modal.querySelector('#ak-submit').addEventListener('click', async () => {
+    const password = modal.querySelector('#ak-pwd').value;
+    try {
+      if (configured) {
+        await anthropicKey.unlock(password);
+      } else {
+        const key = modal.querySelector('#ak-input').value.trim();
+        await anthropicKey.setupKey(key, password);
+      }
+      close();
+      updateAnthropicBadge();
+    } catch (e) {
+      showErr(e.message);
+    }
+  });
+}
+
+function updateAnthropicBadge() {
+  const badge = document.getElementById('v2-anthropic-badge');
+  if (!badge) return;
+  if (anthropicKey.isUnlocked()) {
+    badge.textContent = '🔓 Anthropic ativa';
+    badge.title = 'Chave Anthropic desbloqueada. Concierge pode gerar itinerários.';
+    badge.style.background = '#1e40af';
+  } else if (anthropicKey.isConfigured()) {
+    badge.textContent = '🔒 Anthropic';
+    badge.title = 'Chave cifrada no localStorage. Clique p/ desbloquear com a senha mestra.';
+    badge.style.background = '#ca8a04';
+  } else {
+    badge.textContent = '🔐 Anthropic';
+    badge.title = 'Configurar chave Anthropic para ativar o Concierge (Claude Opus 4.7).';
+    badge.style.background = '#475569';
+  }
+}
+
 async function openCustomsForTrip(trip) {
   const result = await customs.run({ trip });
   const overlay = document.createElement('div');
@@ -322,6 +428,14 @@ const FAB_BADGES = [
     tooltip: 'Configurar GitHub PAT para commitar viagens automaticamente. Cifrado AES-256.',
     color: '#475569',
     onClick: () => openPATModal(),
+  },
+  {
+    id: 'v2-anthropic-badge', // texto/cor mudam via updateAnthropicBadge()
+    emoji: '🔐',
+    label: 'Anthropic',
+    tooltip: 'Configurar chave Anthropic para ativar o Concierge (Claude Opus 4.7). Cifrada AES-256.',
+    color: '#475569',
+    onClick: () => openAnthropicKeyModal(),
   },
   {
     id: 'v2-be-badge',
@@ -411,6 +525,7 @@ function injectFloatingButton() {
 
   document.body.appendChild(stack);
   updateBadge();
+  updateAnthropicBadge();
 }
 
 function updateBadge() {
@@ -432,6 +547,8 @@ function updateBadge() {
 }
 
 v2.openPATModal = openPATModal;
+v2.openAnthropicKeyModal = openAnthropicKeyModal;
+v2.anthropicKey = anthropicKey;
 
 // ── Modal de backend (Supabase + Gmail) ────────────────────────────────
 function openBackendModal() {

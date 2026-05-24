@@ -871,6 +871,7 @@ const TABS_PLANNED = [
   { key:'budget',    label:'💰 Orçamento' },
   { key:'packing',   label:'🧳 Bagagem'   },
   { key:'inspire',   label:'💡 Inspiração' },
+  { key:'concierge', label:'🍽 Concierge' },
   { key:'context',   label:'🌦 Clima & Câmbio' }
 ];
 
@@ -969,6 +970,7 @@ function hydrateCard(node, trip) {
     populateBudget(node, trip);
     populatePacking(node, trip);
     populateInspiration(node, trip);
+    populateConcierge(node, trip);
     populateContext(node, trip);
   } else {
     populateDiary(node, trip);
@@ -1724,6 +1726,45 @@ function populateContext(node, trip) {
       out.textContent = Math.round(v * fx.perBRL).toLocaleString('pt-BR');
       panel.querySelector('.fx-converted').firstChild.textContent =
         `R$ ${v.toLocaleString('pt-BR')} ≈ `;
+    });
+  }
+}
+
+function populateConcierge(node, trip) {
+  const panel = node.querySelector('[data-panel="concierge"]');
+  if (!panel) return;
+  const hasSaved = Array.isArray(trip.notes?.itinerary) && trip.notes.itinerary.length > 0;
+  panel.innerHTML = `
+    <div class="cn-bar">
+      <div class="cn-bar-info">
+        <strong>🍽 Concierge Local</strong>
+        <div class="cn-bar-hint">${hasSaved
+          ? `Itinerário salvo (${trip.notes.itinerary.length} dias). Clique para abrir/editar.`
+          : 'Gera itinerário diário com Claude Opus, usando seu histórico. Custo ~$0.30 por geração.'}</div>
+      </div>
+      <button type="button" class="cn-bar-btn" data-cn-run>
+        ${hasSaved ? '👁 Ver itinerário' : '✨ Gerar itinerário'}
+      </button>
+    </div>
+  `;
+  const btn = panel.querySelector('[data-cn-run]');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const v2 = window.viagensV2;
+      if (!v2 || typeof v2.concierge !== 'function') {
+        toast('Concierge ainda não carregou. Recarregue a página e tente novamente.');
+        return;
+      }
+      // Validar chave Anthropic desbloqueada
+      if (!v2.anthropicKey?.isUnlocked()) {
+        if (!v2.anthropicKey?.isConfigured()) {
+          toast('Configure sua chave Anthropic primeiro (botão 🔐 no canto inferior direito).');
+          return;
+        }
+        toast('Desbloqueie a chave Anthropic primeiro (botão 🔒 no canto inferior direito).');
+        return;
+      }
+      v2.concierge(trip);
     });
   }
 }
