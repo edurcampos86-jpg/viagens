@@ -73,7 +73,15 @@ jobs:
           check_url "$BASE/"                    "Minhas Viagens"     5000   "index.html"
           check_url "$BASE/assets/app.js"       "data-dp-run"        100000 "app.js"
           check_url "$BASE/assets/styles.css"   "AGENTES"            50000  "styles.css"
-          check_url "$BASE/sw-workbox.js"       "viagens-v3-pwa-1"   3000   "sw-workbox.js"
+          # Checa invariantes (Workbox precache configurado + constante VERSION
+          # presente), nao versao especifica. Bumps de VERSION em sw-workbox.js
+          # NAO devem exigir atualizacao aqui — historico em #50 (smoke quebrou
+          # ao mergear PR #49 com bump v3-pwa-1 -> v3-pwa-2).
+          check_url "$BASE/sw-workbox.js"       "precacheAndRoute"   3000   "sw-workbox.js (precache configurado)"
+          check_url "$BASE/sw-workbox.js"       "VERSION"            3000   "sw-workbox.js (constante VERSION definida)"
+          # cleanup-pat.js (one-time B-N1 cleanup) tambem entra no smoke
+          # — adicionado junto com o desacoplamento do check de versao.
+          check_url "$BASE/assets/cleanup-pat.js" "viagens.cleanup.b-n1.done" 200 "cleanup-pat.js (B-N1 cleanup)"
           check_url "$BASE/manifest.webmanifest" "Minhas Viagens"    200    "manifest"
           check_url "$BASE/src/main.js"         "openCustoms"        1000   "main.js"
 
