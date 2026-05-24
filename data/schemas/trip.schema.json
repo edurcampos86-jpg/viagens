@@ -85,7 +85,8 @@
     },
     "transporte": {
       "type": "array",
-      "description": "Trechos de transporte (voos, ônibus, carro, trem). Ordem cronológica.",
+      "deprecated": true,
+      "description": "DEPRECATED desde ADR-001 (PR #52). Use bookings.flights (e bookings.experiences para outros modais) — ver docs/ADR-001-schema-canonico.md. Mantido para compat com legacy.",
       "items": {
         "type": "object",
         "required": ["modo", "origem", "destino"],
@@ -106,7 +107,8 @@
     },
     "hospedagem": {
       "type": "array",
-      "description": "Hospedagens estruturadas (substitui logistics.hotels[] eventualmente).",
+      "deprecated": true,
+      "description": "DEPRECATED desde ADR-001 (PR #52). Use bookings.stays — ver docs/ADR-001-schema-canonico.md. Mantido para compat com assets/app.js legacy.",
       "items": {
         "type": "object",
         "required": ["nome"],
@@ -125,9 +127,32 @@
         "additionalProperties": false
       }
     },
+    "bookings": {
+      "type": "object",
+      "description": "Schema canônico para reservas desde ADR-001 (PR #52). Cada array contém bookings ($defs/booking) com status/criticidade/dataLimite que alimentam a fórmula de urgência do Cockpit. Ver docs/ADR-001-schema-canonico.md.",
+      "properties": {
+        "flights": {
+          "type": "array",
+          "description": "Voos e transportes interurbanos de longa distância.",
+          "items": { "$ref": "#/$defs/booking" }
+        },
+        "stays": {
+          "type": "array",
+          "description": "Hospedagens (hotel, airbnb, casa de amigo, etc).",
+          "items": { "$ref": "#/$defs/booking" }
+        },
+        "experiences": {
+          "type": "array",
+          "description": "Ingressos, tours, restaurantes premium, eventos.",
+          "items": { "$ref": "#/$defs/booking" }
+        }
+      },
+      "additionalProperties": false
+    },
     "orcamento": {
       "type": "object",
-      "description": "Orçamento estimado e real, por categoria. Substitui 'budget' antigo eventualmente.",
+      "deprecated": true,
+      "description": "DEPRECATED desde ADR-001 (PR #52). Valor real virá da soma de bookings[*].valor; planejado fica em budget — ver docs/ADR-001-schema-canonico.md. Mantido para compat.",
       "properties": {
         "moeda": { "type": "string", "default": "BRL" },
         "estimado": {
@@ -369,6 +394,45 @@
         "moeda": { "type": "string", "default": "BRL" }
       },
       "additionalProperties": false
+    },
+    "booking": {
+      "type": "object",
+      "description": "Unidade atômica de bookings.{flights,stays,experiences}. Adicionado em ADR-001 Fase 2.",
+      "required": ["titulo", "status"],
+      "properties": {
+        "id": { "type": "string", "description": "ID interno opcional (ex: para deduplicar com inbox_events do Gmail parser)." },
+        "titulo": { "type": "string", "minLength": 1, "description": "Texto curto que identifica a reserva (ex: 'TAP TP-066 GRU-LIS', 'Aman Tokyo 3 noites')." },
+        "status": {
+          "type": "string",
+          "enum": ["pendente", "em_andamento", "confirmado", "cancelado", "na"],
+          "description": "Alimenta peso_pendencia da fórmula de urgência (ADR-001 §Decisão 3). 'na' = não-aplicável."
+        },
+        "data": { "type": "string", "format": "date", "description": "Data principal do evento (check-in, voo de ida, dia do ingresso)." },
+        "dataLimite": {
+          "type": "string",
+          "format": "date",
+          "description": "Quando este booking expira ou precisa ser fechado, INDEPENDENTE da data da viagem (ex: hold de hotel até X, prazo de visto, deadline de cancelamento sem multa)."
+        },
+        "valor": { "type": "number", "minimum": 0, "description": "Valor monetário pago/orçado; soma alimenta budget.actual após Fase 3." },
+        "moeda": {
+          "type": "string",
+          "enum": ["BRL", "USD", "EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD", "ZAR"],
+          "default": "BRL"
+        },
+        "localizador": { "type": ["string", "null"], "description": "PNR, código de reserva, número de pedido." },
+        "link": { "type": ["string", "null"], "format": "uri", "description": "URL da reserva no site da operadora (Booking, Decolar, etc)." },
+        "criticidade": {
+          "type": "string",
+          "enum": ["alta", "media", "baixa"],
+          "description": "Default por tipo de array: flights=alta, stays=media, experiences=baixa. Alimenta peso_criticidade da fórmula de urgência."
+        },
+        "confirmada": {
+          "type": "boolean",
+          "description": "Atalho legacy para status=confirmado. Mantido para compat com migração de hospedagem.confirmada."
+        },
+        "notas": { "type": "string" }
+      },
+      "additionalProperties": true
     }
   }
 }
