@@ -42,19 +42,56 @@ export function resolveRulesForTrip(trip, rulesDoc) {
 
 function matches(rule, cc, trip) {
   if (!rule) return false;
-  if (rule.country_code && rule.country_code.toUpperCase() === cc) {
-    if (rule.is_domestic != null) {
-      // Heurística: se rule pede domestic, exige flag pt-br
-      const isDomestic = (trip.country || '').toLowerCase() === 'brasil' && cc === 'BR';
-      return rule.is_domestic === isDomestic;
+  // schengen: tratado externamente em resolveRulesForTripFull via applies_to
+  if (rule.region === 'schengen') return false;
+
+  // country_code (opcional): se especificado, deve bater
+  if (rule.country_code) {
+    if (rule.country_code.toUpperCase() !== cc) return false;
+  }
+
+  // is_domestic (Brasil only): mantém comportamento legado
+  if (rule.is_domestic != null) {
+    const isDomestic = (trip.country || '').toLowerCase() === 'brasil' && cc === 'BR';
+    if (rule.is_domestic !== isDomestic) return false;
+  }
+
+  // region_code (B7): regex word-boundary em trip.sub ou trip.region
+  if (rule.region_code) {
+    const hay = `${trip.sub || ''} ${trip.region || ''}`;
+    const rx = new RegExp(`\\b${rule.region_code}\\b`, 'i');
+    if (!rx.test(hay)) return false;
+  }
+
+  // month_range (B7): mês inclusivo; suporta wrap-around (ex: [11, 2] = nov–fev)
+  if (Array.isArray(rule.month_range) && rule.month_range.length === 2) {
+    let month = null;
+    if (trip.startDate) {
+      const m = String(trip.startDate).match(/^\d{4}-(\d{2})/);
+      month = m ? parseInt(m[1], 10) : null;
+    } else if (trip.month) {
+      month = +trip.month;
     }
-    return true;
+    if (!month) return false;
+    const [a, b] = rule.month_range;
+    const inRange = a <= b ? (month >= a && month <= b) : (month >= a || month <= b);
+    if (!inRange) return false;
   }
-  if (rule.region === 'schengen') {
-    // Resolvido no parent (regra tem `applies_to`)
-    return false; // tratamos no laço externo
+
+  // trip_type (B7): any-of contra trip.type
+  if (Array.isArray(rule.trip_type) && rule.trip_type.length > 0) {
+    if (!rule.trip_type.includes(trip.type)) return false;
   }
-  return false;
+
+  // Pelo menos um critério tem que ter sido especificado pra evitar
+  // que uma regra vazia matchee todo mundo.
+  const hasAnyCriterion =
+    rule.country_code ||
+    rule.is_domestic != null ||
+    rule.region_code ||
+    Array.isArray(rule.month_range) ||
+    Array.isArray(rule.trip_type);
+  return Boolean(hasAnyCriterion);
 }
 
 function inferCountryCode(trip) {

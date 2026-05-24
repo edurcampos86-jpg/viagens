@@ -1,7 +1,8 @@
 {
-  "version": "1.0",
-  "updated_at": "2026-05-19T00:00:00Z",
-  "fonte": "Regras consolidadas a partir de Itamaraty (gov.br/mre), Anvisa, OMS, CDC e guias de adaptadores eletricos (IEC).",
+  "version": "1.1",
+  "_schema": 3,
+  "updated_at": "2026-05-24T00:00:00Z",
+  "fonte": "Regras consolidadas a partir de Itamaraty (gov.br/mre), Anvisa, OMS, CDC e guias de adaptadores eletricos (IEC). Sprint SP-Junho adicionou regras por regiao/mes/tipo (_schema=3).",
   "rules": [
     {
       "match": { "country_code": "BR", "is_domestic": true },
@@ -230,6 +231,69 @@
         "check_mig": "https://apps.migracioncolombia.gov.co/pre-registro/",
         "vaccines": "https://www.gov.br/anvisa/pt-br/assuntos/viajante/cive"
       }
+    },
+    {
+      "match": {
+        "country_code": "BR",
+        "region_code": "SP",
+        "month_range": [6, 8],
+        "trip_type": ["festival", "leisure"]
+      },
+      "country_name": "Brasil — SP no inverno",
+      "checklist_items": [
+        "Casaco medio (min. 12C em junho/julho noite)",
+        "App de Uber/99 com saldo (rotas noturnas Vila Madalena/Centro)",
+        "Hotel central reservado com antecedencia (regiao enche em eventos)"
+      ]
+    },
+    {
+      "match": {
+        "country_code": "BR",
+        "month_range": [12, 3],
+        "trip_type": ["leisure"]
+      },
+      "country_name": "Brasil — verao praiano",
+      "checklist_items": [
+        "Protetor solar 50+ resistente a agua",
+        "Repelente DEET 30%+ (dengue circula em janeiro-marco)",
+        "Sandalia/chinelo + roupa leve (UV alto)"
+      ]
+    },
+    {
+      "match": {
+        "country_code": "BE",
+        "month_range": [7, 8],
+        "trip_type": ["festival"]
+      },
+      "country_name": "Belgica — Tomorrowland (verao)",
+      "checklist_items": [
+        "Protetor auricular reutilizavel (palco principal >100dB)",
+        "Capa de chuva leve (verao belga: chove sem aviso)",
+        "Identidade fisica + copia digital (revista pesada na entrada)"
+      ]
+    },
+    {
+      "match": {
+        "country_code": "IT",
+        "month_range": [7, 8]
+      },
+      "country_name": "Italia — alta temporada",
+      "checklist_items": [
+        "Reserva de restaurante feita com 48h+ (Roma/Florenca lotam)",
+        "Ar-condicionado confirmado no hotel (>35C em julho/agosto)",
+        "Garrafa reutilizavel (nasoni publicos em Roma sao potaveis)"
+      ]
+    },
+    {
+      "match": {
+        "country_code": "NL"
+      },
+      "country_name": "Holanda — qualquer mes",
+      "checklist_items": [
+        "OV-chipkaart anonimo ou app NS pra trens/metro",
+        "Capa de chuva (chove em qualquer mes, especialmente outono)",
+        "Cuidado com ciclistas: nunca caminhe na ciclofaixa vermelha"
+      ]
     }
   ]
 }

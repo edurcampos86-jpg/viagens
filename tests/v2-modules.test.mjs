@@ -259,6 +259,33 @@ test('checklist: injeção idempotente', () => {
   assert.equal(first.length, second.length, 'segunda chamada não deveria duplicar');
 });
 
+test('checklist B7: sp-junho matchea br-sp-junho (region SP + mês 6 + festival)', () => {
+  const trip = {
+    country_code: 'BR',
+    country: 'Brasil',
+    sub: 'São Paulo · SP',
+    startDate: '2026-06-13',
+    type: 'festival',
+  };
+  const items = cl.injectChecklistItems([], trip, rules);
+  const labels = items.map((it) => it.item).join(' | ').toLowerCase();
+  assert.ok(labels.includes('casaco'), `esperava casaco em SP no inverno: ${labels}`);
+  assert.ok(labels.includes('uber') || labels.includes('99'), `esperava ride-hailing: ${labels}`);
+});
+
+test('checklist B7: trip BR genérico não pega br-sp-junho (sem region)', () => {
+  const trip = {
+    country_code: 'BR',
+    country: 'Brasil',
+    sub: 'Brasilia · DF',
+    startDate: '2026-06-15',
+    type: 'event',
+  };
+  const items = cl.injectChecklistItems([], trip, rules);
+  const labels = items.map((it) => it.item).join(' | ').toLowerCase();
+  assert.ok(!labels.includes('casaco medio'), `Brasília não deveria pegar regra SP: ${labels}`);
+});
+
 // ── customs.js (run for international trip) ───────────────────────────
 // Não testamos a UI; só a função pura `run` retornando estrutura esperada.
 const customs = await import(`${ROOT}/src/agents/customs.js`);

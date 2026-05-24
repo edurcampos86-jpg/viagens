@@ -3,9 +3,26 @@
 // =================================================================
 
 import * as overlay from '../src/core/overlay.js';
+import { loadRules, injectChecklistItems } from '../src/components/checklist.js';
 
 // Exposto pra console + handlers que vivem em outros módulos.
 window.viagensOverlay = overlay;
+
+// Cache de destination_rules carregado uma vez. populateChecklist usa
+// pra injetar itens contextuais (B7). Async; quando carrega e a plan-page
+// estiver aberta, força um re-render do checklist pra aplicar os autos.
+let rulesDocCache = null;
+loadRules()
+  .then((d) => {
+    rulesDocCache = d;
+    if (typeof state !== 'undefined' && state.activePlanId) {
+      const t = state.trips.find((x) => x.id === state.activePlanId);
+      if (t) renderPlanChecklist(t);
+    }
+  })
+  .catch(() => {
+    // sem rules é tudo bem — fallback é defaultChecklist
+  });
 
 const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const MONTH_NAMES_LONG = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -50,18 +67,26 @@ const FX_HINT = {
 };
 
 // ── Default planning checklist used when trip has no `checklist` ─────
+// B7: itens de internacional (passaporte/visto/vacinas/adaptador/eSIM)
+// só aparecem em viagem internacional. Doméstica fica enxuta — itens
+// contextuais (regra br-* em destination_rules.json) entram via
+// injectChecklistItems sobre essa base.
 function defaultChecklist(trip) {
   const monthsAhead = monthsUntil(trip);
+  const isDomestic =
+    (trip.country_code || '').toUpperCase() === 'BR' ||
+    (trip.country || '').toLowerCase() === 'brasil';
+  const intl = !isDomestic;
   return [
-    { id:'passport',  label:'Passaporte com 6+ meses de validade', due:offsetMonths(trip, -6) },
-    { id:'visa',      label:'Verificar necessidade de visto', due:offsetMonths(trip, -4) },
-    { id:'vaccines',  label:'Vacinas recomendadas (ex.: febre amarela)', due:offsetMonths(trip, -2) },
-    { id:'insurance', label:'Seguro-viagem internacional', due:offsetMonths(trip, -1) },
+    intl && { id:'passport',  label:'Passaporte com 6+ meses de validade', due:offsetMonths(trip, -6) },
+    intl && { id:'visa',      label:'Verificar necessidade de visto', due:offsetMonths(trip, -4) },
+    intl && { id:'vaccines',  label:'Vacinas recomendadas (ex.: febre amarela)', due:offsetMonths(trip, -2) },
+    intl && { id:'insurance', label:'Seguro-viagem internacional', due:offsetMonths(trip, -1) },
     { id:'flights',   label:'Reservar voos', due:offsetMonths(trip, -3) },
     { id:'hotels',    label:'Reservar hospedagem', due:offsetMonths(trip, -2) },
-    { id:'cash',      label:'Cartão internacional + moeda local', due:offsetMonths(trip, -1) },
-    { id:'adapter',   label:'Adaptador de tomada', due:offsetMonths(trip, -1) },
-    { id:'esim',      label:'eSIM ou chip internacional', due:offsetWeeks(trip, -2) },
+    intl && { id:'cash',      label:'Cartão internacional + moeda local', due:offsetMonths(trip, -1) },
+    intl && { id:'adapter',   label:'Adaptador de tomada', due:offsetMonths(trip, -1) },
+    intl && { id:'esim',      label:'eSIM ou chip internacional', due:offsetWeeks(trip, -2) },
     monthsAhead < 0
       ? null
       : { id:'checkin', label:'Check-in online (24h antes)', due:offsetDays(trip, -1) }
@@ -1392,7 +1417,18 @@ function populateChecklist(node, trip) {
   const panel = node.querySelector('[data-panel="checklist"]');
   if (!panel) return;
   const saved = loadTripState(trip.id);
-  const items = trip.checklist || defaultChecklist(trip);
+  let items = trip.checklist || defaultChecklist(trip);
+  // B7: injeta itens contextuais das destination_rules (se já carregadas).
+  // De-dup por label (case-insensitive) pra não sobrepor itens manuais.
+  if (rulesDocCache) {
+    const autoItems = injectChecklistItems([], trip, rulesDocCache);
+    for (const aug of autoItems) {
+      const has = items.some((it) => (it.label || '').toLowerCase() === aug.item.toLowerCase());
+      if (has) continue;
+      const slug = aug.item.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 40);
+      items = items.concat([{ id: `auto-${slug}`, label: aug.item, auto: true, reason: aug.reason }]);
+    }
+  }
   // Merge: manual checks (saved.checklist) OR auto-detected (trip.checklistAuto)
   const autoChecks = trip.checklistAuto || {};
   const manualChecks = saved.checklist || {};
@@ -1422,7 +1458,9 @@ function populateChecklist(node, trip) {
         const overdue = it.due && new Date(it.due) < new Date() && !checked;
         const autoBadge = autoMeta
           ? `<span class="cl-auto" title="Detectado automaticamente via ${escapeHtml(autoMeta.provider || 'email')} ${autoMeta.ref ? '(' + escapeHtml(autoMeta.ref) + ')' : ''}">🔗 ${escapeHtml(autoMeta.provider || 'auto')}</span>`
-          : '';
+          : (it.auto
+              ? `<span class="cl-auto" title="${escapeHtml(it.reason || 'Regra contextual de destination_rules.json')}">📋 auto</span>`
+              : '');
         return `<li class="cl-item${checked ? ' done' : ''}${overdue ? ' overdue' : ''}${isAuto ? ' auto' : ''}">
           <label>
             <input type="checkbox" data-id="${escapeHtml(it.id)}" ${checked ? 'checked' : ''}/>
