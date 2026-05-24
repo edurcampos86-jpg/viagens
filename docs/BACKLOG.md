@@ -122,20 +122,71 @@ com força-push e coordenação com colaboradores (se houver clones ativos).
 migradas. O [`CHANGELOG-V2.md`](../CHANGELOG-V2.md) linha 95 promete
 "✅ Atualização orçamento auto > 80%" — não cumprido.
 
-**Resolução automática:** será resolvido pela Fase 3 do
-[ADR-001](ADR-001-schema-canonico.md) (migração de dados retroativa). Após a
-Fase 3, viagens com `hospedagem` ou `air` populados terão valores reais em
-`bookings.stays[].price_brl` e `bookings.flights[*].price_brl` (quando o
-campo `price_brl` for adicionado por booking).
+**Resolução parcial:** a Fase 3 do [ADR-001](ADR-001-schema-canonico.md)
+(PR #54, mergeado em `5dceea0`) populou `bookings.stays[]` e
+`bookings.flights[]` retroativamente, mas **não** populou `valor` por
+booking — esse campo segue sem dados em todas as 47 viagens migradas.
+`computeActualFromBookings` agora itera sobre arrays não-vazios mas
+continua somando `0` enquanto `valor` (ou `price_brl`) não for adicionado.
 
-**Status:** rastreado por ADR-001, será resolvido na sequência Fase 2 → Fase 3.
+**Status:** ⏳ pendente. Próximo passo: definir UX para popular `valor` por
+booking (editor inline, parser de Gmail no backend Supabase, ou input
+manual em batch). Fora do escopo de Sprint 1.
+
+---
+
+## B-N12 — Leaflet "Map container is already initialized" em SPA
+
+**Severidade:** 🟡 Atenção (polui console, não quebra UX)
+
+**Sintoma:** ao navegar entre páginas de viagens (`#plan/<id>` → outra viagem),
+o console mostra `Error: Map container is already initialized`. Aparece ~5
+ocorrências por sessão típica de uso.
+
+**Localização:** `assets/app.js:1932` em `renderMiniMap`.
+
+**Causa raiz provável:** o mini-mapa Leaflet é re-instanciado no mesmo
+container DOM sem chamar `.remove()` antes. Bug clássico de SPA com Leaflet.
+
+**Solução proposta:** guardar referência da instância Leaflet em variável
+de módulo; antes de re-instanciar, chamar `existingMap.remove()` ou checar
+`container._leaflet_id`.
+
+**Prioridade:** baixa — não bloqueia funcionalidade. Resolver junto com
+refactor futuro de `assets/app.js`.
+
+**Descoberto em:** smoke test humano da Fase 3 (ADR-001), 24/mai/2026.
+
+---
+
+## B-N13 — "Mês favorito de viagem" mostra undefined em agregação global
+
+**Severidade:** 🟡 Atenção (UX visível, dado incorreto)
+
+**Sintoma:** na tela "Ver tudo com filtros", filtro "Tudo (52 viagens)",
+o card "MÊS FAVORITO DE VIAGEM" exibe `undefined (undefinedx)`. Filtros por
+ano específico funcionam corretamente (ex: "Jun (1×)" para 2021).
+
+**Causa raiz provável:** função agregadora em `assets/app.js` (área de stats)
+usa `mode()` ou `groupBy()` sobre `trips.map(t => t.month)`, e quebra quando
+alguma viagem tem `month` undefined/null/string. Confirmado via Console
+fetch que existem viagens nessa condição (as 8 recorrentes sem ano: `natal-
+micareta`, `canoa-quebrada-reveillon-cardume`, etc).
+
+**Solução proposta:** filtrar `t.month != null && typeof t.month === 'number'`
+antes da agregação. Adicionar fallback "—" para mês quando não calculável.
+
+**Prioridade:** média — afeta credibilidade visual da página de stats.
+
+**Descoberto em:** smoke test humano da Fase 3 (ADR-001), 24/mai/2026.
+Confirmado preexistente via diagnóstico independente.
 
 ---
 
 ## Documentar schema V2 + fórmula de urgência
 
-**Status:** rastreado por [ADR-001](ADR-001-schema-canonico.md) (Fase 1).
-Implementação na Fase 4.
+**Status:** ✅ CONCLUÍDO pela Fase 4 do ADR-001 (PR #55, este). Ver
+[`docs/SCHEMA_V2.md`](SCHEMA_V2.md).
 
 ---
 

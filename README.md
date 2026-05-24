@@ -138,6 +138,10 @@ Decision Records) em `docs/ADR-*.md`.
 
 - [ADR-001 — Schema canônico = `bookings.*`](docs/ADR-001-schema-canonico.md) (2026-05-24)
 
+## Documentação técnica
+
+- [SCHEMA_V2.md — Schema canônico de `trips.json` (formato + fórmula de urgência)](docs/SCHEMA_V2.md)
+
 ## Licença
 
 Uso pessoal do Eduardo Campos. Código sob revisão antes de qualquer reuso público.
