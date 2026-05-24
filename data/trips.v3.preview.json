@@ -1,0 +1,3572 @@
+{
+  "config": {
+    "owner": "Eduardo Campos",
+    "period": "2021–2027",
+    "title": "Minhas Viagens",
+    "tagline": "Memórias e planos pelo mundo — atualizado via Google Photos"
+  },
+  "trips": [
+    {
+      "id": "iguacu-2021",
+      "name": "Foz do Iguaçu",
+      "sub": "Paraná · Brasil",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🌊",
+      "year": 2021,
+      "month": 6,
+      "label": "Jun 2021",
+      "lat": -25.6953,
+      "lon": -54.4367,
+      "col": "#22c55e",
+      "pax": "família",
+      "air": "GRU→IGU",
+      "nts": 4,
+      "km": 1100,
+      "type": "leisure",
+      "highlights": [
+        "Cataratas do Iguaçu",
+        "Parque das Aves",
+        "Lado argentino",
+        "Usina de Itaipu"
+      ],
+      "memory": "A imensidão das cataratas deixa qualquer um sem palavras — água por todos os lados.",
+      "logistics": {
+        "hotels": [
+          "Hotel das Cataratas"
+        ],
+        "restaurants": [
+          "Restaurante Ipê",
+          "Búfalo Branco"
+        ],
+        "tips": "Prefira visitar as cataratas cedo pela manhã para evitar multidões."
+      },
+      "hospedagem": [
+        {
+          "nome": "Hotel das Cataratas"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "iguacu-2021-fl-001",
+            "titulo": "GRU→IGU",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "iguacu-2021-st-001",
+            "titulo": "Hotel das Cataratas",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "media": {
+        "cover": "media/iguacu-2021/04.webp",
+        "gallery": [
+          {
+            "type": "image",
+            "src": "media/iguacu-2021/04.webp",
+            "thumb": "media/iguacu-2021/04-thumb.webp",
+            "caption": "Vista panorâmica das cataratas — calçadão do lado brasileiro",
+            "width": 1440,
+            "height": 1920
+          },
+          {
+            "type": "image",
+            "src": "media/iguacu-2021/02.webp",
+            "thumb": "media/iguacu-2021/02-thumb.webp",
+            "caption": "De braços abertos diante das cataratas",
+            "width": 1440,
+            "height": 1920
+          },
+          {
+            "type": "image",
+            "src": "media/iguacu-2021/01.webp",
+            "thumb": "media/iguacu-2021/01-thumb.webp",
+            "caption": "Pose espontânea no mirante das quedas",
+            "width": 1440,
+            "height": 1920
+          },
+          {
+            "type": "image",
+            "src": "media/iguacu-2021/03.webp",
+            "thumb": "media/iguacu-2021/03-thumb.webp",
+            "caption": "Garotada no mirante — energia das cataratas",
+            "width": 1440,
+            "height": 1920
+          },
+          {
+            "type": "image",
+            "src": "media/iguacu-2021/05.webp",
+            "thumb": "media/iguacu-2021/05-thumb.webp",
+            "caption": "Selfie com cataratas e arco-íris ao fundo",
+            "width": 1920,
+            "height": 1440
+          },
+          {
+            "type": "video",
+            "src": "media/iguacu-2021/video-02.mp4",
+            "poster": "media/iguacu-2021/video-02-poster.webp",
+            "caption": "Vista aérea das cataratas — voo de drone",
+            "date": "2021-06-13",
+            "duration": 10
+          },
+          {
+            "type": "video",
+            "src": "media/iguacu-2021/video-03.mp4",
+            "poster": "media/iguacu-2021/video-03-poster.webp",
+            "caption": "Panorâmica das quedas no lado brasileiro",
+            "date": "2021-06-12"
+          },
+          {
+            "type": "video",
+            "src": "media/iguacu-2021/video-01.mp4",
+            "poster": "media/iguacu-2021/video-01-poster.webp",
+            "caption": "Salto vertical das cataratas",
+            "date": "2021-06-26",
+            "duration": 4
+          },
+          {
+            "type": "video",
+            "src": "media/iguacu-2021/video-04.mp4",
+            "poster": "media/iguacu-2021/video-04-poster.webp",
+            "caption": "Clipe rápido do passeio",
+            "date": "2021-06-26",
+            "duration": 3
+          }
+        ],
+        "stats": {
+          "photos": 5,
+          "videos": 4
+        }
+      },
+      "created_at": "2021-06-01T00:00:00Z",
+      "updated_at": "2026-05-22T00:00:00Z",
+      "_schema": 2
+    },
+    {
+      "id": "atacama-2021",
+      "name": "Deserto do Atacama",
+      "sub": "San Pedro de Atacama · Chile",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Chile",
+      "flag": "🇨🇱",
+      "emoji": "🏜️",
+      "year": 2021,
+      "month": 11,
+      "label": "Nov 2021",
+      "lat": -22.9087,
+      "lon": -68.1997,
+      "col": "#f97316",
+      "pax": "casal",
+      "air": "GRU→SCL→CJC",
+      "nts": 7,
+      "km": 3600,
+      "type": "adventure",
+      "highlights": [
+        "Gêiseres del Tatio ao amanhecer",
+        "Laguna Cejar (flutuação)",
+        "Valle de la Luna",
+        "Céu estrelado mais límpido do mundo"
+      ],
+      "memory": "O Atacama é Marte na Terra. A paisagem lunar, o silêncio ensurdecedor e um céu com mais estrelas do que jamais imaginei.",
+      "logistics": {
+        "hotels": [
+          "Alto Atacama Desert Lodge"
+        ],
+        "restaurants": [
+          "Adobe Restaurant",
+          "La Estaka"
+        ],
+        "tips": "Leve protetor solar FPS 100+ — a altitude intensifica o sol. Aclimatize-se por 1 dia antes de tours exigentes."
+      },
+      "hospedagem": [
+        {
+          "nome": "Alto Atacama Desert Lodge"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "atacama-2021-fl-001",
+            "titulo": "GRU→SCL→CJC",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "atacama-2021-st-001",
+            "titulo": "Alto Atacama Desert Lodge",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "media": {
+        "cover": "https://picsum.photos/seed/atacama-cover/1600/900",
+        "gallery": [
+          {
+            "type": "image",
+            "src": "https://picsum.photos/seed/atacama-01/1600/1000",
+            "thumb": "https://picsum.photos/seed/atacama-01/640/400",
+            "caption": "Gêiseres del Tatio ao amanhecer",
+            "date": "2021-11-12"
+          },
+          {
+            "type": "image",
+            "src": "https://picsum.photos/seed/atacama-02/1600/1000",
+            "thumb": "https://picsum.photos/seed/atacama-02/640/400",
+            "caption": "Laguna Cejar — flutuação salina",
+            "date": "2021-11-13"
+          },
+          {
+            "type": "image",
+            "src": "https://picsum.photos/seed/atacama-03/1200/1600",
+            "thumb": "https://picsum.photos/seed/atacama-03/480/640",
+            "caption": "Valle de la Luna ao pôr do sol",
+            "date": "2021-11-14"
+          },
+          {
+            "type": "image",
+            "src": "https://picsum.photos/seed/atacama-04/1600/1000",
+            "thumb": "https://picsum.photos/seed/atacama-04/640/400",
+            "caption": "Salar de Atacama — flamingos cor-de-rosa",
+            "date": "2021-11-15"
+          },
+          {
+            "type": "image",
+            "src": "https://picsum.photos/seed/atacama-05/1600/1000",
+            "thumb": "https://picsum.photos/seed/atacama-05/640/400",
+            "caption": "Céu noturno — o mais límpido do mundo",
+            "date": "2021-11-16"
+          },
+          {
+            "type": "image",
+            "src": "https://picsum.photos/seed/atacama-06/1200/1600",
+            "thumb": "https://picsum.photos/seed/atacama-06/480/640",
+            "caption": "Pueblo de San Pedro — vida pacata",
+            "date": "2021-11-17"
+          },
+          {
+            "type": "image",
+            "src": "https://picsum.photos/seed/atacama-07/1600/1000",
+            "thumb": "https://picsum.photos/seed/atacama-07/640/400",
+            "caption": "Caminhada na trilha das salinas",
+            "date": "2021-11-18"
+          }
+        ],
+        "stats": {
+          "photos": 7,
+          "videos": 0
+        }
+      },
+      "created_at": "2021-11-01T00:00:00Z",
+      "updated_at": "2026-05-22T00:00:00Z",
+      "_schema": 2
+    },
+    {
+      "id": "argentina-2021",
+      "name": "Argentina",
+      "sub": "Buenos Aires · El Calafate · Puerto Iguazú",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Argentina",
+      "flag": "🇦🇷",
+      "emoji": "🥩",
+      "year": 2021,
+      "month": 12,
+      "label": "Dez 2021",
+      "lat": -34.6037,
+      "lon": -58.3816,
+      "col": "#60a5fa",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + Aerolíneas",
+      "nts": 12,
+      "km": 3800,
+      "type": "leisure",
+      "highlights": [
+        "Glaciar Perito Moreno em El Calafate",
+        "Cataratas del Iguazú",
+        "La Boca em Buenos Aires",
+        "Tango no San Telmo"
+      ],
+      "memory": "Argentina é uma montanha-russa emocional — da grandiosidade do Perito Moreno às lágrimas das Cataratas, da nostalgia tangueira de Buenos Aires ao asado perfeito.",
+      "logistics": {
+        "hotels": [
+          "Palermo Soho Boutique Hotel",
+          "Los Sauces (El Calafate)"
+        ],
+        "restaurants": [
+          "Don Julio",
+          "La Tablita"
+        ],
+        "tips": "Use pesos em dinheiro — o câmbio paralelo ('blue') oferece valor muito melhor."
+      },
+      "hospedagem": [
+        {
+          "nome": "Palermo Soho Boutique Hotel"
+        },
+        {
+          "nome": "Los Sauces (El Calafate)"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "argentina-2021-fl-001",
+            "titulo": "LATAM + Aerolíneas",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "argentina-2021-st-001",
+            "titulo": "Palermo Soho Boutique Hotel",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "argentina-2021-st-002",
+            "titulo": "Los Sauces (El Calafate)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2021-12-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "florida-2022",
+      "name": "Florida",
+      "sub": "Orlando · Tampa · Lake Buena Vista",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Estados Unidos",
+      "flag": "🇺🇸",
+      "emoji": "🎢",
+      "year": 2022,
+      "month": 1,
+      "label": "Jan 2022",
+      "lat": 28.5384,
+      "lon": -81.3789,
+      "col": "#f97316",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + American",
+      "nts": 10,
+      "km": 9200,
+      "type": "leisure",
+      "highlights": [
+        "Walt Disney World",
+        "Universal Studios",
+        "Kennedy Space Center",
+        "Praias de Clearwater"
+      ],
+      "memory": "A Disney é para todos — crianças e adultos se perdem igualmente naquele mundo construído com obsessão pelos detalhes.",
+      "logistics": {
+        "hotels": [
+          "Hard Rock Hotel Universal Orlando"
+        ],
+        "restaurants": [
+          "Bern's Steak House (Tampa)"
+        ],
+        "tips": "Compre ingressos antecipados e use o FastPass."
+      },
+      "hospedagem": [
+        {
+          "nome": "Hard Rock Hotel Universal Orlando"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "florida-2022-fl-001",
+            "titulo": "LATAM + American",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "florida-2022-st-001",
+            "titulo": "Hard Rock Hotel Universal Orlando",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2022-01-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "punta-2022",
+      "name": "Punta del Este",
+      "sub": "Maldonado · Uruguai",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Uruguay",
+      "flag": "🇺🇾",
+      "emoji": "🏖️",
+      "year": 2022,
+      "month": 2,
+      "label": "Fev 2022",
+      "lat": -34.9667,
+      "lon": -54.95,
+      "col": "#22c55e",
+      "pax": "casal",
+      "air": "GRU→MVD",
+      "nts": 5,
+      "km": 2100,
+      "type": "leisure",
+      "highlights": [
+        "Praia Mansa e Brava",
+        "La Mano (Monumento)",
+        "Casapueblo em Punta Ballena"
+      ],
+      "memory": "Sofisticação uruguaia com praias paradisíacas — ótimo custo-benefício comparado a outros destinos premium.",
+      "logistics": {
+        "hotels": [
+          "L'Auberge Hotel"
+        ],
+        "restaurants": [
+          "Lo de Tere",
+          "Parador La Huella"
+        ],
+        "tips": "Fevereiro é alta temporada — reserve com meses de antecedência."
+      },
+      "hospedagem": [
+        {
+          "nome": "L'Auberge Hotel"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "punta-2022-fl-001",
+            "titulo": "GRU→MVD",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "punta-2022-st-001",
+            "titulo": "L'Auberge Hotel",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2022-02-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "cartagena-2022",
+      "name": "Cartagena",
+      "sub": "Cartagena das Índias · Ilhas do Rosário · Colômbia",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Colombia",
+      "flag": "🇨🇴",
+      "emoji": "🏰",
+      "year": 2022,
+      "month": 3,
+      "label": "Mar 2022",
+      "lat": 10.3997,
+      "lon": -75.5144,
+      "col": "#f59e0b",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM",
+      "nts": 6,
+      "km": 5800,
+      "type": "leisure",
+      "highlights": [
+        "Cidade Murada colonial",
+        "Castillo de San Felipe",
+        "Islas del Rosario",
+        "Noite na cidade histórica"
+      ],
+      "memory": "Cartagena parece cenário de filme. As ruas de paralelepípedo, flores nas sacadas coloniais e o calor caribenho convidando para uma cerveja gelada ao entardecer.",
+      "logistics": {
+        "hotels": [
+          "Hotel Tcherassi Spa + Hotel"
+        ],
+        "restaurants": [
+          "Carmen",
+          "La Cevichería"
+        ],
+        "tips": "Agende passeio às Ilhas do Rosário com antecedência. Evite sol entre 11h e 15h."
+      },
+      "hospedagem": [
+        {
+          "nome": "Hotel Tcherassi Spa + Hotel"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "cartagena-2022-fl-001",
+            "titulo": "LATAM",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "cartagena-2022-st-001",
+            "titulo": "Hotel Tcherassi Spa + Hotel",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2022-03-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "ny-2022",
+      "name": "Nova Iorque",
+      "sub": "Manhattan · Brooklyn · Times Square",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Estados Unidos",
+      "flag": "🇺🇸",
+      "emoji": "🗽",
+      "year": 2022,
+      "month": 6,
+      "label": "Jun 2022",
+      "lat": 40.7128,
+      "lon": -74.006,
+      "col": "#6366f1",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + American",
+      "nts": 8,
+      "km": 9400,
+      "type": "leisure",
+      "highlights": [
+        "Central Park de manhã cedo",
+        "Times Square à noite",
+        "Brooklyn Bridge a pé",
+        "Metropolitan Museum of Art"
+      ],
+      "memory": "Nova Iorque é uma energia diferente. A cidade que nunca dorme — a cada esquina uma história, um musical da Broadway, um sabor do mundo inteiro.",
+      "logistics": {
+        "hotels": [
+          "The Knickerbocker"
+        ],
+        "restaurants": [
+          "Carbone",
+          "Le Bernardin"
+        ],
+        "tips": "Use o metrô — é a forma mais rápida de se locomover."
+      },
+      "hospedagem": [
+        {
+          "nome": "The Knickerbocker"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "ny-2022-fl-001",
+            "titulo": "LATAM + American",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "ny-2022-st-001",
+            "titulo": "The Knickerbocker",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2022-06-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "cancun-2022",
+      "name": "Cancún",
+      "sub": "Quintana Roo · México",
+      "status": "done",
+      "continent": "Americas",
+      "country": "México",
+      "flag": "🇲🇽",
+      "emoji": "🌴",
+      "year": 2022,
+      "month": 7,
+      "label": "Jul 2022",
+      "lat": 21.1619,
+      "lon": -86.8515,
+      "col": "#22c55e",
+      "pax": "família",
+      "air": "GRU→CUN",
+      "nts": 8,
+      "km": 5600,
+      "type": "leisure",
+      "highlights": [
+        "Chichén Itzá",
+        "Cenotes Ik Kil",
+        "Playa del Carmen"
+      ],
+      "memory": "Mergulho nos cenotes — uma experiência mística e refrescante no calor do Yucatán.",
+      "logistics": {
+        "hotels": [
+          "Grand Hyatt Playa del Carmen"
+        ],
+        "restaurants": [
+          "La Fisheria",
+          "Axiote"
+        ],
+        "tips": "Alugue carro para explorar a Riviera Maya. Cenotes valem o desvio."
+      },
+      "hospedagem": [
+        {
+          "nome": "Grand Hyatt Playa del Carmen"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "cancun-2022-fl-001",
+            "titulo": "GRU→CUN",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "cancun-2022-st-001",
+            "titulo": "Grand Hyatt Playa del Carmen",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2022-07-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "abc-2022",
+      "name": "Ilhas ABC & Puerto Rico",
+      "sub": "Aruba · Bonaire · Curaçao · Rincón (PR)",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Caribe",
+      "flag": "🇦🇼",
+      "emoji": "🐠",
+      "year": 2022,
+      "month": 8,
+      "label": "Ago 2022",
+      "lat": 12.5211,
+      "lon": -69.9683,
+      "col": "#06b6d4",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + Insel Air",
+      "nts": 12,
+      "km": 7200,
+      "type": "leisure",
+      "highlights": [
+        "Eagle Beach em Aruba",
+        "Mergulho em Bonaire",
+        "Centro histórico de Curaçao",
+        "Surf em Rincón Puerto Rico"
+      ],
+      "memory": "As ilhas ABC são o Caribe em sua versão mais autêntica. Bonaire especialmente — visibilidade incrível, vida marinha exuberante.",
+      "logistics": {
+        "hotels": [
+          "Bucuti & Tara Beach Resort (Aruba)"
+        ],
+        "restaurants": [
+          "Papiamento Restaurant"
+        ],
+        "tips": "Bonaire é paraíso de mergulho. Curaçao tem o melhor centro histórico."
+      },
+      "hospedagem": [
+        {
+          "nome": "Bucuti & Tara Beach Resort (Aruba)"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "abc-2022-fl-001",
+            "titulo": "LATAM + Insel Air",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "abc-2022-st-001",
+            "titulo": "Bucuti & Tara Beach Resort (Aruba)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2022-08-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "mykonos-2022",
+      "name": "Mykonos",
+      "sub": "Egeu Meridional · Grécia",
+      "status": "done",
+      "continent": "Europe",
+      "country": "Grécia",
+      "flag": "🇬🇷",
+      "emoji": "🏛️",
+      "year": 2022,
+      "month": 9,
+      "label": "Set 2022",
+      "lat": 37.4467,
+      "lon": 25.3289,
+      "col": "#3b82f6",
+      "pax": "casal",
+      "air": "GRU→ATH→JMK",
+      "nts": 7,
+      "km": 9800,
+      "type": "leisure",
+      "highlights": [
+        "Little Venice ao pôr do sol",
+        "Paradise Beach",
+        "Chora (centro histórico)"
+      ],
+      "memory": "O Mediterrâneo em setembro é perfeito — turistas diminuem, preços caem e o clima é ideal.",
+      "logistics": {
+        "hotels": [
+          "Cavo Tagoo Mykonos"
+        ],
+        "restaurants": [
+          "Scorpios",
+          "Nammos"
+        ],
+        "tips": "Alugue quadriciclo para explorar a ilha. Setembro é melhor que julho/agosto."
+      },
+      "hospedagem": [
+        {
+          "nome": "Cavo Tagoo Mykonos"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "mykonos-2022-fl-001",
+            "titulo": "GRU→ATH→JMK",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "mykonos-2022-st-001",
+            "titulo": "Cavo Tagoo Mykonos",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2022-09-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "lisboapo-2022",
+      "name": "Lisboa & Porto",
+      "sub": "Lisboa · Sintra · Porto · Portugal",
+      "status": "done",
+      "continent": "Europe",
+      "country": "Portugal",
+      "flag": "🇵🇹",
+      "emoji": "🎵",
+      "year": 2022,
+      "month": 10,
+      "label": "Out 2022",
+      "lat": 38.7169,
+      "lon": -9.1399,
+      "col": "#14b8a6",
+      "pax": "Jodson Oliveira",
+      "air": "TAP",
+      "nts": 10,
+      "km": 9300,
+      "type": "leisure",
+      "highlights": [
+        "Alfama e Castelo São Jorge",
+        "Pastéis de Belém",
+        "Sintra",
+        "Livraria Lello no Porto",
+        "Douro Valley"
+      ],
+      "memory": "Lisboa é uma cidade que não para de surpreender. Os bondes amarelos subindo as ladeiras, o fado nas ruas de Alfama e a doçura dos pastéis de Belém — Portugal sempre chama de volta.",
+      "logistics": {
+        "hotels": [
+          "Bairro Alto Hotel (Lisboa)",
+          "The Yeatman (Porto)"
+        ],
+        "restaurants": [
+          "Belcanto",
+          "Cantinho do Avillez"
+        ],
+        "tips": "Visite o Museu do Azulejo em Lisboa. No Porto, cruzeiro pelo Rio Douro ao fim de tarde."
+      },
+      "hospedagem": [
+        {
+          "nome": "Bairro Alto Hotel (Lisboa)"
+        },
+        {
+          "nome": "The Yeatman (Porto)"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "lisboapo-2022-fl-001",
+            "titulo": "TAP",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "lisboapo-2022-st-001",
+            "titulo": "Bairro Alto Hotel (Lisboa)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "lisboapo-2022-st-002",
+            "titulo": "The Yeatman (Porto)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2022-10-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "tailandia-2023",
+      "name": "Tailândia",
+      "sub": "Bangkok · Pattaya",
+      "status": "done",
+      "continent": "Asia",
+      "country": "Thailand",
+      "flag": "🇹🇭",
+      "emoji": "🐘",
+      "year": 2023,
+      "month": 1,
+      "label": "Jan 2023",
+      "lat": 13.7563,
+      "lon": 100.5018,
+      "col": "#06b6d4",
+      "pax": "casal",
+      "air": "GRU→DXB→BKK",
+      "nts": 12,
+      "km": 16800,
+      "type": "adventure",
+      "highlights": [
+        "Templo Wat Phra Kaew",
+        "Floating Market",
+        "Pattaya Beach Road"
+      ],
+      "memory": "Bangkok é caos e beleza simultâneos — a culinária de rua é simplesmente extraordinária.",
+      "logistics": {
+        "hotels": [
+          "Mandarin Oriental Bangkok"
+        ],
+        "restaurants": [
+          "Jay Fai",
+          "Bo.lan"
+        ],
+        "tips": "Vá em janeiro — é a estação seca. Sempre descalce ao entrar em templos. Uber/Grab é mais barato que táxi."
+      },
+      "hospedagem": [
+        {
+          "nome": "Mandarin Oriental Bangkok"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "tailandia-2023-fl-001",
+            "titulo": "GRU→DXB→BKK",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "tailandia-2023-st-001",
+            "titulo": "Mandarin Oriental Bangkok",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "houston-2023",
+      "name": "Houston",
+      "sub": "Houston · NASA Space Center",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Estados Unidos",
+      "flag": "🇺🇸",
+      "emoji": "🚀",
+      "year": 2023,
+      "month": 2,
+      "label": "Fev 2023",
+      "lat": 29.7604,
+      "lon": -95.3698,
+      "col": "#64748b",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + United",
+      "nts": 5,
+      "km": 8800,
+      "type": "leisure",
+      "highlights": [
+        "NASA Johnson Space Center",
+        "Houston Galleria",
+        "Hermann Park",
+        "Rodeo de Houston"
+      ],
+      "memory": "Houston é a cidade da NASA — caminhar pelo centro espacial e ver os foguetes de perto mistura ciência e emoção de uma forma que você não espera.",
+      "logistics": {
+        "hotels": [
+          "The Post Oak Hotel"
+        ],
+        "restaurants": [
+          "Pappas Bros. Steakhouse"
+        ],
+        "tips": "Reserve com antecedência o tour de astronauta na NASA."
+      },
+      "hospedagem": [
+        {
+          "nome": "The Post Oak Hotel"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "houston-2023-fl-001",
+            "titulo": "LATAM + United",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "houston-2023-st-001",
+            "titulo": "The Post Oak Hotel",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2023-02-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "pragabud-2023",
+      "name": "Praga & Budapeste",
+      "sub": "Praga · Budapeste",
+      "status": "done",
+      "continent": "Europe",
+      "country": "República Tcheca",
+      "flag": "🇨🇿",
+      "emoji": "🏰",
+      "year": 2023,
+      "month": 3,
+      "label": "Mar 2023",
+      "lat": 50.0755,
+      "lon": 14.4378,
+      "col": "#8b5cf6",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + TAP + Wizzair",
+      "nts": 9,
+      "km": 9600,
+      "type": "leisure",
+      "highlights": [
+        "Castelo de Praga",
+        "Ponte Carlos",
+        "Parlamento de Budapeste à noite",
+        "Banhos termais Széchenyi"
+      ],
+      "memory": "Europa Central em toda sua glória. Praga com arquitetura gótica intocada e Budapeste dividida pelo Danúbio — duas cidades diferentes, igualmente encantadoras.",
+      "logistics": {
+        "hotels": [
+          "Four Seasons Hotel Prague",
+          "Four Seasons Gresham Palace Budapest"
+        ],
+        "restaurants": [
+          "Field Restaurant",
+          "Costes"
+        ],
+        "tips": "Pegue um trem direto entre Praga e Budapeste — é cênico e prático."
+      },
+      "hospedagem": [
+        {
+          "nome": "Four Seasons Hotel Prague"
+        },
+        {
+          "nome": "Four Seasons Gresham Palace Budapest"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "pragabud-2023-fl-001",
+            "titulo": "LATAM + TAP + Wizzair",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "pragabud-2023-st-001",
+            "titulo": "Four Seasons Hotel Prague",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "pragabud-2023-st-002",
+            "titulo": "Four Seasons Gresham Palace Budapest",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2023-03-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "bali-2023",
+      "name": "Bali",
+      "sub": "Indonésia",
+      "status": "done",
+      "continent": "Asia",
+      "country": "Indonesia",
+      "flag": "🇮🇩",
+      "emoji": "🌺",
+      "year": 2023,
+      "month": 3,
+      "label": "Mar 2023",
+      "lat": -8.3405,
+      "lon": 115.092,
+      "col": "#06b6d4",
+      "pax": "casal",
+      "air": "GRU→SIN→DPS",
+      "nts": 10,
+      "km": 18200,
+      "type": "leisure",
+      "highlights": [
+        "Templo Tanah Lot",
+        "Terraços de arroz de Tegalalang",
+        "Ubud Art Market"
+      ],
+      "memory": "A espiritualidade balinesa está em cada esquina — flores de oferenda, incenso e gamelan ao amanhecer.",
+      "logistics": {
+        "hotels": [
+          "COMO Shambhala Estate (Ubud)",
+          "Alila Seminyak"
+        ],
+        "restaurants": [
+          "Locavore",
+          "Mozaic"
+        ],
+        "tips": "Base em Ubud para cultura, Seminyak para praias."
+      },
+      "hospedagem": [
+        {
+          "nome": "COMO Shambhala Estate (Ubud)"
+        },
+        {
+          "nome": "Alila Seminyak"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "bali-2023-fl-001",
+            "titulo": "GRU→SIN→DPS",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "bali-2023-st-001",
+            "titulo": "COMO Shambhala Estate (Ubud)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "bali-2023-st-002",
+            "titulo": "Alila Seminyak",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2023-03-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "machupicchu-2023",
+      "name": "Machu Picchu",
+      "sub": "Cusco · Peru",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Peru",
+      "flag": "🇵🇪",
+      "emoji": "🏔️",
+      "year": 2023,
+      "month": 4,
+      "label": "Abr 2023",
+      "lat": -13.1631,
+      "lon": -72.545,
+      "col": "#22c55e",
+      "pax": "casal",
+      "air": "GRU→LIM→CUZ",
+      "nts": 7,
+      "km": 4800,
+      "type": "adventure",
+      "highlights": [
+        "Machu Picchu ao nascer do sol",
+        "Trilha Inca",
+        "Valle Sagrado dos Incas"
+      ],
+      "memory": "Acordar às 4h para ver Machu Picchu emergir da névoa antes dos turistas chegarem — absoluto e indescritível.",
+      "logistics": {
+        "hotels": [
+          "Inkaterra Machu Picchu Pueblo Hotel"
+        ],
+        "restaurants": [
+          "Cicciolina (Cusco)",
+          "MAP Café"
+        ],
+        "tips": "Aclimatize 2 dias em Cusco antes de subir. Compre ingresso com 1-2 meses de antecedência."
+      },
+      "hospedagem": [
+        {
+          "nome": "Inkaterra Machu Picchu Pueblo Hotel"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "machupicchu-2023-fl-001",
+            "titulo": "GRU→LIM→CUZ",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "machupicchu-2023-st-001",
+            "titulo": "Inkaterra Machu Picchu Pueblo Hotel",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2023-04-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "italia-2023",
+      "name": "Itália — Roma & Vaticano",
+      "sub": "Roma · Vaticano · Coliseu",
+      "status": "done",
+      "continent": "Europe",
+      "country": "Italy",
+      "flag": "🇮🇹",
+      "emoji": "🍕",
+      "year": 2023,
+      "month": 5,
+      "label": "Mai 2023",
+      "lat": 41.9028,
+      "lon": 12.4964,
+      "col": "#dc2626",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + TAP + ITA",
+      "nts": 7,
+      "km": 9800,
+      "type": "leisure",
+      "highlights": [
+        "Coliseu Romano",
+        "Museu e Capela Sistina",
+        "Fontana di Trevi",
+        "Foro Romano"
+      ],
+      "memory": "Roma te engole — cada pedra tem 2.000 anos de história. Jogar a moeda na Fontana di Trevi com a certeza de que voltaremos foi um dos momentos mais simbólicos.",
+      "logistics": {
+        "hotels": [
+          "Hotel de Russie"
+        ],
+        "restaurants": [
+          "La Pergola",
+          "Roscioli"
+        ],
+        "tips": "Entre cedo no Vaticano. Reserve Coliseu antecipado."
+      },
+      "hospedagem": [
+        {
+          "nome": "Hotel de Russie"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "italia-2023-fl-001",
+            "titulo": "LATAM + TAP + ITA",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "italia-2023-st-001",
+            "titulo": "Hotel de Russie",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2023-05-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "amsterda-2023",
+      "name": "Amsterdã & Bélgica",
+      "sub": "Amsterdã · Bruxelas · Boom (Tomorrowland)",
+      "status": "done",
+      "continent": "Europe",
+      "country": "Holanda",
+      "flag": "🇳🇱",
+      "emoji": "🎶",
+      "year": 2023,
+      "month": 8,
+      "label": "Ago 2023",
+      "lat": 52.3676,
+      "lon": 4.9041,
+      "col": "#f59e0b",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + KLM",
+      "nts": 9,
+      "km": 9500,
+      "type": "festival",
+      "highlights": [
+        "Canais de Amsterdã de bicicleta",
+        "Museu Van Gogh",
+        "Atomium de Bruxelas",
+        "Festival Tomorrowland em Boom"
+      ],
+      "memory": "Amsterdã de bicicleta pelas ruas históricas, os canais refletindo as casas estreitas... E a cereja do bolo: Tomorrowland em Boom — a maior festa do mundo.",
+      "logistics": {
+        "hotels": [
+          "Pulitzer Amsterdam",
+          "Hotel Amigo (Bruxelas)"
+        ],
+        "restaurants": [
+          "De Kas (Amsterdã)"
+        ],
+        "tips": "Reserve Tomorrowland com 6+ meses. Amsterdã é melhor de bike."
+      },
+      "hospedagem": [
+        {
+          "nome": "Pulitzer Amsterdam"
+        },
+        {
+          "nome": "Hotel Amigo (Bruxelas)"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "amsterda-2023-fl-001",
+            "titulo": "LATAM + KLM",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "amsterda-2023-st-001",
+            "titulo": "Pulitzer Amsterdam",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "amsterda-2023-st-002",
+            "titulo": "Hotel Amigo (Bruxelas)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2023-08-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "alemanha-2023",
+      "name": "Alemanha",
+      "sub": "Berlim · Frankfurt · Potsdam",
+      "status": "done",
+      "continent": "Europe",
+      "country": "Alemanha",
+      "flag": "🇩🇪",
+      "emoji": "🍺",
+      "year": 2023,
+      "month": 10,
+      "label": "Out 2023",
+      "lat": 52.52,
+      "lon": 13.405,
+      "col": "#6b7280",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + TAP + Lufthansa",
+      "nts": 9,
+      "km": 9800,
+      "type": "leisure",
+      "highlights": [
+        "Portão de Brandemburgo",
+        "Muro de Berlim",
+        "Palácio de Sanssouci em Potsdam",
+        "Römerberg em Frankfurt"
+      ],
+      "memory": "A Alemanha surpreende com sua história exposta sem vergonha. Berlim respira arte, memória e uma cena cultural vibrante — nada é escondido, tudo é ensinado.",
+      "logistics": {
+        "hotels": [
+          "Hotel Adlon Kempinski (Berlim)"
+        ],
+        "restaurants": [
+          "Rutz Restaurant",
+          "Tim Raue"
+        ],
+        "tips": "Use o trem ICE entre cidades — confortável e rápido."
+      },
+      "hospedagem": [
+        {
+          "nome": "Hotel Adlon Kempinski (Berlim)"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "alemanha-2023-fl-001",
+            "titulo": "LATAM + TAP + Lufthansa",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "alemanha-2023-st-001",
+            "titulo": "Hotel Adlon Kempinski (Berlim)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "japao-2023",
+      "name": "Japão",
+      "sub": "Tóquio · Kyoto · Shibuya · Suzuka",
+      "status": "done",
+      "continent": "Asia",
+      "country": "Japan",
+      "flag": "🇯🇵",
+      "emoji": "🗼",
+      "year": 2023,
+      "month": 10,
+      "label": "Out 2023",
+      "lat": 35.6762,
+      "lon": 139.6503,
+      "col": "#ec4899",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + Japan Airlines",
+      "nts": 12,
+      "km": 22000,
+      "type": "leisure",
+      "highlights": [
+        "Cruzamento de Shibuya",
+        "Templos de Kyoto",
+        "Templo Senso-ji",
+        "Circuito de Suzuka (F1)"
+      ],
+      "memory": "O Japão é um choque cultural positivo. A perfeição no atendimento, a tecnologia futurística e a tradição milenar coexistindo — uma lição de excelência que todo profissional deveria vivenciar.",
+      "logistics": {
+        "hotels": [
+          "The Peninsula Tokyo",
+          "Aman Kyoto"
+        ],
+        "restaurants": [
+          "Sukiyabashi Jiro",
+          "Kikunoi (Kyoto)"
+        ],
+        "tips": "Compre o JR Pass antes de viajar. Suzuka em outubro tem GP do Japão de F1."
+      },
+      "hospedagem": [
+        {
+          "nome": "The Peninsula Tokyo"
+        },
+        {
+          "nome": "Aman Kyoto"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "japao-2023-fl-001",
+            "titulo": "LATAM + Japan Airlines",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "japao-2023-st-001",
+            "titulo": "The Peninsula Tokyo",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "japao-2023-st-002",
+            "titulo": "Aman Kyoto",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "patagonia-2024",
+      "name": "Patagônia",
+      "sub": "El Calafate · Torres del Paine · Argentina/Chile",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Argentina",
+      "flag": "🇦🇷",
+      "emoji": "🧊",
+      "year": 2024,
+      "month": 1,
+      "label": "Jan 2024",
+      "lat": -51.63,
+      "lon": -72.56,
+      "col": "#60a5fa",
+      "pax": "casal",
+      "air": "GRU→EZE→FTE",
+      "nts": 9,
+      "km": 3800,
+      "type": "adventure",
+      "highlights": [
+        "Glaciar Perito Moreno",
+        "Torres del Paine",
+        "Trekking W"
+      ],
+      "memory": "O estrondo do gelo quebrando no Perito Moreno ecoa pelo vale inteiro — natureza em sua forma mais bruta.",
+      "logistics": {
+        "hotels": [
+          "Los Sauces Casa Patagónica",
+          "Explora Patagonia"
+        ],
+        "restaurants": [
+          "La Tablita (El Calafate)"
+        ],
+        "tips": "Janeiro é verão austral. Reserve trekking Torres del Paine com 6+ meses."
+      },
+      "hospedagem": [
+        {
+          "nome": "Los Sauces Casa Patagónica"
+        },
+        {
+          "nome": "Explora Patagonia"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "patagonia-2024-fl-001",
+            "titulo": "GRU→EZE→FTE",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "patagonia-2024-st-001",
+            "titulo": "Los Sauces Casa Patagónica",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "patagonia-2024-st-002",
+            "titulo": "Explora Patagonia",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "santiago-2024",
+      "name": "Santiago",
+      "sub": "Região Metropolitana · Chile",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Chile",
+      "flag": "🇨🇱",
+      "emoji": "🍷",
+      "year": 2024,
+      "month": 3,
+      "label": "Mar 2024",
+      "lat": -33.4489,
+      "lon": -70.6693,
+      "col": "#f97316",
+      "pax": "casal",
+      "air": "GRU→SCL",
+      "nts": 5,
+      "km": 2800,
+      "type": "leisure",
+      "highlights": [
+        "Vinícolas do Vale do Maipo",
+        "Cerro San Cristóbal",
+        "Bairro Lastarria"
+      ],
+      "memory": "Santiago me surpreendeu — cidade elegante com gastronomia sofisticada e vinho excepcional.",
+      "logistics": {
+        "hotels": [
+          "The Singular Santiago"
+        ],
+        "restaurants": [
+          "Boragó",
+          "Ambrosía Bistró"
+        ],
+        "tips": "Visite vinícolas no dia de chegada."
+      },
+      "hospedagem": [
+        {
+          "nome": "The Singular Santiago"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "santiago-2024-fl-001",
+            "titulo": "GRU→SCL",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "santiago-2024-st-001",
+            "titulo": "The Singular Santiago",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2024-03-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "espanha-2024",
+      "name": "Espanha — Ibiza & Cidades",
+      "sub": "Barcelona · Ibiza · Madrid · Segóvia · Toledo",
+      "status": "done",
+      "continent": "Europe",
+      "country": "Espanha",
+      "flag": "🇪🇸",
+      "emoji": "💃",
+      "year": 2024,
+      "month": 5,
+      "label": "Mai 2024",
+      "lat": 40.4168,
+      "lon": -3.7038,
+      "col": "#ef4444",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + TAP + Vueling",
+      "nts": 12,
+      "km": 9500,
+      "type": "leisure",
+      "highlights": [
+        "Sagrada Família de Gaudí",
+        "Festas em Ibiza",
+        "Museu do Prado",
+        "Alcázar de Segóvia",
+        "Sant Jordi de ses Salines"
+      ],
+      "memory": "España em pleno verão — da arte modernista de Gaudí à loucura das festas em Ibiza. Madrid de bônus com a grandiosidade do Prado e história medieval de Toledo.",
+      "logistics": {
+        "hotels": [
+          "Hotel Arts Barcelona",
+          "Six Senses Ibiza"
+        ],
+        "restaurants": [
+          "Disfrutar (Barcelona)",
+          "Sublimotion (Ibiza)"
+        ],
+        "tips": "Compre Sagrada Família antecipado. Em Ibiza, vá de quadriciclo às calas escondidas."
+      },
+      "hospedagem": [
+        {
+          "nome": "Hotel Arts Barcelona"
+        },
+        {
+          "nome": "Six Senses Ibiza"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "espanha-2024-fl-001",
+            "titulo": "LATAM + TAP + Vueling",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "espanha-2024-st-001",
+            "titulo": "Hotel Arts Barcelona",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "espanha-2024-st-002",
+            "titulo": "Six Senses Ibiza",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2024-05-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "costarica-2024",
+      "name": "Costa Rica",
+      "sub": "San José · Arenal · Osa",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Costa Rica",
+      "flag": "🇨🇷",
+      "emoji": "🌿",
+      "year": 2024,
+      "month": 6,
+      "label": "Jun 2024",
+      "lat": 9.7489,
+      "lon": -83.7534,
+      "col": "#22c55e",
+      "pax": "casal",
+      "air": "GRU→MIA→SJO",
+      "nts": 10,
+      "km": 7200,
+      "type": "adventure",
+      "highlights": [
+        "Vulcão Arenal",
+        "Zip-line na floresta tropical",
+        "Praia Manuel Antonio"
+      ],
+      "memory": "Pura vida! A Costa Rica é biodiversidade pura — preguiças, tucanos e macacos no café da manhã.",
+      "logistics": {
+        "hotels": [
+          "Nayara Springs (Arenal)",
+          "Lapa Rios Lodge (Osa)"
+        ],
+        "restaurants": [
+          "Don Rufino",
+          "La Luna Restaurant"
+        ],
+        "tips": "Alugue 4x4 — estradas rurais são difíceis."
+      },
+      "hospedagem": [
+        {
+          "nome": "Nayara Springs (Arenal)"
+        },
+        {
+          "nome": "Lapa Rios Lodge (Osa)"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "costarica-2024-fl-001",
+            "titulo": "GRU→MIA→SJO",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "costarica-2024-st-001",
+            "titulo": "Nayara Springs (Arenal)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "costarica-2024-st-002",
+            "titulo": "Lapa Rios Lodge (Osa)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2024-06-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "havai-2024",
+      "name": "Havaí",
+      "sub": "Honolulu · Waimanalo · Pupukea",
+      "status": "done",
+      "continent": "Oceania",
+      "country": "Estados Unidos",
+      "flag": "🇺🇸",
+      "emoji": "🤙",
+      "year": 2024,
+      "month": 7,
+      "label": "Jul 2024",
+      "lat": 21.3069,
+      "lon": -157.8583,
+      "col": "#22c55e",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + American Airlines",
+      "nts": 10,
+      "km": 14000,
+      "type": "leisure",
+      "highlights": [
+        "Praia de Waikiki",
+        "Pipeline em Pupukea",
+        "Diamond Head",
+        "Waimanalo Beach",
+        "Luau tradicional"
+      ],
+      "memory": "O Havaí é diferente de qualquer lugar nos EUA — uma energia única, natureza exuberante e a cultura polinésia que te transporta para outro mundo completamente.",
+      "logistics": {
+        "hotels": [
+          "Halekulani Honolulu"
+        ],
+        "restaurants": [
+          "Roy's Waikiki",
+          "Mama's Fish House"
+        ],
+        "tips": "Acordar cedo para trilha Diamond Head antes do calor. Alugue carro para North Shore."
+      },
+      "hospedagem": [
+        {
+          "nome": "Halekulani Honolulu"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "havai-2024-fl-001",
+            "titulo": "LATAM + American Airlines",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "havai-2024-st-001",
+            "titulo": "Halekulani Honolulu",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2024-07-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "mykonos-2025",
+      "name": "Mykonos 2025",
+      "sub": "Mykonos · Ilhas Gregas",
+      "status": "done",
+      "continent": "Europe",
+      "country": "Grécia",
+      "flag": "🇬🇷",
+      "emoji": "⛵",
+      "year": 2025,
+      "month": 7,
+      "label": "Jul 2025",
+      "lat": 37.4467,
+      "lon": 25.3289,
+      "col": "#3b82f6",
+      "pax": "amigos",
+      "air": "LATAM + Aegean",
+      "nts": 7,
+      "km": 10500,
+      "type": "leisure",
+      "highlights": [
+        "Iate particular pelas ilhas",
+        "Sunset em Little Venice",
+        "Praias paradisíacas",
+        "Restaurantes de frutos do mar",
+        "Moinhos de vento"
+      ],
+      "memory": "O Mediterrâneo em sua forma mais pura. Casas brancas com janelas azuis, praias de água cristalina e um ritmo de vida que te faz esquecer tudo. Segunda visita, agora com grupo de amigos.",
+      "logistics": {
+        "hotels": [
+          "Cavo Tagoo Mykonos"
+        ],
+        "restaurants": [
+          "Spilia Seaside",
+          "Scorpios"
+        ],
+        "tips": "Contrate iate por um dia para Delos e Rhenia."
+      },
+      "hospedagem": [
+        {
+          "nome": "Cavo Tagoo Mykonos"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "mykonos-2025-fl-001",
+            "titulo": "LATAM + Aegean",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "mykonos-2025-st-001",
+            "titulo": "Cavo Tagoo Mykonos",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2025-07-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "tailandia-2026",
+      "name": "Tailândia 2026",
+      "sub": "Bangkok · Phuket · Krabi · Pattaya",
+      "status": "done",
+      "continent": "Asia",
+      "country": "Thailand",
+      "flag": "🇹🇭",
+      "emoji": "🏝️",
+      "year": 2026,
+      "month": 1,
+      "label": "Jan 2026",
+      "lat": 13.0,
+      "lon": 101.0,
+      "col": "#06b6d4",
+      "pax": "Jodson Oliveira",
+      "air": "LATAM + AirAsia",
+      "nts": 14,
+      "km": 18000,
+      "type": "leisure",
+      "highlights": [
+        "Praias de Phuket",
+        "Templos de Bangkok",
+        "Ilhas de Krabi",
+        "Pattaya Beach Road",
+        "Mai Khao",
+        "Karon",
+        "Ao Nang"
+      ],
+      "memory": "Uma aventura incrível pelo sudeste asiático — dos templos dourados de Bangkok ao azul-turquesa das ilhas de Krabi. Cultura, gastronomia e beleza natural em 14 dias inesquecíveis.",
+      "logistics": {
+        "hotels": [
+          "Amanpuri (Phuket)",
+          "Rayavadee (Krabi)"
+        ],
+        "restaurants": [
+          "Suay Restaurant",
+          "Jay Fai (Bangkok)"
+        ],
+        "tips": "Janeiro é perfeito para o sul — estação seca. Use barcos para se mover entre as ilhas."
+      },
+      "hospedagem": [
+        {
+          "nome": "Amanpuri (Phuket)"
+        },
+        {
+          "nome": "Rayavadee (Krabi)"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "tailandia-2026-fl-001",
+            "titulo": "LATAM + AirAsia",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "tailandia-2026-st-001",
+            "titulo": "Amanpuri (Phuket)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "tailandia-2026-st-002",
+            "titulo": "Rayavadee (Krabi)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "africa-2026",
+      "name": "África do Sul",
+      "sub": "Johannesburg · Sun City · Pilanesberg · Cape Town",
+      "status": "done",
+      "continent": "Africa",
+      "country": "South Africa",
+      "flag": "🇿🇦",
+      "emoji": "🦁",
+      "year": 2026,
+      "month": 3,
+      "label": "Mar 2026",
+      "lat": -29.0,
+      "lon": 25.0,
+      "col": "#f97316",
+      "pax": "Equipe Onix / Yamaha",
+      "air": "Emirates / TAP",
+      "nts": 10,
+      "km": 10000,
+      "type": "adventure",
+      "highlights": [
+        "Safari no Pilanesberg",
+        "Sun City Resort",
+        "Table Mountain",
+        "V&A Waterfront Cape Town",
+        "Kempton Park"
+      ],
+      "memory": "Viagem especial Kando Yamaha — fusão de negócios e aventura no continente africano. Da emoção do safari ao topo da Table Mountain, uma experiência transformadora.",
+      "logistics": {
+        "hotels": [
+          "Sun City Resort",
+          "One&Only Cape Town"
+        ],
+        "restaurants": [
+          "La Colombe",
+          "Test Kitchen"
+        ],
+        "tips": "Reserve safari com 1 ano de antecedência. Março: animais concentrados perto da água."
+      },
+      "hospedagem": [
+        {
+          "nome": "Sun City Resort"
+        },
+        {
+          "nome": "One&Only Cape Town"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "africa-2026-fl-001",
+            "titulo": "Emirates / TAP",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "africa-2026-st-001",
+            "titulo": "Sun City Resort",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "africa-2026-st-002",
+            "titulo": "One&Only Cape Town",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2026-03-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "noronha-2024",
+      "name": "Fernando de Noronha",
+      "sub": "Vila dos Remédios · PE",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🐬",
+      "year": 2024,
+      "month": 9,
+      "label": "Set 2024",
+      "lat": -3.8542,
+      "lon": -32.4297,
+      "col": "#22c55e",
+      "pax": "casal",
+      "air": "GRU→REC→FEN",
+      "nts": 5,
+      "km": 3200,
+      "type": "leisure",
+      "highlights": [
+        "Praia do Sancho",
+        "Baía dos Porcos",
+        "Vila dos Remédios",
+        "Mergulho com tartarugas"
+      ],
+      "memory": "Fernando de Noronha é o paraíso brasileiro — águas cristalinas, vida marinha exuberante e paisagens de cinema.",
+      "logistics": {
+        "hotels": [
+          "Pousada Maravilha"
+        ],
+        "restaurants": [
+          "Mergulhão",
+          "Cacimba Bistrô"
+        ],
+        "tips": "Reserve com meses de antecedência. Pegue o passaporte do PARNAMAR no aeroporto."
+      },
+      "hospedagem": [
+        {
+          "nome": "Pousada Maravilha"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "noronha-2024-fl-001",
+            "titulo": "GRU→REC→FEN",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "noronha-2024-st-001",
+            "titulo": "Pousada Maravilha",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2024-09-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "gramado-2023",
+      "name": "Gramado & Canela",
+      "sub": "Serra Gaúcha · RS",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🍫",
+      "year": 2023,
+      "month": 7,
+      "label": "Jul 2023",
+      "lat": -29.3789,
+      "lon": -50.8767,
+      "col": "#84cc16",
+      "pax": "casal",
+      "air": "FLN→POA",
+      "nts": 4,
+      "km": 700,
+      "type": "leisure",
+      "highlights": [
+        "Mini Mundo",
+        "Cascata do Caracol",
+        "Rua Coberta",
+        "Chocolates artesanais"
+      ],
+      "memory": "Inverno na Serra Gaúcha é mágico — frio europeu, fondue, vinho local e ar bucólico.",
+      "logistics": {
+        "hotels": [
+          "Saint Andrews Hotel"
+        ],
+        "restaurants": [
+          "Garfo & Bombacha",
+          "La Hacienda"
+        ],
+        "tips": "Vá em julho para o frio. Reserve restaurantes principais antecipadamente."
+      },
+      "hospedagem": [
+        {
+          "nome": "Saint Andrews Hotel"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "gramado-2023-fl-001",
+            "titulo": "FLN→POA",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "gramado-2023-st-001",
+            "titulo": "Saint Andrews Hotel",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2023-07-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "rio-2023",
+      "name": "Rio de Janeiro",
+      "sub": "Rio · Niterói · RJ",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🏖️",
+      "year": 2023,
+      "month": 12,
+      "label": "Dez 2023",
+      "lat": -22.9068,
+      "lon": -43.1729,
+      "col": "#fbbf24",
+      "pax": "amigos",
+      "air": "FLN→GIG",
+      "nts": 5,
+      "km": 1200,
+      "type": "leisure",
+      "highlights": [
+        "Cristo Redentor",
+        "Pão de Açúcar",
+        "Praia de Copacabana",
+        "MAC Niterói"
+      ],
+      "memory": "Cidade maravilhosa — sempre vibrante, sempre acolhedora.",
+      "logistics": {
+        "hotels": [
+          "Belmond Copacabana Palace"
+        ],
+        "restaurants": [
+          "Aprazível",
+          "Olympe"
+        ],
+        "tips": "Reveillon em Copacabana exige reserva com muito tempo de antecedência."
+      },
+      "hospedagem": [
+        {
+          "nome": "Belmond Copacabana Palace"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "rio-2023-fl-001",
+            "titulo": "FLN→GIG",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "rio-2023-st-001",
+            "titulo": "Belmond Copacabana Palace",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2023-12-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "jericoacoara-2025",
+      "name": "Jericoacoara",
+      "sub": "Vila de Jericoacoara · CE",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🌅",
+      "year": 2025,
+      "month": 4,
+      "label": "Abr 2025",
+      "lat": -2.7958,
+      "lon": -40.5128,
+      "col": "#f59e0b",
+      "pax": "amigos",
+      "air": "FLN→FOR",
+      "nts": 5,
+      "km": 2800,
+      "type": "adventure",
+      "highlights": [
+        "Pôr do sol na Duna",
+        "Lagoa do Paraíso",
+        "Pedra Furada",
+        "Buggy pelas dunas"
+      ],
+      "memory": "Jeri tem um charme único — rua de areia, energia descontraída e os melhores entardeceres do Brasil.",
+      "logistics": {
+        "hotels": [
+          "Vila Kalango"
+        ],
+        "restaurants": [
+          "Tamarindo",
+          "Naturalmente"
+        ],
+        "tips": "Use buggy 4x4 — caro mas vale. Não saia sem ver o pôr do sol na Duna."
+      },
+      "hospedagem": [
+        {
+          "nome": "Vila Kalango"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "jericoacoara-2025-fl-001",
+            "titulo": "FLN→FOR",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "jericoacoara-2025-st-001",
+            "titulo": "Vila Kalango",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2025-04-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "maragogi-2024",
+      "name": "Maragogi & Maceió",
+      "sub": "Maragogi · Maceió · AL",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🐚",
+      "year": 2024,
+      "month": 11,
+      "label": "Nov 2024",
+      "lat": -9.0122,
+      "lon": -35.2225,
+      "col": "#06b6d4",
+      "pax": "casal",
+      "air": "FLN→MCZ",
+      "nts": 5,
+      "km": 2400,
+      "type": "leisure",
+      "highlights": [
+        "Galés de Maragogi",
+        "Praia de Antunes",
+        "Pajuçara em Maceió",
+        "Piscinas naturais"
+      ],
+      "memory": "Caribe brasileiro — Maragogi tem as piscinas naturais mais lindas do Nordeste.",
+      "logistics": {
+        "hotels": [
+          "Salinas do Maragogi"
+        ],
+        "restaurants": [
+          "Lopana",
+          "Sur"
+        ],
+        "tips": "Para as Galés, vá em maré baixa. Compre ingresso antecipado."
+      },
+      "hospedagem": [
+        {
+          "nome": "Salinas do Maragogi"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "maragogi-2024-fl-001",
+            "titulo": "FLN→MCZ",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "maragogi-2024-st-001",
+            "titulo": "Salinas do Maragogi",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2024-11-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "sp-junho-2026",
+      "name": "São Paulo — Só Track Boa + Pride",
+      "sub": "São Paulo · SP",
+      "status": "planned",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🎵",
+      "year": 2026,
+      "month": 6,
+      "label": "Jun 2026",
+      "startDate": "2026-06-13",
+      "endDate": "2026-06-22",
+      "lat": -23.5505,
+      "lon": -46.6333,
+      "col": "#a855f7",
+      "pax": "amigos",
+      "air": "FLN→GRU (TAM)",
+      "nts": 8,
+      "km": 860,
+      "type": "festival",
+      "highlights": [
+        "Só Track Boa 13/06",
+        "Pride SP 22/06",
+        "Vida noturna paulistana"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [],
+        "restaurants": [],
+        "tips": "Passagem já comprada pela TAM. Falta hotel."
+      },
+      "bookings": {
+        "flights": [
+          {
+            "id": "sp-junho-2026-fl-001",
+            "titulo": "FLN→GRU (TAM)",
+            "status": "pendente",
+            "criticidade": "alta",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
+        "stays": [],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2026-06-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "europa-tomorrowland-2026",
+      "name": "Europa — Tomorrowland Bélgica",
+      "sub": "Boom · Bruxelas · Bélgica",
+      "status": "planned",
+      "continent": "Europe",
+      "country": "Bélgica",
+      "flag": "🇧🇪",
+      "emoji": "🎶",
+      "year": 2026,
+      "month": 7,
+      "label": "Jul 2026",
+      "startDate": "2026-07-17",
+      "endDate": "2026-07-28",
+      "lat": 51.0875,
+      "lon": 4.3722,
+      "col": "#ec4899",
+      "pax": "amigos",
+      "air": "GRU→BRU",
+      "nts": 11,
+      "km": 18000,
+      "type": "festival",
+      "highlights": [
+        "Tomorrowland 2026 (já contratado)",
+        "Bruxelas",
+        "Antuérpia"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [],
+        "restaurants": [],
+        "tips": "Contrato Tomorrowland assinado. Passagem comprada. Falta hotel em Boom/Bruxelas."
+      },
+      "bookings": {
+        "flights": [
+          {
+            "id": "europa-tomorrowland-2026-fl-001",
+            "titulo": "GRU→BRU",
+            "status": "pendente",
+            "criticidade": "alta",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
+        "stays": [],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2026-07-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "brasilia-2026",
+      "name": "Brasília — Festa da Lili",
+      "sub": "Brasília · DF",
+      "status": "planned",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🎂",
+      "year": 2026,
+      "month": 8,
+      "label": "Ago 2026",
+      "startDate": "2026-08-07",
+      "endDate": "2026-08-10",
+      "lat": -15.7942,
+      "lon": -47.8825,
+      "col": "#22c55e",
+      "pax": "amigos",
+      "air": "FLN→BSB",
+      "nts": 3,
+      "km": 1600,
+      "type": "event",
+      "highlights": [
+        "Aniversário da Lili",
+        "Reencontro com amigos"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [],
+        "restaurants": [],
+        "tips": "Tudo confirmado: passagem, hospedagem, ingresso."
+      },
+      "bookings": {
+        "flights": [
+          {
+            "id": "brasilia-2026-fl-001",
+            "titulo": "FLN→BSB",
+            "status": "pendente",
+            "criticidade": "alta",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
+        "stays": [],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2026-08-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "sanisland-2026",
+      "name": "San Island — Maldivas",
+      "sub": "Male · Maldivas",
+      "status": "planned",
+      "continent": "Asia",
+      "country": "Maldivas",
+      "flag": "🇲🇻",
+      "emoji": "🏖️",
+      "year": 2026,
+      "month": 10,
+      "label": "Out 2026",
+      "startDate": "2026-10-09",
+      "endDate": "2026-10-17",
+      "lat": 4.1755,
+      "lon": 73.5093,
+      "col": "#0ea5e9",
+      "pax": "casal",
+      "air": "GRU→DXB→MLE",
+      "nts": 7,
+      "km": 17000,
+      "type": "luxury",
+      "highlights": [
+        "Overwater bungalow",
+        "Mergulho em corais",
+        "San Island Resort"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [],
+        "restaurants": [],
+        "tips": "Viagem completa a planejar. Conexão DXB ou CMB."
+      },
+      "bookings": {
+        "flights": [
+          {
+            "id": "sanisland-2026-fl-001",
+            "titulo": "GRU→DXB→MLE",
+            "status": "pendente",
+            "criticidade": "alta",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
+        "stays": [],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2026-10-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "japao-2027",
+      "name": "Japão — Hokkaido",
+      "sub": "Sapporo · Hokkaido · Japão",
+      "status": "planned",
+      "continent": "Asia",
+      "country": "Japan",
+      "flag": "🇯🇵",
+      "emoji": "⛷️",
+      "year": 2027,
+      "month": 2,
+      "label": "Fev 2027",
+      "startDate": "2027-02-08",
+      "endDate": "2027-02-18",
+      "lat": 43.0642,
+      "lon": 141.3469,
+      "col": "#06b6d4",
+      "pax": "casal",
+      "air": "GRU→NRT→CTS",
+      "nts": 10,
+      "km": 19200,
+      "type": "adventure",
+      "highlights": [
+        "Esqui em Niseko",
+        "Festival da Neve de Sapporo",
+        "Culinária de Hokkaido"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [
+          "Park Hyatt Niseko Hanazono"
+        ],
+        "restaurants": [],
+        "tips": "Fevereiro é o melhor mês para neve em Niseko. Reserve o Hotel com antecedência."
+      },
+      "hospedagem": [
+        {
+          "nome": "Park Hyatt Niseko Hanazono"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "japao-2027-fl-001",
+            "titulo": "GRU→NRT→CTS",
+            "status": "pendente",
+            "criticidade": "alta",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
+        "stays": [
+          {
+            "id": "japao-2027-st-001",
+            "titulo": "Park Hyatt Niseko Hanazono",
+            "status": "pendente",
+            "criticidade": "media",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2027-02-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "marrocos-2027",
+      "name": "Marrocos",
+      "sub": "Marrakech · Fez · Sahara",
+      "status": "planned",
+      "continent": "Africa",
+      "country": "Morocco",
+      "flag": "🇲🇦",
+      "emoji": "🕌",
+      "year": 2027,
+      "month": 4,
+      "label": "Abr 2027",
+      "startDate": "2027-04-12",
+      "endDate": "2027-04-22",
+      "lat": 31.6295,
+      "lon": -7.9811,
+      "col": "#f97316",
+      "pax": "casal",
+      "air": "GRU→LIS→RAK",
+      "nts": 10,
+      "km": 8800,
+      "type": "leisure",
+      "highlights": [
+        "Medina de Fez",
+        "Deserto do Saara",
+        "Jardins da Menara"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [
+          "La Mamounia (Marrakech)"
+        ],
+        "restaurants": [],
+        "tips": "Abril evita o calor extremo do verão."
+      },
+      "hospedagem": [
+        {
+          "nome": "La Mamounia (Marrakech)"
+        }
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "marrocos-2027-fl-001",
+            "titulo": "GRU→LIS→RAK",
+            "status": "pendente",
+            "criticidade": "alta",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
+        "stays": [
+          {
+            "id": "marrocos-2027-st-001",
+            "titulo": "La Mamounia (Marrakech)",
+            "status": "pendente",
+            "criticidade": "media",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2027-04-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "noruega-2027",
+      "name": "Noruega — Fiordos",
+      "sub": "Bergen · Flåm · Noruega",
+      "status": "wishlist",
+      "continent": "Europe",
+      "country": "Norway",
+      "flag": "🇳🇴",
+      "emoji": "🌌",
+      "year": 2027,
+      "month": 9,
+      "label": "Set 2027",
+      "startDate": "2027-09-05",
+      "endDate": "2027-09-14",
+      "lat": 60.3913,
+      "lon": 5.3221,
+      "col": "#3b82f6",
+      "pax": "casal",
+      "air": "GRU→FRA→BGO",
+      "nts": 9,
+      "km": 11400,
+      "type": "adventure",
+      "highlights": [
+        "Fiorde de Geiranger",
+        "Aurora Boreal",
+        "Trem Flamsbana"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [
+          "Juvet Landscape Hotel"
+        ],
+        "restaurants": [],
+        "tips": "Setembro oferece folhagem de outono e últimas chances de dias longos."
+      },
+      "hospedagem": [
+        {
+          "nome": "Juvet Landscape Hotel"
+        }
+      ],
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2027-09-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "patagonia-wishlist",
+      "name": "Patagônia — Torres del Paine",
+      "sub": "Punta Arenas · Chile",
+      "status": "wishlist",
+      "continent": "Americas",
+      "country": "Chile",
+      "flag": "🇨🇱",
+      "emoji": "🏔️",
+      "year": 2028,
+      "month": 1,
+      "label": "Verão Austral",
+      "lat": -53.1638,
+      "lon": -70.9171,
+      "col": "#22c55e",
+      "pax": "casal",
+      "air": "GRU→SCL→PUQ",
+      "nts": 10,
+      "km": 3000,
+      "type": "adventure",
+      "highlights": [
+        "Trekking W ou O",
+        "Torres del Paine"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [],
+        "restaurants": [],
+        "tips": "Temporada ideal: novembro a março."
+      },
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "created_at": "2028-01-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "maldivas-luademel-wishlist",
+      "name": "Maldivas — Lua de Mel",
+      "sub": "Male · Maldivas",
+      "status": "wishlist",
+      "continent": "Asia",
+      "country": "Maldivas",
+      "flag": "🇲🇻",
+      "emoji": "💕",
+      "year": 2028,
+      "month": 6,
+      "label": "2027+",
+      "lat": 4.1755,
+      "lon": 73.5093,
+      "col": "#ec4899",
+      "pax": "casal",
+      "air": "GRU→DXB→MLE",
+      "nts": 10,
+      "km": 17000,
+      "type": "luxury",
+      "highlights": [
+        "Overwater bungalow",
+        "Resort 5 estrelas"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [],
+        "restaurants": [],
+        "tips": "Monitorar promoções de resorts 5 estrelas."
+      },
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "notes": {
+        "itinerary": [
+          {
+            "day": 1,
+            "date": "2025-01-10",
+            "morning": "Chegada em Malé (MLE). Recepção VIP no aeroporto pela equipe do Soneva Jani — sala lounge privativa enquanto cuidam da bagagem e do despacho para o hidroavião.",
+            "afternoon": "Voo panorâmico de hidroavião (40min) até Soneva Jani, no Noonu Atoll. Check-in na 1-Bedroom Water Retreat with Slide — escorregador privativo direto na lagoa. Champagne e pés descalços (filosofia 'No News, No Shoes').",
+            "evening": "Jantar leve no By the Sea — sashimi e sushi com vista para o pôr do sol. Drinks no deck privativo da villa para acomodar o jet lag.",
+            "notes": "Soneva é a escolha óbvia para quem se hospedou no COMO Shambhala em Ubud — mesma pegada de luxo barefoot, design orgânico e gastronomia séria."
+          },
+          {
+            "day": 2,
+            "date": "2025-01-11",
+            "morning": "Café da manhã no Fresh in the Garden (acessado por ponte suspensa entre as árvores). Manhã de mergulho com snorkel na house reef do resort — tartarugas e arraias praticamente garantidas.",
+            "afternoon": "Sessão de spa em casal no Soneva Jani Spa — escolham o Sundari Ritual (4 mãos). Depois, rede sobre a água na villa.",
+            "evening": "Cinema Paradiso — cinema ao ar livre sobre a água. Filme clássico com jantar servido em boia/poltrona flutuante.",
+            "notes": "O Cinema Paradiso é a assinatura do Soneva — experiência única no mundo, vale a noite inteira."
+          },
+          {
+            "day": 3,
+            "date": "2025-01-12",
+            "morning": "Sessão privativa de observação astronômica no Soneva Jani Observatory (maior telescópio over-water dos Maldivas) — agendar para o pré-amanhecer e ver Vênus.",
+            "afternoon": "Excursão de dolphin cruise ao pôr do sol no dhoni privativo do resort, com canapés e champagne Krug.",
+            "evening": "Jantar degustação no So Hands On — cozinha experimental do chef residente, conceito omakase com produtos locais. Lembra muito o nível técnico do Locavore em Ubud.",
+            "notes": "Conectando com seu gosto por Locavore e Mozaic — So Hands On é o restaurante mais autoral do Soneva."
+          },
+          {
+            "day": 4,
+            "date": "2025-01-13",
+            "morning": "Check-out do Soneva Jani. Transfer de hidroavião de volta a Malé e depois voo doméstico + lancha rápida (cerca de 2h total) para o Cheval Blanc Randheli, no Noonu Atoll.",
+            "afternoon": "Check-in na Water Villa do Cheval Blanc (LVMH) — design Jean-Michel Gathy, paleta neutra impecável. Tarde livre na piscina infinita privativa.",
+            "evening": "Aperitivo no White Bar (champagne Ruinart Blanc de Blancs) seguido de jantar no Deelani — frutos do mar mediterrâneos à beira-mar.",
+            "notes": "Mudança de pegada: do barefoot rústico-chique do Soneva para o luxo francês refinado do Cheval Blanc. Mesma filosofia de excelência do Aman Kyoto que você curtiu."
+          },
+          {
+            "day": 5,
+            "date": "2025-01-14",
+            "morning": "Café da manhã na villa. Aula privativa de mergulho livre (free diving) com instrutor do resort na house reef.",
+            "afternoon": "Sessão Guerlain Spa em casal — o spa do Cheval Blanc ocupa uma ilha inteira, conectada por ponte. Peçam o ritual Orchidée Impériale.",
+            "evening": "Jantar no Diptyque — culinária francesa contemporânea, o ponto alto gastronômico do resort. Sommelier excelente, peça vinhos da Borgonha.",
+            "notes": "Diptyque é do grupo LVMH — mesmo nível de Cipriani/Peninsula em termos de serviço e refinamento."
+          },
+          {
+            "day": 6,
+            "date": "2025-01-15",
+            "morning": "Excursão de iate privativo (Princess 52) com café da manhã a bordo — navegação pelos sandbanks do Noonu Atoll.",
+            "afternoon": "Picnic em ilha deserta arrumado pela equipe do Cheval Blanc — só vocês dois, com chef e mordomo discretos.",
+            "evening": "Volta ao resort. Jantar japonês no Le 1947 by Yannick Alléno (3 estrelas Michelin) — menu degustação com pareamento de saquês raros.",
+            "notes": "Le 1947 é literalmente o restaurante mais premiado dos Maldivas — Alléno tem 3 estrelas em Paris. Estilo de Sukiyabashi Jiro/Kikunoi que você apreciou no Japão."
+          },
+          {
+            "day": 7,
+            "date": "2025-01-16",
+            "morning": "Manhã preguiçosa. Brunch tardio no Le Café Maldives.",
+            "afternoon": "Transfer de lancha + hidroavião para o terceiro e último resort: Joali Being, em Raa Atoll — primeiro wellness resort dos Maldivas. Check-in na Ocean Villa with Pool.",
+            "evening": "Consulta inicial com o Wellbeing Concierge para desenhar os 4 dias de programa (foco em descanso, não em dieta restritiva). Jantar leve no Flow — cozinha funcional, mas saborosa.",
+            "notes": "Joali Being conversa diretamente com COMO Shambhala — mesma proposta de wellness sério em ambiente de luxo, sem ser cafona."
+          },
+          {
+            "day": 8,
+            "date": "2025-01-17",
+            "morning": "Sessão de sound healing no AREKA (centro de wellness do resort) ao nascer do sol. Café da manhã no Mojo.",
+            "afternoon": "Massagem em casal no Kaashi spa (suíte over-water) + sessão de crio + sauna finlandesa com vista oceânica.",
+            "evening": "Jantar romântico na praia preparado pelo Joali — mesa montada exclusivamente para vocês com tochas, jantar de frutos do mar locais.",
+            "notes": "Beach dinner privativo é serviço padrão do Joali — peça com 24h de antecedência."
+          },
+          {
+            "day": 9,
+            "date": "2025-01-18",
+            "morning": "Excursão de mergulho com snorkel para nadar com mantas em Hanifaru Bay (vizinho, no Baa Atoll — Reserva da Biosfera UNESCO).",
+            "afternoon": "Retorno e tarde livre. Sessões de meditação guiada na herbal garden.",
+            "evening": "Jantar no Mojo (cozinha pan-asiática elevada) — peça o curry maldívio autêntico e o robata de peixes locais.",
+            "notes": "Mojo tem influências tailandesas que devem te lembrar Bangkok — bem feito, sem ser turístico."
+          },
+          {
+            "day": 10,
+            "date": "2025-01-19",
+            "morning": "Manhã final na villa — pedido um in-villa breakfast servido na piscina privativa.",
+            "afternoon": "Última imersão na house reef + sessão de banho ritual no Kaashi (Hammam de 90min em casal).",
+            "evening": "Jantar de despedida no Flow com degustação especial — peça ao chef para preparar algo fora do menu, eles adoram.",
+            "notes": "Reserve a degustação off-menu com 48h de antecedência — vale muito a pena."
+          },
+          {
+            "day": 11,
+            "date": "2025-01-20",
+            "morning": "Check-out tardio (12h, cortesia honeymoon). Hidroavião de volta para Malé.",
+            "afternoon": "Day-use no Hulhulé Island Hotel (próximo ao aeroporto) para banho e descanso antes do voo internacional noturno.",
+            "evening": "Embarque em Malé (MLE) com destino ao Brasil — geralmente via Doha (Qatar Airways Qsuite) ou Dubai (Emirates First).",
+            "notes": "Day-use é essencial — voos internacionais saem tarde da noite e o hidroavião chega cedo demais para esperar no aeroporto."
+          }
+        ]
+      },
+      "created_at": "2028-06-01T00:00:00Z",
+      "updated_at": "2026-05-19T01:30:18Z",
+      "_schema": 2
+    },
+    {
+      "id": "natal-micareta",
+      "name": "Natal · Micareta",
+      "sub": "Carnaval fora de época em Natal",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🎉",
+      "lat": -5.8054,
+      "lon": -35.2081,
+      "type": "event",
+      "_audit_notes": "Detectada em Lugares (Natal/RN). Marcada como marcante por Eduardo (motivo: Micareta). Ano a ser descoberto via EXIF.",
+      "created_at": "2026-05-23T04:09:26Z",
+      "updated_at": "2026-05-23T04:09:26Z",
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
+    },
+    {
+      "id": "canoa-quebrada-reveillon-cardume",
+      "name": "Canoa Quebrada · Réveillon Cardume",
+      "sub": "Réveillon com o grupo Cardume",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🌅",
+      "lat": -4.5245,
+      "lon": -37.7057,
+      "type": "event",
+      "_audit_notes": "Detectada em Lugares (Canoa Quebrada/CE). Marcada como marcante por Eduardo (motivo: Réveillon Cardume). Ano a ser descoberto via EXIF.",
+      "created_at": "2026-05-23T04:09:26Z",
+      "updated_at": "2026-05-23T04:09:26Z",
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
+    },
+    {
+      "id": "florianopolis-micareta",
+      "name": "Florianópolis · Micareta",
+      "sub": "Carnaval fora de época em Floripa",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🎊",
+      "lat": -27.5973,
+      "lon": -48.5496,
+      "type": "event",
+      "_audit_notes": "Detectada em Lugares (Floripa/SC). Marcada como marcante por Eduardo (motivo: Micareta). Ano a ser descoberto via EXIF.",
+      "created_at": "2026-05-23T04:09:26Z",
+      "updated_at": "2026-05-23T04:09:26Z",
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
+    },
+    {
+      "id": "mucuge-aniversario",
+      "name": "Chapada Diamantina · Aniversário",
+      "sub": "Mucugê e Chapada Diamantina em comemoração",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🎂",
+      "lat": -13.0053,
+      "lon": -41.3703,
+      "type": "event",
+      "_audit_notes": "Detectada em Lugares (Mucugê/BA). Marcada como marcante por Eduardo (motivo: Aniversário). Ano a ser descoberto via EXIF.",
+      "created_at": "2026-05-23T04:09:26Z",
+      "updated_at": "2026-05-23T04:09:26Z",
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
+    },
+    {
+      "id": "brasilia-recorrente",
+      "name": "Brasília · Visitas recorrentes",
+      "sub": "Idas a trabalho e escalas ao longo dos anos",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🏛️",
+      "lat": -15.794,
+      "lon": -47.8828,
+      "type": "business",
+      "_audit_notes": "Trip agregadora — Eduardo confirmou que todas as visitas pré-2026 foram casuais (trabalho/escala). brasilia-2026 (planejada) permanece como trip separada.",
+      "created_at": "2026-05-23T04:11:33Z",
+      "updated_at": "2026-05-23T04:11:33Z",
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
+    },
+    {
+      "id": "nordeste-litoral-recorrente",
+      "name": "Litoral do Nordeste · Visitas recorrentes",
+      "sub": "Praia do Forte, Morro de São Paulo, Maragogi, Maceió e outras",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🏖️",
+      "lat": -10.5,
+      "lon": -36.5,
+      "type": "leisure",
+      "_audit_notes": "Trip agregadora — Eduardo confirmou que essas visitas ao litoral nordestino foram casuais. Trips marcantes (maragogi-2024, natal-micareta, canoa-quebrada-reveillon-cardume) permanecem separadas.",
+      "created_at": "2026-05-23T04:11:33Z",
+      "updated_at": "2026-05-23T04:11:33Z",
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
+    },
+    {
+      "id": "aracaju-familia",
+      "name": "Aracaju · Encontros em família",
+      "sub": "Visitas afetivas à família em Sergipe",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "👨‍👩‍👧",
+      "lat": -10.9162,
+      "lon": -37.0775,
+      "type": "leisure",
+      "_audit_notes": "Trip agregadora afetiva — Eduardo confirmou que essas viagens são visitas à família em Sergipe.",
+      "created_at": "2026-05-23T04:11:33Z",
+      "updated_at": "2026-05-23T04:11:33Z",
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
+    },
+    {
+      "id": "campos-jordao-recorrente",
+      "name": "Campos do Jordão · Visitas recorrentes",
+      "sub": "Inverno e descanso no interior paulista",
+      "status": "done",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🌲",
+      "lat": -22.7383,
+      "lon": -45.5904,
+      "type": "leisure",
+      "_audit_notes": "Trip agregadora — Eduardo confirmou que as visitas a Campos do Jordão foram casuais (descanso, inverno).",
+      "created_at": "2026-05-23T04:11:33Z",
+      "updated_at": "2026-05-23T04:11:33Z",
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
+    },
+    {
+      "id": "rio-multiplo",
+      "name": "Rio de Janeiro · Múltiplas viagens",
+      "sub": "Réveillons, aniversários e outras celebrações ao longo dos anos",
+      "status": "draft",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🌆",
+      "lat": -22.911,
+      "lon": -43.2094,
+      "type": "event",
+      "_audit_notes": "PLACEHOLDER — Eduardo declarou que TODAS as visitas ao Rio foram marcantes (réveillons, aniversários), mas não lembra quantas foram. Esse trip será EXPLODIDO em N trips individuais quando o Takeout do álbum 'Rio de Janeiro' for processado pelo pipeline e os clusters temporais revelarem as N viagens. Mantém status DRAFT até essa explosão acontecer. Manter rio-2023 como trip pré-existente.",
+      "created_at": "2026-05-23T04:13:43Z",
+      "updated_at": "2026-05-23T04:13:43Z",
+      "_schema": 2
+    },
+    {
+      "id": "lencois-maranhenses-wishlist",
+      "name": "Lençóis Maranhenses",
+      "sub": "Lista de desejos — viagem a planejar",
+      "status": "wishlist",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🏜️",
+      "lat": -2.5393,
+      "lon": -43.017,
+      "type": "adventure",
+      "_audit_notes": "Detectada em Lugares mas Eduardo confirmou que NUNCA foi. Possíveis causas: fotos avulsas de escala, ou falso positivo do GPS. Adicionada como wishlist.",
+      "created_at": "2026-05-23T04:14:47Z",
+      "updated_at": "2026-05-23T04:14:47Z",
+      "_schema": 2
+    }
+  ],
+  "atualizado_em": "2026-05-23T04:14:47Z",
+  "fonte": "Mesclagem entre trips.json (GitHub Pages), index.html local e Google Photos Places · Fase 1b: hospedagem[] derivada de logistics.hotels[]",
+  "_schema": 2
+}
