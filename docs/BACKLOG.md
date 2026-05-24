@@ -111,19 +111,48 @@ com força-push e coordenação com colaboradores (se houver clones ativos).
 
 ---
 
-## Escrever `docs/SCHEMA_V2.md` unificado
+## B-N11 — Orçamento vivo retorna 0 sempre
 
-**Contexto:** o schema v2 implementado vive em `data/schemas/trip.schema.json`
-(JSON Schema validado em CI) + descrição conceitual em
-[`docs/PRD-viagens-v2.md`](PRD-viagens-v2.md) §3.2. O briefing original da
-Sprint 1 (T4) pedia um documento dedicado com a "fórmula de urgência
-ponderada" do Cockpit que NÃO existe hoje.
+**Severidade:** 🟡 Atenção (promessa não cumprida do CHANGELOG-V2)
 
-**Trabalho:** consolidar referência única do schema (campos, enums,
-exemplos) + documentar a fórmula de urgência que vai alimentar o Cockpit
-(Sprint 2). Decidir antes se o Cockpit vai operar sobre o schema atual
-(`bookings.{flights,stays,experiences}`) ou se vai exigir um schema plano
-com `tipo` discriminator.
+**Descrição:** A função `computeActualFromBookings` em
+[`src/components/budget.js:64-72`](../src/components/budget.js) sempre retorna
+`{flights: 0, stays: 0, experiences: 0}` porque os arrays
+`bookings.flights/stays/experiences` estão vazios em todas as 42 viagens
+migradas. O [`CHANGELOG-V2.md`](../CHANGELOG-V2.md) linha 95 promete
+"✅ Atualização orçamento auto > 80%" — não cumprido.
+
+**Resolução automática:** será resolvido pela Fase 3 do
+[ADR-001](ADR-001-schema-canonico.md) (migração de dados retroativa). Após a
+Fase 3, viagens com `hospedagem` ou `air` populados terão valores reais em
+`bookings.stays[].price_brl` e `bookings.flights[*].price_brl` (quando o
+campo `price_brl` for adicionado por booking).
+
+**Status:** rastreado por ADR-001, será resolvido na sequência Fase 2 → Fase 3.
+
+---
+
+## Documentar schema V2 + fórmula de urgência
+
+**Status:** rastreado por [ADR-001](ADR-001-schema-canonico.md) (Fase 1).
+Implementação na Fase 4.
+
+---
+
+## Limpeza de campos legacy do trips.json (pós-Sprint 2)
+
+**Severidade:** 🔵 Informativo
+
+**Descrição:** Após [ADR-001](ADR-001-schema-canonico.md), os campos
+`hospedagem`, `transporte`, `air`, `nts`, `logistics.hotels` permanecem em
+`data/trips.json` para compatibilidade com `assets/app.js` legacy (3800
+linhas, 17 referências a `hospedagem`). Quando o legacy for aposentado ou
+refatorado para usar `getBookings()` em vez de leitura direta, esses
+campos podem ser removidos. Não fazer antes — quebraria o site público.
+
+**Pré-requisitos:** `assets/app.js` refatorado para não acessar
+`trip.hospedagem`/`trip.air`/`trip.nts` diretamente, sempre via
+`src/core/schema.js` (`getBookings`, `getDates`).
 
 ---
 

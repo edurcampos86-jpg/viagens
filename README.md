@@ -131,6 +131,13 @@ Walkthrough completo em [`docs/INGESTAO.md`](docs/INGESTAO.md).
 | Preços | Kiwi Tequila API |
 | LLM | Anthropic API (Sonnet + Haiku) com `anthropic-no-training: true` |
 
+## Decisões arquiteturais
+
+Decisões estruturais do projeto são documentadas como ADRs (Architecture
+Decision Records) em `docs/ADR-*.md`.
+
+- [ADR-001 — Schema canônico = `bookings.*`](docs/ADR-001-schema-canonico.md) (2026-05-24)
+
 ## Licença
 
 Uso pessoal do Eduardo Campos. Código sob revisão antes de qualquer reuso público.
