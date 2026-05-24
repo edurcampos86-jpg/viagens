@@ -966,24 +966,39 @@ function hydrateCard(node, trip) {
     `<div class="tab-panel${i===0?' active':''}" role="tabpanel" data-panel="${t.key}"${i===0?'':' hidden'}></div>`
   ).join('');
 
-  // Populate panels
-  if (isPlanned) {
-    populatePlanning(node, trip);
-    populateRoute(node, trip);
-    populateChecklist(node, trip);
-    populateReservations(node, trip);
-    populateBudget(node, trip);
-    populatePacking(node, trip);
-    populateInspiration(node, trip);
-    populateConcierge(node, trip);
-    populateContext(node, trip);
-  } else {
-    populateDiary(node, trip);
-    populateRoute(node, trip);
-    populateLogistics(node, trip);
-    populateCost(node, trip);
-    populateGallery(node, trip);
+  // Populate panels — LAZY: só a tab ativa renderiza agora.
+  // As demais populam on-demand no tab switch (B4: era 8x botão Despachante
+  // porque populateChecklist rodava pra todos os cards da timeline ao mesmo
+  // tempo, replicando .dp-btn em cada um).
+  const POPULATE_FN = isPlanned ? {
+    planning: populatePlanning,
+    route: populateRoute,
+    checklist: populateChecklist,
+    reservations: populateReservations,
+    budget: populateBudget,
+    packing: populatePacking,
+    inspire: populateInspiration,
+    concierge: populateConcierge,
+    context: populateContext,
+  } : {
+    diary: populateDiary,
+    route: populateRoute,
+    logistics: populateLogistics,
+    cost: populateCost,
+    gallery: populateGallery,
+  };
+
+  function populateTabIfNeeded(key) {
+    const panel = node.querySelector(`[data-panel="${key}"]`);
+    if (!panel || panel.dataset.populated === '1') return;
+    const fn = POPULATE_FN[key];
+    if (!fn) return;
+    fn(node, trip);
+    panel.dataset.populated = '1';
   }
+
+  // Inicializa só o panel da primeira tab (active)
+  populateTabIfNeeded(tabsSchema[0].key);
 
   // Toggle expand
   const exp = node.querySelector('[data-exp]');
@@ -1002,6 +1017,7 @@ function hydrateCard(node, trip) {
   node.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       const target = tab.dataset.tab;
+      populateTabIfNeeded(target); // B4: popula on-demand
       node.querySelectorAll('.tab').forEach(t => {
         const active = t === tab;
         t.classList.toggle('active', active);
