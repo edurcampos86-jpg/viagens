@@ -4,6 +4,7 @@
 
 import * as overlay from '../src/core/overlay.js';
 import { loadRules, injectChecklistItems } from '../src/components/checklist.js';
+import { deriveDatesFromBookings } from '../src/core/dates.js';
 
 // Exposto pra console + handlers que vivem em outros módulos.
 window.viagensOverlay = overlay;
@@ -2941,6 +2942,143 @@ function openOverlaySyncModal(trip) {
   if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
 }
 
+// B1: popover de edição de período (start/end/nts), persiste no overlay
+// top-level e re-hidrata a página. Usa deriveDatesFromBookings pra sugerir
+// datas a partir de flights/stays do trip.
+function openDateEditorPopover(trip, anchor) {
+  document.querySelectorAll('.overlay-date-popover').forEach((el) => el.remove());
+
+  const suggested = deriveDatesFromBookings(trip.bookings);
+
+  const pop = document.createElement('div');
+  pop.className = 'overlay-date-popover';
+  pop.setAttribute('role', 'dialog');
+  pop.setAttribute('aria-label', 'Editar período da viagem');
+  pop.style.cssText = `position:absolute;z-index:9001;background:#fff;color:#0f172a;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 25px 50px -12px rgba(0,0,0,.35);padding:16px;font:14px Inter,system-ui,sans-serif;min-width:290px;max-width:340px;`;
+
+  const fmtShiftBtn = 'padding:6px 10px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;cursor:pointer;font:inherit;min-width:32px;';
+  const fmtInput = 'flex:1;padding:6px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;';
+
+  pop.innerHTML = `
+    <h4 style="margin:0 0 10px;font-size:14px;font-weight:700;">Editar período</h4>
+    <label style="display:block;font-size:11px;color:#475569;margin-bottom:2px;">Início</label>
+    <div style="display:flex;gap:4px;margin-bottom:8px;align-items:center;">
+      <input type="date" id="dpe-start" value="${trip.startDate || ''}" style="${fmtInput}" aria-label="Data de início"/>
+      <button type="button" data-dpe-shift="start:-1" style="${fmtShiftBtn}" aria-label="Início -1 dia">−1d</button>
+      <button type="button" data-dpe-shift="start:1" style="${fmtShiftBtn}" aria-label="Início +1 dia">+1d</button>
+    </div>
+    <label style="display:block;font-size:11px;color:#475569;margin-bottom:2px;">Fim</label>
+    <div style="display:flex;gap:4px;margin-bottom:10px;align-items:center;">
+      <input type="date" id="dpe-end" value="${trip.endDate || ''}" style="${fmtInput}" aria-label="Data de fim"/>
+      <button type="button" data-dpe-shift="end:-1" style="${fmtShiftBtn}" aria-label="Fim -1 dia">−1d</button>
+      <button type="button" data-dpe-shift="end:1" style="${fmtShiftBtn}" aria-label="Fim +1 dia">+1d</button>
+    </div>
+    ${suggested ? `
+      <div style="background:#fef3c7;color:#92400e;padding:8px 10px;border-radius:6px;font-size:12px;margin-bottom:10px;line-height:1.4;">
+        💡 Suas reservas sugerem <strong>${suggested.start || '?'}</strong> → <strong>${suggested.end || '?'}</strong>.
+        <button type="button" id="dpe-suggest" style="margin-top:4px;padding:3px 8px;border:0;background:#0f172a;color:#fff;border-radius:4px;cursor:pointer;font:inherit;font-size:11px;display:block;">Aplicar sugestão</button>
+      </div>
+    ` : ''}
+    <div id="dpe-err" style="color:#b91c1c;font-size:12px;margin-bottom:6px;display:none;">Data de fim deve ser ≥ início.</div>
+    <div style="display:flex;justify-content:space-between;gap:6px;">
+      <button type="button" id="dpe-reset" style="padding:6px 10px;border:1px solid #fecaca;color:#b91c1c;background:#fff;border-radius:6px;cursor:pointer;font:inherit;font-size:12px;" title="Reverter para datas do trips.json">↺ Reverter</button>
+      <div style="display:flex;gap:6px;">
+        <button type="button" id="dpe-cancel" style="padding:6px 12px;border:1px solid #cbd5e1;background:#fff;border-radius:6px;cursor:pointer;font:inherit;">Cancelar</button>
+        <button type="button" id="dpe-save" style="padding:6px 12px;border:0;background:#0f172a;color:#fff;border-radius:6px;cursor:pointer;font:inherit;">Salvar</button>
+      </div>
+    </div>
+  `;
+
+  const r = anchor.getBoundingClientRect();
+  pop.style.top = `${window.scrollY + r.bottom + 6}px`;
+  pop.style.left = `${Math.max(8, window.scrollX + r.left)}px`;
+  document.body.appendChild(pop);
+
+  const startInput = pop.querySelector('#dpe-start');
+  const endInput = pop.querySelector('#dpe-end');
+  const errEl = pop.querySelector('#dpe-err');
+  const saveBtn = pop.querySelector('#dpe-save');
+
+  function validate() {
+    const s = startInput.value, e = endInput.value;
+    const invalid = !!(s && e && e < s);
+    errEl.style.display = invalid ? 'block' : 'none';
+    saveBtn.disabled = invalid;
+    return !invalid;
+  }
+  startInput.addEventListener('input', validate);
+  endInput.addEventListener('input', validate);
+
+  pop.querySelectorAll('[data-dpe-shift]').forEach((b) => {
+    b.addEventListener('click', () => {
+      const [which, delta] = b.dataset.dpeShift.split(':');
+      const inp = which === 'start' ? startInput : endInput;
+      const cur = inp.value || trip.startDate || new Date().toISOString().slice(0, 10);
+      const d = new Date(cur + 'T00:00:00');
+      d.setDate(d.getDate() + parseInt(delta, 10));
+      inp.value = d.toISOString().slice(0, 10);
+      validate();
+    });
+  });
+
+  if (suggested) {
+    pop.querySelector('#dpe-suggest')?.addEventListener('click', () => {
+      if (suggested.start) startInput.value = suggested.start;
+      if (suggested.end) endInput.value = suggested.end;
+      validate();
+    });
+  }
+
+  function close() {
+    pop.remove();
+    document.removeEventListener('keydown', onKey);
+    document.removeEventListener('click', onClickOutside, true);
+  }
+  function onKey(e) {
+    if (e.key === 'Escape') { e.preventDefault(); close(); }
+  }
+  function onClickOutside(e) {
+    if (!pop.contains(e.target) && e.target !== anchor) close();
+  }
+
+  pop.querySelector('#dpe-cancel').addEventListener('click', close);
+
+  pop.querySelector('#dpe-reset').addEventListener('click', () => {
+    if (!confirm('Reverter para as datas do trips.json (descarta apenas startDate/endDate/nts do overlay)?')) return;
+    const cur = overlay.readOverlay(trip.id);
+    if (cur?._topLevel) {
+      delete cur._topLevel.startDate;
+      delete cur._topLevel.endDate;
+      delete cur._topLevel.nts;
+      // re-grava overlay sem essas chaves
+      overlay.clearTopLevelOverlay(trip.id);
+      // re-grava os outros campos top-level (se houver)
+      const others = { ...cur._topLevel };
+      if (Object.keys(others).length) overlay.writeOverlay(trip.id, { _topLevel: others });
+    }
+    close();
+    const original = state.trips.find((x) => x.id === trip.id) || trip;
+    hydratePlanPage(original);
+    toast('↺ Datas revertidas ao trips.json.');
+  });
+
+  saveBtn.addEventListener('click', () => {
+    if (!validate()) return;
+    const s = startInput.value || null;
+    const e = endInput.value || null;
+    const nts = s && e ? Math.round((new Date(e) - new Date(s)) / 86400000) : null;
+    overlay.writeOverlay(trip.id, { _topLevel: { startDate: s, endDate: e, nts } });
+    close();
+    const original = state.trips.find((x) => x.id === trip.id) || trip;
+    hydratePlanPage(original);
+    toast('✓ Período atualizado (overlay local).');
+  });
+
+  document.addEventListener('keydown', onKey);
+  setTimeout(() => document.addEventListener('click', onClickOutside, true), 0);
+  startInput.focus();
+}
+
 function hydratePlanPage(trip) {
   // Aplica overlay top-level (B5) antes de qualquer render. Sub-seções
   // (checklist, committed, etc) continuam sendo lidas via loadTripState
@@ -2956,9 +3094,20 @@ function hydratePlanPage(trip) {
   document.getElementById('planHeroSub').textContent = trip.sub || '';
 
   const start = trip.startDate, end = trip.endDate;
-  document.getElementById('planHeroDates').textContent = start
-    ? `${formatPtDate(start)}${end ? ' → ' + formatPtDate(end) : ''}` + ` · ${trip.nts || '?'} noites`
-    : `${trip.label || ''} · ${trip.nts || '?'} noites`;
+  const datesEl = document.getElementById('planHeroDates');
+  datesEl.textContent = start
+    ? `${formatPtDate(start)}${end ? ' → ' + formatPtDate(end) : ''}` + ` · ${trip.nts || '?'} noites · ✏`
+    : `${trip.label || ''} · ${trip.nts || '?'} noites · ✏`;
+  // B1: torna o badge clicável pra abrir o editor de período
+  datesEl.setAttribute('role', 'button');
+  datesEl.setAttribute('tabindex', '0');
+  datesEl.setAttribute('aria-label', 'Editar período da viagem');
+  datesEl.title = 'Clique para editar o período';
+  datesEl.style.cursor = 'pointer';
+  datesEl.onclick = () => openDateEditorPopover(trip, datesEl);
+  datesEl.onkeydown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); datesEl.click(); }
+  };
 
   const heroBg = document.getElementById('planHeroBg');
   if (trip.photo) heroBg.style.backgroundImage = `url(${trip.photo})`;
