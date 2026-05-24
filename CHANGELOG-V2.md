@@ -87,6 +87,27 @@ Backend pronto para deploy, inerte até credenciais serem configuradas.
 
 ---
 
+## Sprint SP-Junho 2026 (em andamento — Fase 1 fechada)
+
+Sprint pra resolver os achados da auditoria ao vivo do `#plan/sp-junho-2026`
+(São Paulo — Só Track Boa + Pride, 13–22/jun). Branch direto em `main`,
+8 commits atômicos na Fase 1.
+
+| Commit | Lote | O que mudou | Arquivos-chave |
+|---|---|---|---|
+| `331417e` | pré-sprint | `npm test` passa em Windows (`fileURLToPath`) | `tests/v2-modules.test.mjs` |
+| `8c1c482` | B5 | Overlay local com namespace `_topLevel` + UI de sync (dialog/badge/exporter) | `src/core/overlay.js`, `assets/app.js`, `index.html`, `docs/OVERLAY.md` |
+| `9bdd089` | B4 | Lazy populate dos cards da timeline (era 8× botão Despachante) | `assets/app.js:hydrateCard` |
+| `8ff8cd9` | B3 | `computeNextAction(trip)` — janela T-D + estado (bookings/memory/checklist) | `assets/app.js` |
+| `527a106` | B7 | `matches()` cobre region/month/trip_type + 5 regras BR-SP-junho/BR-verao/BE/IT/NL + plug no `populateChecklist`; doméstica sem passaporte | `src/components/checklist.js`, `data/destination_rules.json` (`_schema: 3`), `assets/app.js`, `tests/v2-modules.test.mjs` (+2) |
+| `938be78` | B6 | Despachante: toast de profile vazio + spinner + erro visível | `assets/app.js:populateChecklist` |
+| `d4b5e96` | B2 | `computeChecklistItems` compartilhado → quickstat conta auto-itens | `assets/app.js` |
+| `a1d8992` | B1 | Editor inline de período (popover, ±1d, sugestão das reservas, validação, ↺ revert) → grava em `overlay._topLevel` | `assets/app.js`, import `deriveDatesFromBookings` |
+
+**27/27 testes verdes** ao fim da Fase 1 (era 19/25 antes do fix do path).
+
+---
+
 ## Métricas alcançadas vs PRD
 
 | North star | Meta | v2.0 |
