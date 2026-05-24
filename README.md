@@ -60,6 +60,27 @@ npm run dev   # vite na porta 5173
 
 Configurar PAT no badge "⚙ Configurar PAT" no canto inferior direito → senha mestra ≥ 8 chars → editar viagens inline.
 
+## Como salvar edições no site
+
+Por motivos de segurança, edições feitas no site permanecem locais (browser)
+até serem exportadas e comitadas manualmente no GitHub:
+
+1. Faça suas edições no site
+2. Use o botão "Exportar edições" no header
+3. Baixe o `trips.json` gerado
+4. Cole o conteúdo no `data/trips.json` via GitHub Web (ou via git localmente)
+5. Commit
+
+### Por que não há "Sync automático"?
+
+Versões anteriores tinham um botão "Sync agora" que armazenava um GitHub PAT
+em `localStorage` para fazer commits automáticos. Removido em 2026-05-24
+(Sprint 1 T2) por risco de segurança — PAT em `localStorage` é vulnerável a
+XSS e extensões de browser maliciosas, mesmo cifrado.
+
+A automação correta (OAuth Device Flow ou GitHub Actions com formulário) está
+no backlog. Veja [`docs/BACKLOG.md`](docs/BACKLOG.md).
+
 ## v2.0 — sumário
 
 Veja `CHANGELOG-V2.md` para a lista completa de features. Em alto nível:

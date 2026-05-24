@@ -24,7 +24,7 @@ if (!self.workbox) {
   // Bump VERSION em cada deploy que muda assets/* ou index.html — Workbox
   // entao expira a entrada precacheada antiga e baixa a nova. Faz o papel
   // do cache-busting via query string sem precisar de build.
-  const VERSION = 'viagens-v3-pwa-1';
+  const VERSION = 'viagens-v3-pwa-2';
 
   // Precache do app shell completo (HTML + CSS + JS criticos com revision).
   // URLs relativas ao scope do SW (que agora é /viagens/ porque o script
@@ -38,7 +38,7 @@ if (!self.workbox) {
     { url: 'icons/icon-512.svg', revision: VERSION },
     { url: 'assets/app.js', revision: VERSION },
     { url: 'assets/styles.css', revision: VERSION },
-    { url: 'assets/sync-button.js', revision: VERSION },
+    { url: 'assets/cleanup-pat.js', revision: VERSION },
     { url: 'src/main.js', revision: VERSION },
   ]);
 
