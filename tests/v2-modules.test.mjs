@@ -227,7 +227,9 @@ test('wizard.nextStep: post-trip → done', () => {
 
 // ── checklist.js (injectChecklistItems) ───────────────────────────────
 const cl = await import(`${ROOT}/src/components/checklist.js`);
-const rules = JSON.parse(readFileSync(`${ROOT}data/destination_rules.json`, 'utf8'));
+const rules = JSON.parse(
+  readFileSync(new URL('../data/destination_rules.json', import.meta.url), 'utf8'),
+);
 
 test('checklist: Tailândia injeta visto + febre amarela', () => {
   const items = cl.injectChecklistItems([], { country_code: 'TH', country: 'Tailandia' }, rules);
