@@ -1413,13 +1413,12 @@ function paintComments(panel, trip) {
   });
 }
 
-function populateChecklist(node, trip) {
-  const panel = node.querySelector('[data-panel="checklist"]');
-  if (!panel) return;
-  const saved = loadTripState(trip.id);
+// B2: lista final de items considerando defaultChecklist + injeção de
+// rules contextuais. Usada por populateChecklist (render) E por
+// renderPlanQuickstats (contagem), garantindo que o quickstat não fica
+// '0/0' quando há só auto-itens.
+function computeChecklistItems(trip) {
   let items = trip.checklist || defaultChecklist(trip);
-  // B7: injeta itens contextuais das destination_rules (se já carregadas).
-  // De-dup por label (case-insensitive) pra não sobrepor itens manuais.
   if (rulesDocCache) {
     const autoItems = injectChecklistItems([], trip, rulesDocCache);
     for (const aug of autoItems) {
@@ -1429,6 +1428,14 @@ function populateChecklist(node, trip) {
       items = items.concat([{ id: `auto-${slug}`, label: aug.item, auto: true, reason: aug.reason }]);
     }
   }
+  return items;
+}
+
+function populateChecklist(node, trip) {
+  const panel = node.querySelector('[data-panel="checklist"]');
+  if (!panel) return;
+  const saved = loadTripState(trip.id);
+  const items = computeChecklistItems(trip);
   // Merge: manual checks (saved.checklist) OR auto-detected (trip.checklistAuto)
   const autoChecks = trip.checklistAuto || {};
   const manualChecks = saved.checklist || {};
@@ -3041,7 +3048,8 @@ function computeNextAction(trip) {
   const d = daysUntil(trip);
   const memVal = (trip.memory || '').toString().trim();
   const saved = loadTripState(trip.id) || {};
-  const items = trip.checklist || defaultChecklist(trip);
+  // B2: usa computeChecklistItems pra incluir auto-items no denominador
+  const items = computeChecklistItems(trip);
   const checks = { ...(saved.checklist || {}), ...(trip.checklistAuto || {}) };
   const pendingChecks = items.filter(i => !checks[i.id]).length;
   const bookings = trip.bookings || {};
@@ -3096,8 +3104,9 @@ function renderPlanQuickstats(trip) {
   const host = document.getElementById('planQuickstats');
   const saved = loadTripState(trip.id);
 
-  // Checklist progress
-  const items = trip.checklist || defaultChecklist(trip);
+  // Checklist progress — B2: usa computeChecklistItems pra contar
+  // também os auto-itens injetados das destination_rules.
+  const items = computeChecklistItems(trip);
   const checks = { ...(saved.checklist || {}), ...(trip.checklistAuto || {}) };
   const doneN = items.filter(i => checks[i.id]).length;
   const total = items.length;
