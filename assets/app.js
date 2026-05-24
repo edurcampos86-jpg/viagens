@@ -1485,11 +1485,36 @@ function populateChecklist(node, trip) {
   // .dp-btn e .dp-hint têm pointer-events: none no CSS, então o clique sempre cai aqui.
   const dpBar = panel.querySelector('.dp-bar');
   if (dpBar) {
-    dpBar.addEventListener('click', () => {
-      if (window.viagensV2 && typeof window.viagensV2.openCustoms === 'function') {
-        window.viagensV2.openCustoms(trip);
-      } else {
+    dpBar.addEventListener('click', async () => {
+      // B6: guard claro se o módulo v2 ainda não carregou
+      if (!window.viagensV2 || typeof window.viagensV2.openCustoms !== 'function') {
         toast('Despachante ainda não carregou. Recarregue a página e tente novamente.');
+        return;
+      }
+      // B6: profile vazio em viagem internacional → toast informativo
+      // (não bloqueia — só avisa que checks de passaporte/visto/vacinas
+      // vão ficar amarelos por falta de dado).
+      const isIntl =
+        (trip.country_code || '').toUpperCase() !== 'BR' &&
+        (trip.country || '').toLowerCase() !== 'brasil';
+      let profile = null;
+      try { profile = JSON.parse(localStorage.getItem('viagens.v2.profile') || 'null'); } catch { /* corrupted */ }
+      if (isIntl && !profile) {
+        toast('⚠ Perfil vazio — Despachante avaliará só voltagem/direção. Preencha passaporte/vacinas em viagensV2.customs.saveProfile(...) no console.');
+      }
+      // B6: loading state + erro visível
+      const btn = dpBar.querySelector('.dp-btn');
+      const originalLabel = btn?.textContent;
+      dpBar.setAttribute('aria-busy', 'true');
+      if (btn) btn.textContent = '⏳ Rodando Despachante…';
+      try {
+        await window.viagensV2.openCustoms(trip);
+      } catch (err) {
+        console.error('Despachante falhou:', err);
+        toast(`❌ Despachante falhou: ${err?.message || 'erro desconhecido'}`);
+      } finally {
+        dpBar.removeAttribute('aria-busy');
+        if (btn && originalLabel) btn.textContent = originalLabel;
       }
     });
     // Acessibilidade: permitir ativar via teclado também
