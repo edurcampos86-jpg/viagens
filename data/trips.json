@@ -49,8 +49,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "iguacu-2021-fl-001",
+            "titulo": "GRU→IGU",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "iguacu-2021-st-001",
+            "titulo": "Hotel das Cataratas",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -62,17 +80,82 @@
       "media": {
         "cover": "media/iguacu-2021/04.webp",
         "gallery": [
-          { "type": "image", "src": "media/iguacu-2021/04.webp", "thumb": "media/iguacu-2021/04-thumb.webp", "caption": "Vista panorâmica das cataratas — calçadão do lado brasileiro", "width": 1440, "height": 1920 },
-          { "type": "image", "src": "media/iguacu-2021/02.webp", "thumb": "media/iguacu-2021/02-thumb.webp", "caption": "De braços abertos diante das cataratas", "width": 1440, "height": 1920 },
-          { "type": "image", "src": "media/iguacu-2021/01.webp", "thumb": "media/iguacu-2021/01-thumb.webp", "caption": "Pose espontânea no mirante das quedas", "width": 1440, "height": 1920 },
-          { "type": "image", "src": "media/iguacu-2021/03.webp", "thumb": "media/iguacu-2021/03-thumb.webp", "caption": "Garotada no mirante — energia das cataratas", "width": 1440, "height": 1920 },
-          { "type": "image", "src": "media/iguacu-2021/05.webp", "thumb": "media/iguacu-2021/05-thumb.webp", "caption": "Selfie com cataratas e arco-íris ao fundo", "width": 1920, "height": 1440 },
-          { "type": "video", "src": "media/iguacu-2021/video-02.mp4", "poster": "media/iguacu-2021/video-02-poster.webp", "caption": "Vista aérea das cataratas — voo de drone", "date": "2021-06-13", "duration": 10 },
-          { "type": "video", "src": "media/iguacu-2021/video-03.mp4", "poster": "media/iguacu-2021/video-03-poster.webp", "caption": "Panorâmica das quedas no lado brasileiro", "date": "2021-06-12" },
-          { "type": "video", "src": "media/iguacu-2021/video-01.mp4", "poster": "media/iguacu-2021/video-01-poster.webp", "caption": "Salto vertical das cataratas", "date": "2021-06-26", "duration": 4 },
-          { "type": "video", "src": "media/iguacu-2021/video-04.mp4", "poster": "media/iguacu-2021/video-04-poster.webp", "caption": "Clipe rápido do passeio", "date": "2021-06-26", "duration": 3 }
+          {
+            "type": "image",
+            "src": "media/iguacu-2021/04.webp",
+            "thumb": "media/iguacu-2021/04-thumb.webp",
+            "caption": "Vista panorâmica das cataratas — calçadão do lado brasileiro",
+            "width": 1440,
+            "height": 1920
+          },
+          {
+            "type": "image",
+            "src": "media/iguacu-2021/02.webp",
+            "thumb": "media/iguacu-2021/02-thumb.webp",
+            "caption": "De braços abertos diante das cataratas",
+            "width": 1440,
+            "height": 1920
+          },
+          {
+            "type": "image",
+            "src": "media/iguacu-2021/01.webp",
+            "thumb": "media/iguacu-2021/01-thumb.webp",
+            "caption": "Pose espontânea no mirante das quedas",
+            "width": 1440,
+            "height": 1920
+          },
+          {
+            "type": "image",
+            "src": "media/iguacu-2021/03.webp",
+            "thumb": "media/iguacu-2021/03-thumb.webp",
+            "caption": "Garotada no mirante — energia das cataratas",
+            "width": 1440,
+            "height": 1920
+          },
+          {
+            "type": "image",
+            "src": "media/iguacu-2021/05.webp",
+            "thumb": "media/iguacu-2021/05-thumb.webp",
+            "caption": "Selfie com cataratas e arco-íris ao fundo",
+            "width": 1920,
+            "height": 1440
+          },
+          {
+            "type": "video",
+            "src": "media/iguacu-2021/video-02.mp4",
+            "poster": "media/iguacu-2021/video-02-poster.webp",
+            "caption": "Vista aérea das cataratas — voo de drone",
+            "date": "2021-06-13",
+            "duration": 10
+          },
+          {
+            "type": "video",
+            "src": "media/iguacu-2021/video-03.mp4",
+            "poster": "media/iguacu-2021/video-03-poster.webp",
+            "caption": "Panorâmica das quedas no lado brasileiro",
+            "date": "2021-06-12"
+          },
+          {
+            "type": "video",
+            "src": "media/iguacu-2021/video-01.mp4",
+            "poster": "media/iguacu-2021/video-01-poster.webp",
+            "caption": "Salto vertical das cataratas",
+            "date": "2021-06-26",
+            "duration": 4
+          },
+          {
+            "type": "video",
+            "src": "media/iguacu-2021/video-04.mp4",
+            "poster": "media/iguacu-2021/video-04-poster.webp",
+            "caption": "Clipe rápido do passeio",
+            "date": "2021-06-26",
+            "duration": 3
+          }
         ],
-        "stats": { "photos": 5, "videos": 4 }
+        "stats": {
+          "photos": 5,
+          "videos": 4
+        }
       },
       "created_at": "2021-06-01T00:00:00Z",
       "updated_at": "2026-05-22T00:00:00Z",
@@ -121,8 +204,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "atacama-2021-fl-001",
+            "titulo": "GRU→SCL→CJC",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "atacama-2021-st-001",
+            "titulo": "Alto Atacama Desert Lodge",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -134,15 +235,60 @@
       "media": {
         "cover": "https://picsum.photos/seed/atacama-cover/1600/900",
         "gallery": [
-          { "type": "image", "src": "https://picsum.photos/seed/atacama-01/1600/1000", "thumb": "https://picsum.photos/seed/atacama-01/640/400", "caption": "Gêiseres del Tatio ao amanhecer", "date": "2021-11-12" },
-          { "type": "image", "src": "https://picsum.photos/seed/atacama-02/1600/1000", "thumb": "https://picsum.photos/seed/atacama-02/640/400", "caption": "Laguna Cejar — flutuação salina", "date": "2021-11-13" },
-          { "type": "image", "src": "https://picsum.photos/seed/atacama-03/1200/1600", "thumb": "https://picsum.photos/seed/atacama-03/480/640", "caption": "Valle de la Luna ao pôr do sol", "date": "2021-11-14" },
-          { "type": "image", "src": "https://picsum.photos/seed/atacama-04/1600/1000", "thumb": "https://picsum.photos/seed/atacama-04/640/400", "caption": "Salar de Atacama — flamingos cor-de-rosa", "date": "2021-11-15" },
-          { "type": "image", "src": "https://picsum.photos/seed/atacama-05/1600/1000", "thumb": "https://picsum.photos/seed/atacama-05/640/400", "caption": "Céu noturno — o mais límpido do mundo", "date": "2021-11-16" },
-          { "type": "image", "src": "https://picsum.photos/seed/atacama-06/1200/1600", "thumb": "https://picsum.photos/seed/atacama-06/480/640", "caption": "Pueblo de San Pedro — vida pacata", "date": "2021-11-17" },
-          { "type": "image", "src": "https://picsum.photos/seed/atacama-07/1600/1000", "thumb": "https://picsum.photos/seed/atacama-07/640/400", "caption": "Caminhada na trilha das salinas", "date": "2021-11-18" }
+          {
+            "type": "image",
+            "src": "https://picsum.photos/seed/atacama-01/1600/1000",
+            "thumb": "https://picsum.photos/seed/atacama-01/640/400",
+            "caption": "Gêiseres del Tatio ao amanhecer",
+            "date": "2021-11-12"
+          },
+          {
+            "type": "image",
+            "src": "https://picsum.photos/seed/atacama-02/1600/1000",
+            "thumb": "https://picsum.photos/seed/atacama-02/640/400",
+            "caption": "Laguna Cejar — flutuação salina",
+            "date": "2021-11-13"
+          },
+          {
+            "type": "image",
+            "src": "https://picsum.photos/seed/atacama-03/1200/1600",
+            "thumb": "https://picsum.photos/seed/atacama-03/480/640",
+            "caption": "Valle de la Luna ao pôr do sol",
+            "date": "2021-11-14"
+          },
+          {
+            "type": "image",
+            "src": "https://picsum.photos/seed/atacama-04/1600/1000",
+            "thumb": "https://picsum.photos/seed/atacama-04/640/400",
+            "caption": "Salar de Atacama — flamingos cor-de-rosa",
+            "date": "2021-11-15"
+          },
+          {
+            "type": "image",
+            "src": "https://picsum.photos/seed/atacama-05/1600/1000",
+            "thumb": "https://picsum.photos/seed/atacama-05/640/400",
+            "caption": "Céu noturno — o mais límpido do mundo",
+            "date": "2021-11-16"
+          },
+          {
+            "type": "image",
+            "src": "https://picsum.photos/seed/atacama-06/1200/1600",
+            "thumb": "https://picsum.photos/seed/atacama-06/480/640",
+            "caption": "Pueblo de San Pedro — vida pacata",
+            "date": "2021-11-17"
+          },
+          {
+            "type": "image",
+            "src": "https://picsum.photos/seed/atacama-07/1600/1000",
+            "thumb": "https://picsum.photos/seed/atacama-07/640/400",
+            "caption": "Caminhada na trilha das salinas",
+            "date": "2021-11-18"
+          }
         ],
-        "stats": { "photos": 7, "videos": 0 }
+        "stats": {
+          "photos": 7,
+          "videos": 0
+        }
       },
       "created_at": "2021-11-01T00:00:00Z",
       "updated_at": "2026-05-22T00:00:00Z",
@@ -195,8 +341,34 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "argentina-2021-fl-001",
+            "titulo": "LATAM + Aerolíneas",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "argentina-2021-st-001",
+            "titulo": "Palermo Soho Boutique Hotel",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "argentina-2021-st-002",
+            "titulo": "Los Sauces (El Calafate)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -251,8 +423,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "florida-2022-fl-001",
+            "titulo": "LATAM + American",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "florida-2022-st-001",
+            "titulo": "Hard Rock Hotel Universal Orlando",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -307,8 +497,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "punta-2022-fl-001",
+            "titulo": "GRU→MVD",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "punta-2022-st-001",
+            "titulo": "L'Auberge Hotel",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -364,8 +572,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "cartagena-2022-fl-001",
+            "titulo": "LATAM",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "cartagena-2022-st-001",
+            "titulo": "Hotel Tcherassi Spa + Hotel",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -421,8 +647,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "ny-2022-fl-001",
+            "titulo": "LATAM + American",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "ny-2022-st-001",
+            "titulo": "The Knickerbocker",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -477,8 +721,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "cancun-2022-fl-001",
+            "titulo": "GRU→CUN",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "cancun-2022-st-001",
+            "titulo": "Grand Hyatt Playa del Carmen",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -533,8 +795,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "abc-2022-fl-001",
+            "titulo": "LATAM + Insel Air",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "abc-2022-st-001",
+            "titulo": "Bucuti & Tara Beach Resort (Aruba)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -589,8 +869,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "mykonos-2022-fl-001",
+            "titulo": "GRU→ATH→JMK",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "mykonos-2022-st-001",
+            "titulo": "Cavo Tagoo Mykonos",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -651,8 +949,34 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "lisboapo-2022-fl-001",
+            "titulo": "TAP",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "lisboapo-2022-st-001",
+            "titulo": "Bairro Alto Hotel (Lisboa)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "lisboapo-2022-st-002",
+            "titulo": "The Yeatman (Porto)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -707,8 +1031,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "tailandia-2023-fl-001",
+            "titulo": "GRU→DXB→BKK",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "tailandia-2023-st-001",
+            "titulo": "Mandarin Oriental Bangkok",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -763,8 +1105,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "houston-2023-fl-001",
+            "titulo": "LATAM + United",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "houston-2023-st-001",
+            "titulo": "The Post Oak Hotel",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -824,8 +1184,34 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "pragabud-2023-fl-001",
+            "titulo": "LATAM + TAP + Wizzair",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "pragabud-2023-st-001",
+            "titulo": "Four Seasons Hotel Prague",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "pragabud-2023-st-002",
+            "titulo": "Four Seasons Gresham Palace Budapest",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -884,8 +1270,34 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "bali-2023-fl-001",
+            "titulo": "GRU→SIN→DPS",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "bali-2023-st-001",
+            "titulo": "COMO Shambhala Estate (Ubud)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "bali-2023-st-002",
+            "titulo": "Alila Seminyak",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -940,8 +1352,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "machupicchu-2023-fl-001",
+            "titulo": "GRU→LIM→CUZ",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "machupicchu-2023-st-001",
+            "titulo": "Inkaterra Machu Picchu Pueblo Hotel",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -997,8 +1427,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "italia-2023-fl-001",
+            "titulo": "LATAM + TAP + ITA",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "italia-2023-st-001",
+            "titulo": "Hotel de Russie",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1057,8 +1505,34 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "amsterda-2023-fl-001",
+            "titulo": "LATAM + KLM",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "amsterda-2023-st-001",
+            "titulo": "Pulitzer Amsterdam",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "amsterda-2023-st-002",
+            "titulo": "Hotel Amigo (Bruxelas)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1114,8 +1588,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "alemanha-2023-fl-001",
+            "titulo": "LATAM + TAP + Lufthansa",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "alemanha-2023-st-001",
+            "titulo": "Hotel Adlon Kempinski (Berlim)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1175,8 +1667,34 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "japao-2023-fl-001",
+            "titulo": "LATAM + Japan Airlines",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "japao-2023-st-001",
+            "titulo": "The Peninsula Tokyo",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "japao-2023-st-002",
+            "titulo": "Aman Kyoto",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1234,8 +1752,34 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "patagonia-2024-fl-001",
+            "titulo": "GRU→EZE→FTE",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "patagonia-2024-st-001",
+            "titulo": "Los Sauces Casa Patagónica",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "patagonia-2024-st-002",
+            "titulo": "Explora Patagonia",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1290,8 +1834,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "santiago-2024-fl-001",
+            "titulo": "GRU→SCL",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "santiago-2024-st-001",
+            "titulo": "The Singular Santiago",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1352,8 +1914,34 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "espanha-2024-fl-001",
+            "titulo": "LATAM + TAP + Vueling",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "espanha-2024-st-001",
+            "titulo": "Hotel Arts Barcelona",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "espanha-2024-st-002",
+            "titulo": "Six Senses Ibiza",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1412,8 +2000,34 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "costarica-2024-fl-001",
+            "titulo": "GRU→MIA→SJO",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "costarica-2024-st-001",
+            "titulo": "Nayara Springs (Arenal)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "costarica-2024-st-002",
+            "titulo": "Lapa Rios Lodge (Osa)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1470,8 +2084,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "havai-2024-fl-001",
+            "titulo": "LATAM + American Airlines",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "havai-2024-st-001",
+            "titulo": "Halekulani Honolulu",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1528,8 +2160,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "mykonos-2025-fl-001",
+            "titulo": "LATAM + Aegean",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "mykonos-2025-st-001",
+            "titulo": "Cavo Tagoo Mykonos",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1592,8 +2242,34 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "tailandia-2026-fl-001",
+            "titulo": "LATAM + AirAsia",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "tailandia-2026-st-001",
+            "titulo": "Amanpuri (Phuket)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "tailandia-2026-st-002",
+            "titulo": "Rayavadee (Krabi)",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1654,8 +2330,34 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "africa-2026-fl-001",
+            "titulo": "Emirates / TAP",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "africa-2026-st-001",
+            "titulo": "Sun City Resort",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          },
+          {
+            "id": "africa-2026-st-002",
+            "titulo": "One&Only Cape Town",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1711,8 +2413,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "noronha-2024-fl-001",
+            "titulo": "GRU→REC→FEN",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "noronha-2024-st-001",
+            "titulo": "Pousada Maravilha",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1768,8 +2488,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "gramado-2023-fl-001",
+            "titulo": "FLN→POA",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "gramado-2023-st-001",
+            "titulo": "Saint Andrews Hotel",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1825,8 +2563,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "rio-2023-fl-001",
+            "titulo": "FLN→GIG",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "rio-2023-st-001",
+            "titulo": "Belmond Copacabana Palace",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1882,8 +2638,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "jericoacoara-2025-fl-001",
+            "titulo": "FLN→FOR",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "jericoacoara-2025-st-001",
+            "titulo": "Vila Kalango",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1939,8 +2713,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "maragogi-2024-fl-001",
+            "titulo": "FLN→MCZ",
+            "status": "confirmado",
+            "criticidade": "alta",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
+        "stays": [
+          {
+            "id": "maragogi-2024-st-001",
+            "titulo": "Salinas do Maragogi",
+            "status": "confirmado",
+            "criticidade": "media",
+            "confirmada": true,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Viagem already done — confirmada=true assumida por contexto histórico."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -1987,7 +2779,16 @@
         "tips": "Passagem já comprada pela TAM. Falta hotel."
       },
       "bookings": {
-        "flights": [],
+        "flights": [
+          {
+            "id": "sp-junho-2026-fl-001",
+            "titulo": "FLN→GRU (TAM)",
+            "status": "pendente",
+            "criticidade": "alta",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
         "stays": [],
         "experiences": []
       },
@@ -2035,7 +2836,16 @@
         "tips": "Contrato Tomorrowland assinado. Passagem comprada. Falta hotel em Boom/Bruxelas."
       },
       "bookings": {
-        "flights": [],
+        "flights": [
+          {
+            "id": "europa-tomorrowland-2026-fl-001",
+            "titulo": "GRU→BRU",
+            "status": "pendente",
+            "criticidade": "alta",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
         "stays": [],
         "experiences": []
       },
@@ -2082,7 +2892,16 @@
         "tips": "Tudo confirmado: passagem, hospedagem, ingresso."
       },
       "bookings": {
-        "flights": [],
+        "flights": [
+          {
+            "id": "brasilia-2026-fl-001",
+            "titulo": "FLN→BSB",
+            "status": "pendente",
+            "criticidade": "alta",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
         "stays": [],
         "experiences": []
       },
@@ -2130,7 +2949,16 @@
         "tips": "Viagem completa a planejar. Conexão DXB ou CMB."
       },
       "bookings": {
-        "flights": [],
+        "flights": [
+          {
+            "id": "sanisland-2026-fl-001",
+            "titulo": "GRU→DXB→MLE",
+            "status": "pendente",
+            "criticidade": "alta",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
         "stays": [],
         "experiences": []
       },
@@ -2185,8 +3013,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "japao-2027-fl-001",
+            "titulo": "GRU→NRT→CTS",
+            "status": "pendente",
+            "criticidade": "alta",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
+        "stays": [
+          {
+            "id": "japao-2027-st-001",
+            "titulo": "Park Hyatt Niseko Hanazono",
+            "status": "pendente",
+            "criticidade": "media",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -2240,8 +3086,26 @@
         }
       ],
       "bookings": {
-        "flights": [],
-        "stays": [],
+        "flights": [
+          {
+            "id": "marrocos-2027-fl-001",
+            "titulo": "GRU→LIS→RAK",
+            "status": "pendente",
+            "criticidade": "alta",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
+        "stays": [
+          {
+            "id": "marrocos-2027-st-001",
+            "titulo": "La Mamounia (Marrakech)",
+            "status": "pendente",
+            "criticidade": "media",
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+          }
+        ],
         "experiences": []
       },
       "budget": {
@@ -2506,7 +3370,12 @@
       "_audit_notes": "Detectada em Lugares (Natal/RN). Marcada como marcante por Eduardo (motivo: Micareta). Ano a ser descoberto via EXIF.",
       "created_at": "2026-05-23T04:09:26Z",
       "updated_at": "2026-05-23T04:09:26Z",
-      "_schema": 2
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
     },
     {
       "id": "canoa-quebrada-reveillon-cardume",
@@ -2523,7 +3392,12 @@
       "_audit_notes": "Detectada em Lugares (Canoa Quebrada/CE). Marcada como marcante por Eduardo (motivo: Réveillon Cardume). Ano a ser descoberto via EXIF.",
       "created_at": "2026-05-23T04:09:26Z",
       "updated_at": "2026-05-23T04:09:26Z",
-      "_schema": 2
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
     },
     {
       "id": "florianopolis-micareta",
@@ -2540,7 +3414,12 @@
       "_audit_notes": "Detectada em Lugares (Floripa/SC). Marcada como marcante por Eduardo (motivo: Micareta). Ano a ser descoberto via EXIF.",
       "created_at": "2026-05-23T04:09:26Z",
       "updated_at": "2026-05-23T04:09:26Z",
-      "_schema": 2
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
     },
     {
       "id": "mucuge-aniversario",
@@ -2557,7 +3436,12 @@
       "_audit_notes": "Detectada em Lugares (Mucugê/BA). Marcada como marcante por Eduardo (motivo: Aniversário). Ano a ser descoberto via EXIF.",
       "created_at": "2026-05-23T04:09:26Z",
       "updated_at": "2026-05-23T04:09:26Z",
-      "_schema": 2
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
     },
     {
       "id": "brasilia-recorrente",
@@ -2574,7 +3458,12 @@
       "_audit_notes": "Trip agregadora — Eduardo confirmou que todas as visitas pré-2026 foram casuais (trabalho/escala). brasilia-2026 (planejada) permanece como trip separada.",
       "created_at": "2026-05-23T04:11:33Z",
       "updated_at": "2026-05-23T04:11:33Z",
-      "_schema": 2
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
     },
     {
       "id": "nordeste-litoral-recorrente",
@@ -2591,7 +3480,12 @@
       "_audit_notes": "Trip agregadora — Eduardo confirmou que essas visitas ao litoral nordestino foram casuais. Trips marcantes (maragogi-2024, natal-micareta, canoa-quebrada-reveillon-cardume) permanecem separadas.",
       "created_at": "2026-05-23T04:11:33Z",
       "updated_at": "2026-05-23T04:11:33Z",
-      "_schema": 2
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
     },
     {
       "id": "aracaju-familia",
@@ -2608,7 +3502,12 @@
       "_audit_notes": "Trip agregadora afetiva — Eduardo confirmou que essas viagens são visitas à família em Sergipe.",
       "created_at": "2026-05-23T04:11:33Z",
       "updated_at": "2026-05-23T04:11:33Z",
-      "_schema": 2
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
     },
     {
       "id": "campos-jordao-recorrente",
@@ -2625,7 +3524,12 @@
       "_audit_notes": "Trip agregadora — Eduardo confirmou que as visitas a Campos do Jordão foram casuais (descanso, inverno).",
       "created_at": "2026-05-23T04:11:33Z",
       "updated_at": "2026-05-23T04:11:33Z",
-      "_schema": 2
+      "_schema": 2,
+      "bookings": {
+        "flights": [],
+        "stays": [],
+        "experiences": []
+      }
     },
     {
       "id": "rio-multiplo",
