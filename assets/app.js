@@ -2971,6 +2971,64 @@ function hydratePlanPage(trip) {
   }
 }
 
+// B3: motor de "Próxima ação" — janela T-D + estado do trip (bookings,
+// memory, checklist). Retorna { label, severity, cta? } onde cta sinaliza
+// pra qual elemento U5 vai ancorar o scroll (Fase 2).
+function computeNextAction(trip) {
+  const d = daysUntil(trip);
+  const memVal = (trip.memory || '').toString().trim();
+  const saved = loadTripState(trip.id) || {};
+  const items = trip.checklist || defaultChecklist(trip);
+  const checks = { ...(saved.checklist || {}), ...(trip.checklistAuto || {}) };
+  const pendingChecks = items.filter(i => !checks[i.id]).length;
+  const bookings = trip.bookings || {};
+  const confirmedFlights = (bookings.flights || []).filter(
+    f => f.confirmada === true || f.status === 'confirmada' || f.status === 'confirmado'
+  ).length;
+  const hasStays = (bookings.stays || []).length > 0;
+
+  let label, severity = 'info', cta = null;
+
+  if (trip.status === 'wishlist' || d == null) {
+    label = '📌 Definir datas e destino';
+    severity = 'warn';
+    cta = { anchor: 'planHero', kind: 'edit-dates' };
+  } else if (d > 90) {
+    label = '📅 Pesquisar voos e hospedagem';
+    cta = { anchor: 'planReservations' };
+  } else if (d > 60 && confirmedFlights === 0) {
+    label = '✈ Comprar voos (preços tendem a subir)';
+    severity = 'warn';
+    cta = { anchor: 'planReservations' };
+  } else if (d > 30 && !hasStays) {
+    label = '🏨 Reservar hospedagem';
+    severity = 'warn';
+    cta = { anchor: 'planReservations' };
+  } else if (d > 14) {
+    label = '📋 Rodar Despachante Digital + revisar checklist';
+    cta = { anchor: 'planChecklist' };
+  } else if (d > 3) {
+    label = '🧳 Preparar bagagem';
+    cta = { anchor: 'planPacking', tab: 'packing' };
+  } else if (d >= 0) {
+    label = '✈ Check-in online + impressão de docs';
+    severity = 'urgent';
+    cta = { anchor: 'planChecklist' };
+  } else if (!memVal) {
+    label = '📝 Registrar lembranças da viagem';
+    cta = { anchor: 'planPlanning' };
+  } else {
+    label = '✓ Memória registrada';
+    severity = 'done';
+  }
+
+  if (pendingChecks > 0 && severity !== 'done') {
+    label += ` (${pendingChecks} ${pendingChecks === 1 ? 'item pendente' : 'itens pendentes'})`;
+  }
+
+  return { label, severity, cta };
+}
+
 function renderPlanQuickstats(trip) {
   const host = document.getElementById('planQuickstats');
   const saved = loadTripState(trip.id);
@@ -2990,13 +3048,13 @@ function renderPlanQuickstats(trip) {
   const budgetPct = totalEst ? Math.round((totC / totalEst) * 100) : 0;
   const curr = trip.budget?.currency || trip.cost?.currency || 'BRL';
 
-  // Next pending action
-  let pending = items.find(i => !checks[i.id]);
+  // Next action (B3)
+  const next = computeNextAction(trip);
 
   const stats = [
     { icon:'✅', lbl:'Checklist', v:`${doneN}/${total}`, sub:`${pct}% concluído` },
     { icon:'💰', lbl:'Comprometido', v:formatMoney(totC, curr), sub:`${budgetPct}% de ${formatMoney(totalEst, curr)}` },
-    { icon:'🎯', lbl:'Próxima ação', v: pending ? pending.label : '✓ Tudo pronto', sub: pending?.due ? `prazo ${formatPtDate(pending.due)}` : '' },
+    { icon:'🎯', lbl:'Próxima ação', v: next.label, sub: '', severity: next.severity, cta: next.cta },
     { icon:'📍', lbl:'Destino', v:`${trip.flag || ''} ${(trip.country || '').trim()}`, sub:`${CONTINENT_NAMES[trip.continent] || ''}` }
   ];
   host.innerHTML = stats.map(s => `
