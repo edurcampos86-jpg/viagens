@@ -81,6 +81,8 @@ jobs:
 
       - name: Notify Slack on success (only after deploy)
         if: success() && github.event_name == 'workflow_run'
+        # Notificação não pode derrubar o job — smoke real é o que importa.
+        continue-on-error: true
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
@@ -88,12 +90,19 @@ jobs:
             echo "SLACK_WEBHOOK_URL não configurado — pulando notificação."
             exit 0
           fi
+          # Defesa em profundidade: remove whitespace/newlines acidentais
+          # caso o secret tenha sido salvo via stdin com terminator de linha
+          # (PowerShell adiciona \r\n; curl rejeita com exit 3).
+          CLEAN_URL=$(printf '%s' "$SLACK_WEBHOOK_URL" | tr -d '[:space:]')
           curl -sS -X POST -H 'Content-Type: application/json; charset=utf-8' \
             --data '{"text":":white_check_mark: Deploy do *viagens* validado em produção. Todos os smoke checks passaram. <https://edurcampos86-jpg.github.io/viagens/|Abrir site ↗>","username":"Viagens Deploy Bot","icon_emoji":":rocket:"}' \
-            "$SLACK_WEBHOOK_URL"
+            "$CLEAN_URL"
 
       - name: Notify Slack on failure
-        if: failure()
+        # Só notifica quando o SMOKE em si falhou (não quando só a notificação
+        # anterior quebrou). Evita cascata de falhas cosméticas.
+        if: failure() && steps.smoke.outcome == 'failure'
+        continue-on-error: true
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           TRIGGER: ${{ github.event_name }}
@@ -103,6 +112,7 @@ jobs:
             echo "SLACK_WEBHOOK_URL não configurado — pulando notificação."
             exit 0
           fi
+          CLEAN_URL=$(printf '%s' "$SLACK_WEBHOOK_URL" | tr -d '[:space:]')
           PAYLOAD=$(jq -n \
             --arg trigger "$TRIGGER" \
             --arg run "https://github.com/edurcampos86-jpg/viagens/actions/runs/$RUN_ID" \
@@ -112,10 +122,11 @@ jobs:
               icon_emoji: ":rotating_light:"
             }')
           curl -sS -X POST -H 'Content-Type: application/json; charset=utf-8' \
-            --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
+            --data "$PAYLOAD" "$CLEAN_URL"
 
       - name: Open GitHub Issue on failure
-        if: failure()
+        # Mesmo critério: Issue só nasce de smoke real falho.
+        if: failure() && steps.smoke.outcome == 'failure'
         uses: actions/github-script@v7
         with:
           script: |
