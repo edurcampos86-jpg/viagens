@@ -2814,6 +2814,7 @@ function hydratePlanPage(trip) {
   renderPlanPlanning(trip);
   renderPlanPacking(trip);
   renderPlanInspire(trip);
+  renderPlanConcierge(trip);
 
   // Header actions
   const promo = document.getElementById('ppPromote');
@@ -3182,6 +3183,34 @@ function renderPlanInspire(trip) {
     saveTripState(trip.id, { inspirationImages: arr });
     renderPlanInspire(trip);
   });
+}
+
+function renderPlanConcierge(trip) {
+  // Reusa populateConcierge() do PR #46 (que opera num data-panel="concierge")
+  const tmp = document.createElement('div');
+  tmp.innerHTML = '<div data-panel="concierge"></div>';
+  populateConcierge(tmp, trip);
+  document.getElementById('planConcierge').innerHTML = tmp.firstChild.innerHTML;
+  // Re-wire o listener do botão (innerHTML descarta listeners da populate)
+  const btn = document.querySelector('#planConcierge [data-cn-run]');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const v2 = window.viagensV2;
+      if (!v2 || typeof v2.concierge !== 'function') {
+        toast('Concierge ainda não carregou. Recarregue a página e tente novamente.');
+        return;
+      }
+      if (!v2.anthropicKey?.isUnlocked()) {
+        if (!v2.anthropicKey?.isConfigured()) {
+          toast('Configure sua chave Anthropic primeiro (botão 🔐 no canto inferior direito).');
+          return;
+        }
+        toast('Desbloqueie a chave Anthropic primeiro (botão 🔒 no canto inferior direito).');
+        return;
+      }
+      v2.concierge(trip);
+    });
+  }
 }
 
 // ── PWA ──────────────────────────────────────────────────────────
