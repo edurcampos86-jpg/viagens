@@ -2395,6 +2395,98 @@
         "currency": "BRL"
       },
       "checklist": [],
+      "notes": {
+        "itinerary": [
+          {
+            "day": 1,
+            "date": "2025-01-10",
+            "morning": "Chegada em Malé (MLE). Recepção VIP no aeroporto pela equipe do Soneva Jani — sala lounge privativa enquanto cuidam da bagagem e do despacho para o hidroavião.",
+            "afternoon": "Voo panorâmico de hidroavião (40min) até Soneva Jani, no Noonu Atoll. Check-in na 1-Bedroom Water Retreat with Slide — escorregador privativo direto na lagoa. Champagne e pés descalços (filosofia 'No News, No Shoes').",
+            "evening": "Jantar leve no By the Sea — sashimi e sushi com vista para o pôr do sol. Drinks no deck privativo da villa para acomodar o jet lag.",
+            "notes": "Soneva é a escolha óbvia para quem se hospedou no COMO Shambhala em Ubud — mesma pegada de luxo barefoot, design orgânico e gastronomia séria."
+          },
+          {
+            "day": 2,
+            "date": "2025-01-11",
+            "morning": "Café da manhã no Fresh in the Garden (acessado por ponte suspensa entre as árvores). Manhã de mergulho com snorkel na house reef do resort — tartarugas e arraias praticamente garantidas.",
+            "afternoon": "Sessão de spa em casal no Soneva Jani Spa — escolham o Sundari Ritual (4 mãos). Depois, rede sobre a água na villa.",
+            "evening": "Cinema Paradiso — cinema ao ar livre sobre a água. Filme clássico com jantar servido em boia/poltrona flutuante.",
+            "notes": "O Cinema Paradiso é a assinatura do Soneva — experiência única no mundo, vale a noite inteira."
+          },
+          {
+            "day": 3,
+            "date": "2025-01-12",
+            "morning": "Sessão privativa de observação astronômica no Soneva Jani Observatory (maior telescópio over-water dos Maldivas) — agendar para o pré-amanhecer e ver Vênus.",
+            "afternoon": "Excursão de dolphin cruise ao pôr do sol no dhoni privativo do resort, com canapés e champagne Krug.",
+            "evening": "Jantar degustação no So Hands On — cozinha experimental do chef residente, conceito omakase com produtos locais. Lembra muito o nível técnico do Locavore em Ubud.",
+            "notes": "Conectando com seu gosto por Locavore e Mozaic — So Hands On é o restaurante mais autoral do Soneva."
+          },
+          {
+            "day": 4,
+            "date": "2025-01-13",
+            "morning": "Check-out do Soneva Jani. Transfer de hidroavião de volta a Malé e depois voo doméstico + lancha rápida (cerca de 2h total) para o Cheval Blanc Randheli, no Noonu Atoll.",
+            "afternoon": "Check-in na Water Villa do Cheval Blanc (LVMH) — design Jean-Michel Gathy, paleta neutra impecável. Tarde livre na piscina infinita privativa.",
+            "evening": "Aperitivo no White Bar (champagne Ruinart Blanc de Blancs) seguido de jantar no Deelani — frutos do mar mediterrâneos à beira-mar.",
+            "notes": "Mudança de pegada: do barefoot rústico-chique do Soneva para o luxo francês refinado do Cheval Blanc. Mesma filosofia de excelência do Aman Kyoto que você curtiu."
+          },
+          {
+            "day": 5,
+            "date": "2025-01-14",
+            "morning": "Café da manhã na villa. Aula privativa de mergulho livre (free diving) com instrutor do resort na house reef.",
+            "afternoon": "Sessão Guerlain Spa em casal — o spa do Cheval Blanc ocupa uma ilha inteira, conectada por ponte. Peçam o ritual Orchidée Impériale.",
+            "evening": "Jantar no Diptyque — culinária francesa contemporânea, o ponto alto gastronômico do resort. Sommelier excelente, peça vinhos da Borgonha.",
+            "notes": "Diptyque é do grupo LVMH — mesmo nível de Cipriani/Peninsula em termos de serviço e refinamento."
+          },
+          {
+            "day": 6,
+            "date": "2025-01-15",
+            "morning": "Excursão de iate privativo (Princess 52) com café da manhã a bordo — navegação pelos sandbanks do Noonu Atoll.",
+            "afternoon": "Picnic em ilha deserta arrumado pela equipe do Cheval Blanc — só vocês dois, com chef e mordomo discretos.",
+            "evening": "Volta ao resort. Jantar japonês no Le 1947 by Yannick Alléno (3 estrelas Michelin) — menu degustação com pareamento de saquês raros.",
+            "notes": "Le 1947 é literalmente o restaurante mais premiado dos Maldivas — Alléno tem 3 estrelas em Paris. Estilo de Sukiyabashi Jiro/Kikunoi que você apreciou no Japão."
+          },
+          {
+            "day": 7,
+            "date": "2025-01-16",
+            "morning": "Manhã preguiçosa. Brunch tardio no Le Café Maldives.",
+            "afternoon": "Transfer de lancha + hidroavião para o terceiro e último resort: Joali Being, em Raa Atoll — primeiro wellness resort dos Maldivas. Check-in na Ocean Villa with Pool.",
+            "evening": "Consulta inicial com o Wellbeing Concierge para desenhar os 4 dias de programa (foco em descanso, não em dieta restritiva). Jantar leve no Flow — cozinha funcional, mas saborosa.",
+            "notes": "Joali Being conversa diretamente com COMO Shambhala — mesma proposta de wellness sério em ambiente de luxo, sem ser cafona."
+          },
+          {
+            "day": 8,
+            "date": "2025-01-17",
+            "morning": "Sessão de sound healing no AREKA (centro de wellness do resort) ao nascer do sol. Café da manhã no Mojo.",
+            "afternoon": "Massagem em casal no Kaashi spa (suíte over-water) + sessão de crio + sauna finlandesa com vista oceânica.",
+            "evening": "Jantar romântico na praia preparado pelo Joali — mesa montada exclusivamente para vocês com tochas, jantar de frutos do mar locais.",
+            "notes": "Beach dinner privativo é serviço padrão do Joali — peça com 24h de antecedência."
+          },
+          {
+            "day": 9,
+            "date": "2025-01-18",
+            "morning": "Excursão de mergulho com snorkel para nadar com mantas em Hanifaru Bay (vizinho, no Baa Atoll — Reserva da Biosfera UNESCO).",
+            "afternoon": "Retorno e tarde livre. Sessões de meditação guiada na herbal garden.",
+            "evening": "Jantar no Mojo (cozinha pan-asiática elevada) — peça o curry maldívio autêntico e o robata de peixes locais.",
+            "notes": "Mojo tem influências tailandesas que devem te lembrar Bangkok — bem feito, sem ser turístico."
+          },
+          {
+            "day": 10,
+            "date": "2025-01-19",
+            "morning": "Manhã final na villa — pedido um in-villa breakfast servido na piscina privativa.",
+            "afternoon": "Última imersão na house reef + sessão de banho ritual no Kaashi (Hammam de 90min em casal).",
+            "evening": "Jantar de despedida no Flow com degustação especial — peça ao chef para preparar algo fora do menu, eles adoram.",
+            "notes": "Reserve a degustação off-menu com 48h de antecedência — vale muito a pena."
+          },
+          {
+            "day": 11,
+            "date": "2025-01-20",
+            "morning": "Check-out tardio (12h, cortesia honeymoon). Hidroavião de volta para Malé.",
+            "afternoon": "Day-use no Hulhulé Island Hotel (próximo ao aeroporto) para banho e descanso antes do voo internacional noturno.",
+            "evening": "Embarque em Malé (MLE) com destino ao Brasil — geralmente via Doha (Qatar Airways Qsuite) ou Dubai (Emirates First).",
+            "notes": "Day-use é essencial — voos internacionais saem tarde da noite e o hidroavião chega cedo demais para esperar no aeroporto."
+          }
+        ]
+      },
       "created_at": "2028-06-01T00:00:00Z",
       "updated_at": "2026-05-19T01:30:18Z",
       "_schema": 2
