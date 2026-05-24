@@ -2,6 +2,11 @@
 // Minhas Viagens — app.js
 // =================================================================
 
+import * as overlay from '../src/core/overlay.js';
+
+// Exposto pra console + handlers que vivem em outros módulos.
+window.viagensOverlay = overlay;
+
 const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const MONTH_NAMES_LONG = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const CONTINENT_NAMES = {
@@ -2772,7 +2777,92 @@ function closePlanPage() {
   document.body.classList.remove('plan-page-open');
 }
 
+// ── B5: UI de overlay no header do plan-page ──────────────────────────
+function syncOverlayHeaderUI(trip, tripOverlay) {
+  const flag = document.getElementById('planOverlayFlag');
+  const syncBtn = document.querySelector('[data-pp-action="overlay-sync"]');
+  const exportBtn = document.querySelector('[data-pp-action="overlay-export"]');
+  const diff = overlay.diffOverlayVsTrip(trip, tripOverlay);
+  if (flag) flag.hidden = !diff.hasChanges;
+  if (syncBtn) syncBtn.hidden = !diff.hasChanges;
+  if (exportBtn) exportBtn.hidden = !diff.hasChanges;
+}
+
+function exportAllOverlays() {
+  const all = overlay.listAllOverlays();
+  if (!Object.keys(all).length) {
+    toast('Nenhum overlay local para exportar.');
+    return;
+  }
+  const blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `viagens-overlays-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('📥 Overlay baixado.');
+}
+
+function openOverlaySyncModal(trip) {
+  const dlg = document.getElementById('overlaySyncDialog');
+  if (!dlg) return;
+  const tripOverlay = overlay.readOverlay(trip.id);
+  const diff = overlay.diffOverlayVsTrip(trip, tripOverlay);
+  const snippet = overlay.buildPatchSnippet(trip.id, tripOverlay);
+
+  const tripIdEl = document.getElementById('overlaySyncTripId');
+  const diffEl = document.getElementById('overlaySyncDiff');
+  const snippetEl = document.getElementById('overlaySyncSnippet');
+
+  if (tripIdEl) tripIdEl.textContent = trip.id;
+  if (diffEl) {
+    if (!diff.hasChanges) {
+      diffEl.innerHTML = '<p class="overlay-sync-empty">Sem edições top-level para sincronizar.</p>';
+    } else {
+      diffEl.innerHTML = '<ul class="overlay-sync-list">' + diff.fields.map(f => `
+        <li>
+          <strong>${escapeHtml(f.key)}</strong>:
+          <span class="overlay-sync-old">${escapeHtml(JSON.stringify(f.original))}</span>
+          → <span class="overlay-sync-new">${escapeHtml(JSON.stringify(f.override))}</span>
+        </li>
+      `).join('') + '</ul>';
+    }
+  }
+  if (snippetEl) {
+    snippetEl.textContent = snippet ? JSON.stringify(snippet, null, 2) : '(sem alterações)';
+  }
+
+  const copyBtn = document.getElementById('overlaySyncCopy');
+  const discardBtn = document.getElementById('overlaySyncDiscard');
+  if (copyBtn) {
+    copyBtn.disabled = !snippet;
+    copyBtn.onclick = () => {
+      copyText(JSON.stringify(snippet, null, 2));
+      toast('📋 Snippet copiado.');
+    };
+  }
+  if (discardBtn) {
+    discardBtn.disabled = !diff.hasChanges;
+    discardBtn.onclick = () => {
+      if (!confirm(`Descartar edições top-level de ${trip.id}? Sub-seções (checklist, orçamento, etc) ficam preservadas.`)) return;
+      overlay.clearTopLevelOverlay(trip.id);
+      dlg.close();
+      hydratePlanPage(trip);
+      toast('🗑 Edições top-level descartadas.');
+    };
+  }
+
+  if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+}
+
 function hydratePlanPage(trip) {
+  // Aplica overlay top-level (B5) antes de qualquer render. Sub-seções
+  // (checklist, committed, etc) continuam sendo lidas via loadTripState
+  // dentro dos populate*/render* — não duplicamos a leitura aqui.
+  const tripOverlay = overlay.readOverlay(trip.id);
+  trip = overlay.mergeOverlayIntoTrip(trip, tripOverlay);
+  syncOverlayHeaderUI(trip, tripOverlay);
+
   const isWish = trip.status === 'wishlist';
   // Header
   document.getElementById('planPageTitle').textContent = trip.name;
@@ -2841,6 +2931,8 @@ function hydratePlanPage(trip) {
           const url = `${location.origin}${location.pathname}#plan/${t.id}`;
           copyText(url); toast('🔗 Link da página copiado!');
         }
+        else if (action === 'overlay-sync') openOverlaySyncModal(t);
+        else if (action === 'overlay-export') exportAllOverlays();
       });
     });
     document.getElementById('planBack').addEventListener('click', () => {

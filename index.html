@@ -222,12 +222,15 @@
         <button class="plan-action" data-pp-action="ics">📆 Agenda (.ics)</button>
         <button class="plan-action" data-pp-action="share">📤 Compartilhar</button>
         <button class="plan-action" data-pp-action="link">🔗 Copiar link</button>
+        <button class="plan-action" data-pp-action="overlay-sync" id="planOverlaySyncBtn" hidden>📤 Sincronizar com trips.json</button>
+        <button class="plan-action" data-pp-action="overlay-export" id="planOverlayExportBtn" hidden>📥 Exportar overlay</button>
         <button class="plan-action plan-action-primary" data-pp-action="promote" id="ppPromote" hidden></button>
       </div>
     </header>
     <div class="plan-hero" id="planHero">
       <div class="plan-hero-bg" id="planHeroBg"></div>
       <div class="plan-hero-overlay"></div>
+      <button type="button" class="plan-hero-overlay-flag" id="planOverlayFlag" data-pp-action="overlay-sync" hidden aria-label="Ver edições locais não sincronizadas" style="position:absolute;top:14px;right:14px;z-index:5;background:#f59e0b;color:#0f172a;border:0;border-radius:999px;padding:6px 12px;font:600 12px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 10px -2px rgba(15,23,42,.3);">✏ Edições não sincronizadas</button>
       <div class="plan-hero-inner">
         <div class="plan-hero-flag" id="planHeroFlag" aria-hidden="true"></div>
         <h1 class="plan-hero-name" id="planPageTitle"></h1>
@@ -576,6 +579,46 @@
           <li>Volte aqui e clique "Descartar edições locais" — elas já estão no repo.</li>
         </ol>
         <p class="export-warn">⚠ Não esqueça do passo 5. Senão as edições locais e do repo vão divergir.</p>
+      </details>
+    </div>
+  </form>
+</dialog>
+
+<!-- OVERLAY SYNC DIALOG (B5 Sprint SP-Junho — diff overlay top-level vs trips.json) -->
+<dialog id="overlaySyncDialog" class="export-dialog" aria-labelledby="overlaySyncTitle">
+  <form method="dialog" class="export-sheet">
+    <header class="export-head">
+      <h3 id="overlaySyncTitle">Sincronizar edições locais</h3>
+      <button type="submit" class="export-close" aria-label="Fechar">×</button>
+    </header>
+    <div class="export-body">
+      <p class="export-intro">
+        Viagem: <strong id="overlaySyncTripId"></strong>. Estas edições estão só no seu navegador
+        (localStorage). Para que apareçam em <code>data/trips.json</code> e fiquem visíveis no
+        site público, cole o snippet abaixo no GitHub.
+      </p>
+      <h4 style="margin:14px 0 6px;font-size:13px;">O que mudou</h4>
+      <div class="export-list" id="overlaySyncDiff"></div>
+      <h4 style="margin:14px 0 6px;font-size:13px;">Snippet pra colar em <code>data/trips.json</code></h4>
+      <pre id="overlaySyncSnippet" style="background:#0f172a;color:#e2e8f0;padding:10px;border-radius:6px;font:12px ui-monospace,monospace;overflow:auto;max-height:200px;white-space:pre-wrap;"></pre>
+      <div class="export-actions">
+        <button type="button" class="export-btn export-btn-primary" id="overlaySyncCopy">
+          📋 Copiar snippet
+        </button>
+        <button type="button" class="export-btn export-btn-danger" id="overlaySyncDiscard">
+          🗑 Descartar edições top-level
+        </button>
+      </div>
+      <details class="export-howto">
+        <summary>Como aplicar no GitHub Web</summary>
+        <ol>
+          <li>Clique em <strong>Copiar snippet</strong> acima.</li>
+          <li>Abra <a href="https://github.com/edurcampos86-jpg/viagens/blob/main/data/trips.json" target="_blank" rel="noopener">data/trips.json no GitHub Web</a> e clique no lápis (canto superior direito).</li>
+          <li>Localize o objeto da viagem pelo <code>id</code> e atualize os campos editados.</li>
+          <li>Commit (mensagem "edições do site — DATA" serve).</li>
+          <li>Volte aqui e clique <strong>Descartar edições top-level</strong> — sub-seções (checklist, orçamento) ficam preservadas.</li>
+        </ol>
+        <p class="export-warn">⚠ Não esqueça do passo 5. Senão as edições locais e do repo divergem.</p>
       </details>
     </div>
   </form>
