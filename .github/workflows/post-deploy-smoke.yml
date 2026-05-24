@@ -1,0 +1,170 @@
+name: post-deploy-smoke
+
+# Smoke test pós-deploy do GitHub Pages. Inspirado no padrão do projeto Onix
+# (cockpit-onix/.github/workflows/post-deploy-smoke.yml).
+#
+# Roda em 3 situações:
+#   1. Após o workflow "pages-build-deployment" terminar com sucesso
+#   2. Cron a cada 6h (regressão silenciosa em CDN/asset missing)
+#   3. Manualmente via workflow_dispatch
+#
+# Em caso de falha:
+#   - Posta no Slack #viagens-deploys (se SLACK_WEBHOOK_URL configurado)
+#   - Cria Issue auto-labeled smoke-fail + incident (deduplicada por janela 2h)
+
+on:
+  workflow_run:
+    workflows: ["pages-build-deployment"]
+    types:
+      - completed
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: post-deploy-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Só roda se: trigger não for workflow_run, OU se o deploy foi success.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Wait for CDN propagation (after deploy only)
+        if: github.event_name == 'workflow_run'
+        run: sleep 30
+
+      - name: Smoke test critical assets
+        id: smoke
+        run: |
+          set -e
+          BASE="https://edurcampos86-jpg.github.io/viagens"
+
+          check_url () {
+            local url="$1"
+            local must_contain="$2"
+            local min_bytes="$3"
+            local label="$4"
+
+            echo "Checking $label ..."
+            local body
+            body=$(curl -fsSL "$url") || { echo "::error::FAIL fetch $url"; exit 1; }
+
+            local size=${#body}
+            if [ "$size" -lt "$min_bytes" ]; then
+              echo "::error::FAIL size $label: got $size bytes, expected >= $min_bytes"
+              exit 1
+            fi
+
+            if [ -n "$must_contain" ] && ! echo "$body" | grep -q "$must_contain"; then
+              echo "::error::FAIL content $label: missing '$must_contain'"
+              exit 1
+            fi
+
+            echo "  ✓ $label ($size bytes, '$must_contain' present)"
+          }
+
+          check_url "$BASE/"                    "Minhas Viagens"     5000   "index.html"
+          check_url "$BASE/assets/app.js"       "data-dp-run"        100000 "app.js"
+          check_url "$BASE/assets/styles.css"   "AGENTES"            50000  "styles.css"
+          check_url "$BASE/sw-workbox.js"       "viagens-v3-pwa-1"   3000   "sw-workbox.js"
+          check_url "$BASE/manifest.webmanifest" "Minhas Viagens"    200    "manifest"
+          check_url "$BASE/src/main.js"         "openCustoms"        1000   "main.js"
+
+          echo "All smoke checks passed ✓"
+
+      - name: Notify Slack on success (only after deploy)
+        if: success() && github.event_name == 'workflow_run'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL não configurado — pulando notificação."
+            exit 0
+          fi
+          curl -sS -X POST -H 'Content-Type: application/json; charset=utf-8' \
+            --data '{"text":":white_check_mark: Deploy do *viagens* validado em produção. Todos os smoke checks passaram. <https://edurcampos86-jpg.github.io/viagens/|Abrir site ↗>","username":"Viagens Deploy Bot","icon_emoji":":rocket:"}' \
+            "$SLACK_WEBHOOK_URL"
+
+      - name: Notify Slack on failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TRIGGER: ${{ github.event_name }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL não configurado — pulando notificação."
+            exit 0
+          fi
+          PAYLOAD=$(jq -n \
+            --arg trigger "$TRIGGER" \
+            --arg run "https://github.com/edurcampos86-jpg/viagens/actions/runs/$RUN_ID" \
+            '{
+              text: (":rotating_light: *Smoke test FALHOU* no viagens.\nGatilho: " + $trigger + "\n<" + $run + "|Ver logs ↗>"),
+              username: "Viagens Deploy Bot",
+              icon_emoji: ":rotating_light:"
+            }')
+          curl -sS -X POST -H 'Content-Type: application/json; charset=utf-8' \
+            --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
+
+      - name: Open GitHub Issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const trigger = '${{ github.event_name }}';
+            const runId = '${{ github.run_id }}';
+            const runUrl = `https://github.com/edurcampos86-jpg/viagens/actions/runs/${runId}`;
+
+            // Garante que a label existe (idempotente).
+            for (const lbl of [
+              { name: 'smoke-fail', color: 'b60205', description: 'Smoke test pós-deploy falhou' },
+              { name: 'incident',   color: 'b60205', description: 'Falha detectada por automação' },
+            ]) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ...lbl,
+                });
+              } catch (e) {
+                // 422 = label já existe; qualquer outro erro re-lança.
+                if (e.status !== 422) throw e;
+              }
+            }
+
+            // Deduplicação: já existe Issue smoke-fail aberta nas últimas 2h?
+            const since = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'smoke-fail',
+              since,
+            });
+            if (existing.length > 0) {
+              console.log(`Issue aberta há <2h: #${existing[0].number}, não duplico.`);
+              return;
+            }
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Smoke test falhou (${trigger}) — ${new Date().toISOString().slice(0, 10)}`,
+              body: [
+                'Smoke test pós-deploy falhou.',
+                '',
+                `**Gatilho:** \`${trigger}\``,
+                `**Run:** ${runUrl}`,
+                '',
+                'Veja os logs do workflow para diagnóstico. Em caso de cache antigo do PWA preso, consulte `docs/DISASTER_RECOVERY.md`.',
+              ].join('\n'),
+              labels: ['smoke-fail', 'incident'],
+            });

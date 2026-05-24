@@ -24,19 +24,22 @@ if (!self.workbox) {
   // Bump VERSION em cada deploy que muda assets/* ou index.html — Workbox
   // entao expira a entrada precacheada antiga e baixa a nova. Faz o papel
   // do cache-busting via query string sem precisar de build.
-  const VERSION = 'viagens-v2-pwa-2';
+  const VERSION = 'viagens-v3-pwa-1';
 
-  // Precache do app shell completo (HTML + CSS + JS criticos com revision)
+  // Precache do app shell completo (HTML + CSS + JS criticos com revision).
+  // URLs relativas ao scope do SW (que agora é /viagens/ porque o script
+  // está na raiz do projeto). Antes começavam com '/' e apontavam para fora
+  // do GitHub Pages do projeto — PR #1.5B corrigiu scope e paths juntos.
   precaching.precacheAndRoute([
-    { url: '/', revision: VERSION },
-    { url: '/index.html', revision: VERSION },
-    { url: '/manifest.webmanifest', revision: VERSION },
-    { url: '/icons/icon-192.svg', revision: VERSION },
-    { url: '/icons/icon-512.svg', revision: VERSION },
-    { url: '/assets/app.js', revision: VERSION },
-    { url: '/assets/styles.css', revision: VERSION },
-    { url: '/assets/sync-button.js', revision: VERSION },
-    { url: '/src/main.js', revision: VERSION },
+    { url: './', revision: VERSION },
+    { url: 'index.html', revision: VERSION },
+    { url: 'manifest.webmanifest', revision: VERSION },
+    { url: 'icons/icon-192.svg', revision: VERSION },
+    { url: 'icons/icon-512.svg', revision: VERSION },
+    { url: 'assets/app.js', revision: VERSION },
+    { url: 'assets/styles.css', revision: VERSION },
+    { url: 'assets/sync-button.js', revision: VERSION },
+    { url: 'src/main.js', revision: VERSION },
   ]);
 
   // CSS/JS adicionais (chunks dinamicos, src/components/*) caem aqui.
@@ -115,17 +118,20 @@ if (!self.workbox) {
     })
   );
 
-  // Limpa caches antigos (versões anteriores do sw.js manual)
+  // Activate: limpa caches antigos e avisa os clientes que houve update.
   self.addEventListener('activate', (event) => {
-    event.waitUntil(
-      caches.keys().then((keys) =>
-        Promise.all(
-          keys
-            .filter((k) => k.startsWith('viagens-v') && !k.endsWith('-v2'))
-            .map((k) => caches.delete(k))
-        )
-      )
-    );
+    event.waitUntil((async () => {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys
+          .filter((k) => k.startsWith('viagens-v') && !k.endsWith('-v2'))
+          .map((k) => caches.delete(k))
+      );
+      // Notifica clientes que nova versão foi ativada (PR #1.5B).
+      // O app principal escuta esse postMessage e exibe toast de reload.
+      const clients = await self.clients.matchAll({ type: 'window' });
+      clients.forEach((c) => c.postMessage({ type: 'sw-activated', version: VERSION }));
+    })());
   });
 }
 

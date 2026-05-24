@@ -71,17 +71,24 @@ try {
 }
 
 // Registra o Service Worker v2 (Workbox) — substitui o sw.js antigo.
+// PR #1.5B: script movido para a raiz para que o scope /viagens/ seja permitido.
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('src/pwa/sw-workbox.js', { scope: './' })
+      .register('sw-workbox.js', { scope: './' })
       .then((reg) => {
         console.info('[v2] SW Workbox registrado:', reg.scope);
       })
       .catch((e) => console.warn('[v2] SW Workbox registration failed:', e));
   });
-  // SW dispara mensagem 'flush-edit-queue' quando volta online
+
+  // Listener PR #1.5B: detecta nova versão do SW ativada e oferece reload.
+  // Ignora a PRIMEIRA mensagem 'sw-activated' (instalação inicial — sem versão
+  // antiga, não há nada a "atualizar"). A segunda em diante indica deploy novo.
+  let _swActivatedSeen = false;
+
   navigator.serviceWorker.addEventListener('message', async (e) => {
+    // Sync offline: SW dispara 'flush-edit-queue' quando o app volta online.
     if (e.data?.type === 'flush-edit-queue' && settings.isUnlocked()) {
       const result = await syncQueue.flush(async (op) => {
         if (op.kind === 'upsert') {
@@ -93,8 +100,40 @@ if ('serviceWorker' in navigator) {
       if (result.processed) {
         console.info(`[v2] sync queue: ${result.processed} drenadas, ${result.remaining} restantes.`);
       }
+      return;
+    }
+    // Update available: SW novo entrou em activate e expulsou o anterior.
+    if (e.data?.type === 'sw-activated') {
+      if (!_swActivatedSeen) {
+        _swActivatedSeen = true;
+        return;
+      }
+      console.info('[v2] Nova versão do SW disponível:', e.data.version);
+      showUpdateAvailableToast();
     }
   });
+}
+
+// Toast "Nova versão disponível" — exibido após receber 'sw-activated' do SW.
+function showUpdateAvailableToast() {
+  if (document.querySelector('#sw-update-toast')) return;
+  const el = document.createElement('div');
+  el.id = 'sw-update-toast';
+  el.style.cssText = [
+    'position:fixed', 'bottom:20px', 'left:50%', 'transform:translateX(-50%)',
+    'background:#0f172a', 'color:#fff', 'padding:12px 18px', 'border-radius:8px',
+    'font:14px Inter,system-ui,sans-serif', 'z-index:10000',
+    'box-shadow:0 10px 25px rgba(0,0,0,.3)',
+    'display:flex', 'gap:12px', 'align-items:center',
+  ].join(';');
+  el.innerHTML = `
+    <span>🔄 Nova versão disponível</span>
+    <button id="sw-reload-btn" style="background:#f1f5f9;color:#0f172a;border:none;padding:6px 12px;border-radius:6px;font:inherit;font-weight:600;cursor:pointer">Recarregar</button>
+    <button id="sw-dismiss-btn" style="background:transparent;color:#94a3b8;border:none;padding:6px;cursor:pointer;font-size:18px" aria-label="Fechar">×</button>
+  `;
+  document.body.appendChild(el);
+  el.querySelector('#sw-reload-btn').addEventListener('click', () => location.reload());
+  el.querySelector('#sw-dismiss-btn').addEventListener('click', () => el.remove());
 }
 
 // ── Fallback: baixa rascunho .json para aplicar manualmente. ────────────
