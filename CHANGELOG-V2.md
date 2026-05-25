@@ -116,6 +116,15 @@ Sprint pra resolver os achados da auditoria ao vivo do `#plan/sp-junho-2026`
 
 **35/35 testes verdes** ao fim da U4 (+8: `normalizePoi` + integração overlay/POIs).
 
+### Fase 3 (em andamento)
+
+| Lote | O que mudou | Arquivos-chave |
+|---|---|---|
+| (cobertura) | extrai `decideNextAction` (B3) p/ módulo puro testável + cobre `read/writeOverlay` (B5) com shim de localStorage | `src/core/next-action.js`, `tests/v2-modules.test.mjs` |
+| F5 | checklist: reordenar por **drag (Pointer Events: mouse+touch) + teclado (↑/↓)** e **prazo por item** (popover de data); ordem e prazos persistem em `saveTripState` (`checklistOrder`/`checklistDue`), overdue destacado | `src/core/checklist-order.js` (`applyChecklistOrder`/`moveItem`/`isItemOverdue`), `assets/app.js` (`wireChecklistControls`/`openDueEditorPopover`), `assets/styles.css` |
+
+**49/49 testes verdes** ao fim da F5 (+14: decideNextAction ×6, overlay read/write ×3, checklist-order ×5).
+
 ---
 
 ## Métricas alcançadas vs PRD

@@ -6,6 +6,7 @@ import * as overlay from '../src/core/overlay.js';
 import { loadRules, injectChecklistItems } from '../src/components/checklist.js';
 import { deriveDatesFromBookings } from '../src/core/dates.js';
 import { decideNextAction } from '../src/core/next-action.js';
+import { applyChecklistOrder, moveItem, isItemOverdue } from '../src/core/checklist-order.js';
 
 // Exposto pra console + handlers que vivem em outros módulos.
 window.viagensOverlay = overlay;
@@ -1437,7 +1438,9 @@ function populateChecklist(node, trip) {
   const panel = node.querySelector('[data-panel="checklist"]');
   if (!panel) return;
   const saved = loadTripState(trip.id);
-  const items = computeChecklistItems(trip);
+  // F5: aplica a ordem salva pelo usuário (drag/teclado) sobre os itens.
+  const items = applyChecklistOrder(computeChecklistItems(trip), saved.checklistOrder);
+  const dueMap = saved.checklistDue || {};
   // Merge: manual checks (saved.checklist) OR auto-detected (trip.checklistAuto)
   const autoChecks = trip.checklistAuto || {};
   const manualChecks = saved.checklist || {};
@@ -1463,20 +1466,23 @@ function populateChecklist(node, trip) {
         const checked = !!checks[it.id];
         const isAuto = !!autoChecks[it.id] && manualChecks[it.id] !== false;
         const autoMeta = isAuto && typeof autoChecks[it.id] === 'object' ? autoChecks[it.id] : null;
-        const due = it.due ? formatPtDate(it.due) : '';
-        const overdue = it.due && new Date(it.due) < new Date() && !checked;
+        // F5: prazo efetivo = override do usuário (checklistDue) OU o do item.
+        const dueRaw = dueMap[it.id] ?? it.due ?? '';
+        const dueLabel = dueRaw ? formatPtDate(dueRaw) : '';
+        const overdue = isItemOverdue(dueRaw, checked);
         const autoBadge = autoMeta
           ? `<span class="cl-auto" title="Detectado automaticamente via ${escapeHtml(autoMeta.provider || 'email')} ${autoMeta.ref ? '(' + escapeHtml(autoMeta.ref) + ')' : ''}">🔗 ${escapeHtml(autoMeta.provider || 'auto')}</span>`
           : (it.auto
               ? `<span class="cl-auto" title="${escapeHtml(it.reason || 'Regra contextual de destination_rules.json')}">📋 auto</span>`
               : '');
-        return `<li class="cl-item${checked ? ' done' : ''}${overdue ? ' overdue' : ''}${isAuto ? ' auto' : ''}">
+        return `<li class="cl-item${checked ? ' done' : ''}${overdue ? ' overdue' : ''}${isAuto ? ' auto' : ''}" data-id="${escapeHtml(it.id)}">
+          <button type="button" class="cl-handle" data-cl-handle aria-label="Reordenar: ${escapeHtml(it.label)} (arraste ou use ↑/↓)" title="Arraste ou use ↑/↓ para reordenar">⠿</button>
           <label>
             <input type="checkbox" data-id="${escapeHtml(it.id)}" ${checked ? 'checked' : ''}/>
             <span class="cl-label">${escapeHtml(it.label)}</span>
             ${autoBadge}
-            ${due ? `<span class="cl-due">⏰ ${due}</span>` : ''}
           </label>
+          <button type="button" class="cl-due-btn${overdue ? ' overdue' : ''}" data-cl-due="${escapeHtml(it.id)}" aria-label="Prazo: ${escapeHtml(it.label)}" title="Definir prazo">${dueLabel ? '⏰ ' + dueLabel : '⏰'}</button>
         </li>`;
       }).join('')}
     </ul>
@@ -1536,6 +1542,130 @@ function populateChecklist(node, trip) {
       }
     });
   }
+
+  // F5: reordenação (drag/teclado) + editor de prazo por item.
+  wireChecklistControls(panel, trip, () => populateChecklist(node, trip));
+}
+
+// F5 — religa os controles do checklist (handles de reordenar + botões de
+// prazo) num container já renderizado. `rerender` re-desenha o checklist
+// após persistir. Usado tanto na aba do card quanto na plan-page.
+function wireChecklistControls(root, trip, rerender) {
+  const list = root.querySelector('.cl-list');
+  if (!list) return;
+
+  root.querySelectorAll('[data-cl-due]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openDueEditorPopover(trip, btn.dataset.clDue, btn, rerender);
+    });
+  });
+
+  const idsNow = () => [...list.querySelectorAll('.cl-item')].map((li) => li.dataset.id);
+  const persist = (ids, focusId) => {
+    saveTripState(trip.id, { checklistOrder: ids });
+    rerender();
+    if (focusId) {
+      requestAnimationFrame(() => {
+        root.querySelector(`.cl-item[data-id="${CSS.escape(focusId)}"] [data-cl-handle]`)?.focus();
+      });
+    }
+  };
+
+  list.querySelectorAll('[data-cl-handle]').forEach((handle) => {
+    const li = handle.closest('.cl-item');
+    const id = li.dataset.id;
+
+    // Teclado (acessível): ↑/↓ movem o item.
+    handle.addEventListener('keydown', (e) => {
+      const ids = idsNow();
+      const i = ids.indexOf(id);
+      if (e.key === 'ArrowUp' && i > 0) {
+        e.preventDefault();
+        persist(moveItem(ids, id, ids[i - 1]), id);
+      } else if (e.key === 'ArrowDown' && i < ids.length - 1) {
+        e.preventDefault();
+        persist(moveItem(ids, id, ids[i + 2] ?? null), id);
+      }
+    });
+
+    // Ponteiro (mouse + touch): arrasta e reordena ao vivo no DOM.
+    handle.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      handle.setPointerCapture(e.pointerId);
+      li.classList.add('dragging');
+
+      const onMove = (ev) => {
+        const over = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('.cl-item');
+        if (!over || over === li || over.parentElement !== list) return;
+        const rect = over.getBoundingClientRect();
+        const after = ev.clientY > rect.top + rect.height / 2;
+        list.insertBefore(li, after ? over.nextSibling : over);
+      };
+      const onUp = () => {
+        handle.releasePointerCapture(e.pointerId);
+        handle.removeEventListener('pointermove', onMove);
+        handle.removeEventListener('pointerup', onUp);
+        li.classList.remove('dragging');
+        persist(idsNow());
+      };
+      handle.addEventListener('pointermove', onMove);
+      handle.addEventListener('pointerup', onUp);
+    });
+  });
+}
+
+// F5 — popover de prazo de um item (espelha o padrão de openDateEditorPopover:
+// ARIA, Esc, click-fora). Persiste em saved.checklistDue[id]; vazio = limpa.
+function openDueEditorPopover(trip, itemId, anchor, rerender) {
+  document.querySelectorAll('.cl-due-popover').forEach((el) => el.remove());
+  const cur = (loadTripState(trip.id).checklistDue || {})[itemId] || '';
+
+  const pop = document.createElement('div');
+  pop.className = 'cl-due-popover';
+  pop.setAttribute('role', 'dialog');
+  pop.setAttribute('aria-label', 'Definir prazo do item');
+  pop.style.cssText = 'position:absolute;z-index:9001;background:#fff;color:#0f172a;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 25px 50px -12px rgba(0,0,0,.35);padding:14px;font:14px Inter,system-ui,sans-serif;width:min(240px,calc(100vw - 24px));box-sizing:border-box;';
+  pop.innerHTML = `
+    <h4 style="margin:0 0 8px;font-size:14px;font-weight:700;">⏰ Prazo do item</h4>
+    <input type="date" id="cl-due-input" value="${cur}" style="width:100%;box-sizing:border-box;padding:6px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;margin-bottom:10px;" aria-label="Data do prazo" />
+    <div style="display:flex;justify-content:space-between;gap:6px;">
+      <button type="button" id="cl-due-clear" style="padding:6px 10px;border:1px solid #fecaca;color:#b91c1c;background:#fff;border-radius:6px;cursor:pointer;font:inherit;font-size:12px;">Limpar</button>
+      <div style="display:flex;gap:6px;">
+        <button type="button" id="cl-due-cancel" style="padding:6px 12px;border:1px solid #cbd5e1;background:#fff;border-radius:6px;cursor:pointer;font:inherit;">Cancelar</button>
+        <button type="button" id="cl-due-save" style="padding:6px 12px;border:0;background:#0f172a;color:#fff;border-radius:6px;cursor:pointer;font:inherit;">Salvar</button>
+      </div>
+    </div>
+  `;
+
+  const r = anchor.getBoundingClientRect();
+  pop.style.top = `${window.scrollY + r.bottom + 6}px`;
+  pop.style.left = `${Math.max(8, Math.min(window.scrollX + r.left, window.scrollX + window.innerWidth - 248))}px`;
+  document.body.appendChild(pop);
+
+  const input = pop.querySelector('#cl-due-input');
+
+  function close() {
+    pop.remove();
+    document.removeEventListener('keydown', onKey);
+    document.removeEventListener('click', onClickOutside, true);
+  }
+  function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); close(); } }
+  function onClickOutside(e) { if (!pop.contains(e.target) && e.target !== anchor) close(); }
+  function commit(value) {
+    const due = { ...(loadTripState(trip.id).checklistDue || {}) };
+    if (value) due[itemId] = value; else delete due[itemId];
+    saveTripState(trip.id, { checklistDue: due });
+    close();
+    rerender();
+  }
+
+  pop.querySelector('#cl-due-cancel').addEventListener('click', close);
+  pop.querySelector('#cl-due-clear').addEventListener('click', () => commit(''));
+  pop.querySelector('#cl-due-save').addEventListener('click', () => commit(input.value));
+  document.addEventListener('keydown', onKey);
+  setTimeout(() => document.addEventListener('click', onClickOutside, true), 0);
+  input.focus();
 }
 
 function populateReservations(node, trip) {
@@ -3495,6 +3625,9 @@ function renderPlanChecklist(trip) {
       renderPlanQuickstats(trip);
     });
   });
+  // F5: religa reordenar + prazos (innerHTML copiado perde os listeners).
+  const clRoot = document.getElementById('planChecklist');
+  wireChecklistControls(clRoot, trip, () => { renderPlanChecklist(trip); renderPlanQuickstats(trip); });
 }
 
 function renderPlanReservations(trip) {

@@ -1355,6 +1355,31 @@ input[type=range]::-moz-range-thumb {
   color: var(--planned-c);
   border-color: transparent;
 }
+
+/* F5 — reordenar (drag/teclado) + prazo por item */
+.cl-item { display: flex; align-items: stretch; gap: 6px; }
+.cl-item label { flex: 1; }
+.cl-handle {
+  flex-shrink: 0; width: 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text3);
+  font-size: 1rem; line-height: 1; cursor: grab;
+  touch-action: none; /* pointer-drag em touch sem rolar a página */
+}
+.cl-handle:active { cursor: grabbing; }
+.cl-handle:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.cl-item.dragging { opacity: .5; }
+.cl-due-btn {
+  flex-shrink: 0; align-self: center;
+  font-size: .68rem; font-weight: 600; white-space: nowrap;
+  color: var(--text3); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 99px;
+  padding: 4px 8px; cursor: pointer;
+}
+.cl-due-btn.overdue {
+  background: var(--planned-bg); color: var(--planned-c); border-color: transparent;
+}
 .pk-add {
   display: flex; gap: 6px; margin-top: 10px;
 }
