@@ -47,7 +47,7 @@ const CATEGORIES = [
   { key: 'stays', label: 'Hospedagem', color: '#10b981' },
   { key: 'experiences', label: 'Experiências', color: '#a855f7' },
   { key: 'food', label: 'Alimentação', color: '#f59e0b' },
-  { key: 'other', label: 'Outros', color: '#64748b' },
+  { key: 'other', label: 'Outros', color: '#6b7280' },
 ];
 
 function fmt(n) {
