@@ -1602,15 +1602,18 @@ function wireChecklistControls(root, trip, rerender) {
         const after = ev.clientY > rect.top + rect.height / 2;
         list.insertBefore(li, after ? over.nextSibling : over);
       };
-      const onUp = () => {
-        handle.releasePointerCapture(e.pointerId);
+      const cleanup = () => {
+        try { handle.releasePointerCapture(e.pointerId); } catch { /* já solto */ }
         handle.removeEventListener('pointermove', onMove);
         handle.removeEventListener('pointerup', onUp);
+        handle.removeEventListener('pointercancel', onCancel);
         li.classList.remove('dragging');
-        persist(idsNow());
       };
+      const onUp = () => { cleanup(); persist(idsNow()); };
+      const onCancel = () => { cleanup(); rerender(); }; // iOS abortou o gesto: restaura
       handle.addEventListener('pointermove', onMove);
       handle.addEventListener('pointerup', onUp);
+      handle.addEventListener('pointercancel', onCancel);
     });
   });
 }
@@ -3276,9 +3279,20 @@ function hydratePlanPage(trip) {
   datesEl.setAttribute('aria-label', 'Editar período da viagem');
   datesEl.title = 'Clique para editar o período';
   datesEl.style.cursor = 'pointer';
-  datesEl.onclick = () => openDateEditorPopover(trip, datesEl);
+  // B1: usa Pointer Events em vez de onclick — iOS não sintetiza `click`
+  // de forma confiável em <div> estilizado. Guarda de "tap" (pouco
+  // movimento) evita abrir ao rolar a página começando no badge.
+  let datesPtDown = null;
+  datesEl.onpointerdown = (e) => { datesPtDown = { x: e.clientX, y: e.clientY }; };
+  datesEl.onpointercancel = () => { datesPtDown = null; };
+  datesEl.onpointerup = (e) => {
+    if (!datesPtDown) return;
+    const moved = Math.abs(e.clientX - datesPtDown.x) + Math.abs(e.clientY - datesPtDown.y);
+    datesPtDown = null;
+    if (moved < 10) openDateEditorPopover(trip, datesEl);
+  };
   datesEl.onkeydown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); datesEl.click(); }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDateEditorPopover(trip, datesEl); }
   };
 
   const heroBg = document.getElementById('planHeroBg');

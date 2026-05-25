@@ -1366,10 +1366,18 @@ input[type=range]::-moz-range-thumb {
   border-radius: 8px; color: var(--text3);
   font-size: 1rem; line-height: 1; cursor: grab;
   touch-action: none; /* pointer-drag em touch sem rolar a página */
+  -webkit-touch-callout: none; /* iOS: não dispara o menu de long-press */
+  -webkit-user-select: none; user-select: none;
 }
 .cl-handle:active { cursor: grabbing; }
 .cl-handle:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.cl-item.dragging { opacity: .5; }
+.cl-item.dragging {
+  opacity: .9;
+  background: var(--surface3);
+  border-radius: 8px;
+  box-shadow: 0 6px 16px -4px rgba(15, 23, 42, .4);
+}
+.cl-item.dragging .cl-handle { cursor: grabbing; background: var(--accent); color: #fff; }
 .cl-due-btn {
   flex-shrink: 0; align-self: center;
   font-size: .68rem; font-weight: 600; white-space: nowrap;
