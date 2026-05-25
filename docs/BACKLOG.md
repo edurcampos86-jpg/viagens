@@ -35,6 +35,38 @@ automação do save é desejável mas precisa de implementação segura.
 
 ---
 
+## Gmail OAuth pronto pra deploy (F1 da Sprint SP-Junho)
+
+**Contexto:** o fluxo de importar reservas do Gmail (F1) está implementado
+e testado, mas inerte — falta a infraestrutura de deploy. Adiado pra uma
+sprint de infra dedicada.
+
+**O que já existe (código pronto):**
+
+- `backend/functions/gmail-oauth/` — handshake OAuth do Google.
+- `backend/functions/gmail-parser/` — extrai reservas dos e-mails. Senders
+  dedicados: TAP (`senders/tap.ts`), Booking (`senders/booking.ts`); demais
+  via `senders/generic.ts` (LATAM, GOL, Airbnb, Decolar, Hotels.com, events)
+  com fallback LLM (`llm-fallback.ts`).
+- `src/components/inbox.js` — UI da caixa de entrada de reservas.
+- `deriveDatesFromBookings` — já coberto por `tests/v2-modules.test.mjs`.
+- `backend/migrations/001_initial.sql` — schema com RLS (`gmail_tokens`,
+  tokens cifrados, acesso só via Edge Function).
+
+**O que falta (deploy/infra):**
+
+1. Criar o projeto Supabase.
+2. Rodar `supabase db push` da migration `001_initial.sql`.
+3. Configurar `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` no OAuth Console.
+4. Deploy das 2 edge functions (`gmail-oauth`, `gmail-parser`).
+5. Plugar o botão "Importar do Gmail" no FAB ⚙ da U2.
+
+**Conexão:** problema irmão da entrada [Auto-sync seguro](#auto-sync-seguro-originado-em-sprint-1-t2)
+— ambos dependem de Supabase deployado e tocam o mesmo backend hoje inerte.
+Vale resolver juntos numa próxima sprint de infra.
+
+---
+
 ## Endereçar B-N4 — docs stale sobre Concierge
 
 **Contexto:** `docs/ARCHITECTURE.md` §3 e §4.3, `docs/AGENTS.md:204` e

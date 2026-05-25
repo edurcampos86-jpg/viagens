@@ -1792,7 +1792,8 @@ function populateContext(node, trip) {
     </div>
   `).join('');
 
-  const fxBlock = fx ? `
+  const showFx = fx && fx.code !== 'BRL';
+  const fxBlock = showFx ? `
     <div class="fx-block">
       <h4>💱 Câmbio aproximado</h4>
       <div class="fx-rate">R$ 1 ≈ ${fx.perBRL.toLocaleString('pt-BR', { maximumFractionDigits: 4 })} ${fx.code}</div>
@@ -1810,7 +1811,7 @@ function populateContext(node, trip) {
     </div>
     ${fxBlock}
   `;
-  if (fx) {
+  if (showFx) {
     const inp = panel.querySelector('.fx-input');
     const out = panel.querySelector('[data-fx-out]');
     inp.addEventListener('input', () => {
