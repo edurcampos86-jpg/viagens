@@ -320,6 +320,59 @@ await asyncTest('customs.run: viagem internacional reporta itens', async () => {
   assert.ok(['green', 'yellow', 'red'].includes(result.overall));
 });
 
+// ── overlay.js (U4 — POIs + integração Fase 1) ────────────────────────
+const overlay = await import(`${ROOT}/src/core/overlay.js`);
+
+test('overlay.normalizePoi: POI válido normaliza com kind', () => {
+  const p = overlay.normalizePoi({ name: ' Ibirapuera ', lat: -23.587, lon: -46.657, kind: 'viewpoint' });
+  assert.deepEqual(p, { name: 'Ibirapuera', lat: -23.587, lon: -46.657, kind: 'viewpoint' });
+});
+
+test('overlay.normalizePoi: name vazio → null', () => {
+  assert.equal(overlay.normalizePoi({ name: '   ', lat: 0, lon: 0 }), null);
+});
+
+test('overlay.normalizePoi: lat fora de range → null', () => {
+  assert.equal(overlay.normalizePoi({ name: 'x', lat: 91, lon: 0 }), null);
+  assert.equal(overlay.normalizePoi({ name: 'x', lat: 0, lon: 181 }), null);
+});
+
+test('overlay.normalizePoi: lat/lon não-numérico → null', () => {
+  assert.equal(overlay.normalizePoi({ name: 'x', lat: 'abc', lon: 0 }), null);
+});
+
+test('overlay.normalizePoi: kind desconhecido cai para place', () => {
+  const p = overlay.normalizePoi({ name: 'x', lat: 0, lon: 0, kind: 'spaceship' });
+  assert.equal(p.kind, 'place');
+});
+
+test('overlay.normalizePoi: note opcional é trimada; vazia some', () => {
+  assert.equal(overlay.normalizePoi({ name: 'x', lat: 0, lon: 0, note: '   ' }).note, undefined);
+  assert.equal(overlay.normalizePoi({ name: 'x', lat: 0, lon: 0, note: ' oi ' }).note, 'oi');
+});
+
+test('overlay.mergeOverlayIntoTrip: aplica pois sem corromper campos Fase 1', () => {
+  const trip = { id: 't', startDate: '2026-06-13', nts: 9, name: 'SP' };
+  const ov = { _topLevel: { pois: [{ name: 'A', lat: 1, lon: 2, kind: 'hotel' }] } };
+  const merged = overlay.mergeOverlayIntoTrip(trip, ov);
+  assert.equal(merged.startDate, '2026-06-13'); // Fase 1 intacto
+  assert.equal(merged.nts, 9);
+  assert.equal(merged.pois.length, 1);
+  assert.equal(merged.pois[0].kind, 'hotel');
+  assert.equal(trip.pois, undefined); // não muta o original
+});
+
+test('overlay.diffOverlayVsTrip + buildPatchSnippet: pois entram no snippet', () => {
+  const trip = { id: 't', startDate: '2026-06-13' };
+  const ov = { _topLevel: { pois: [{ name: 'A', lat: 1, lon: 2, kind: 'place' }] } };
+  const diff = overlay.diffOverlayVsTrip(trip, ov);
+  assert.equal(diff.hasChanges, true);
+  assert.ok(diff.fields.some((f) => f.key === 'pois'));
+  const snip = overlay.buildPatchSnippet('t', ov);
+  assert.equal(snip.id, 't');
+  assert.equal(snip.pois.length, 1);
+});
+
 // ── Sumário ───────────────────────────────────────────────────────────
 console.log(`\n${passed} passed, ${failed} failed.`);
 if (failed > 0) process.exit(1);
