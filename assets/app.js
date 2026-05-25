@@ -5,6 +5,7 @@
 import * as overlay from '../src/core/overlay.js';
 import { loadRules, injectChecklistItems } from '../src/components/checklist.js';
 import { deriveDatesFromBookings } from '../src/core/dates.js';
+import { decideNextAction } from '../src/core/next-action.js';
 
 // Exposto pra console + handlers que vivem em outros módulos.
 window.viagensOverlay = overlay;
@@ -3248,46 +3249,15 @@ function computeNextAction(trip) {
   ).length;
   const hasStays = (bookings.stays || []).length > 0;
 
-  let label, severity = 'info', cta = null;
-
-  if (trip.status === 'wishlist' || d == null) {
-    label = '📌 Definir datas e destino';
-    severity = 'warn';
-    cta = { anchor: 'planHero', kind: 'edit-dates' };
-  } else if (d > 90) {
-    label = '📅 Pesquisar voos e hospedagem';
-    cta = { anchor: 'planReservations' };
-  } else if (d > 60 && confirmedFlights === 0) {
-    label = '✈ Comprar voos (preços tendem a subir)';
-    severity = 'warn';
-    cta = { anchor: 'planReservations' };
-  } else if (d > 30 && !hasStays) {
-    label = '🏨 Reservar hospedagem';
-    severity = 'warn';
-    cta = { anchor: 'planReservations' };
-  } else if (d > 14) {
-    label = '📋 Rodar Despachante Digital + revisar checklist';
-    cta = { anchor: 'planChecklist' };
-  } else if (d > 3) {
-    label = '🧳 Preparar bagagem';
-    cta = { anchor: 'planPacking', tab: 'packing' };
-  } else if (d >= 0) {
-    label = '✈ Check-in online + impressão de docs';
-    severity = 'urgent';
-    cta = { anchor: 'planChecklist' };
-  } else if (!memVal) {
-    label = '📝 Registrar lembranças da viagem';
-    cta = { anchor: 'planPlanning' };
-  } else {
-    label = '✓ Memória registrada';
-    severity = 'done';
-  }
-
-  if (pendingChecks > 0 && severity !== 'done') {
-    label += ` (${pendingChecks} ${pendingChecks === 1 ? 'item pendente' : 'itens pendentes'})`;
-  }
-
-  return { label, severity, cta };
+  // B3: árvore de decisão extraída pra módulo puro testável.
+  return decideNextAction({
+    status: trip.status,
+    d,
+    confirmedFlights,
+    hasStays,
+    hasMemory: !!memVal,
+    pendingChecks,
+  });
 }
 
 function renderPlanQuickstats(trip) {

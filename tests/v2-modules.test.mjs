@@ -320,6 +320,45 @@ await asyncTest('customs.run: viagem internacional reporta itens', async () => {
   assert.ok(['green', 'yellow', 'red'].includes(result.overall));
 });
 
+// ── next-action.js (B3 — decideNextAction) ────────────────────────────
+const na = await import(`${ROOT}/src/core/next-action.js`);
+
+test('decideNextAction: wishlist → definir datas', () => {
+  const r = na.decideNextAction({ status: 'wishlist', d: null });
+  assert.match(r.label, /Definir datas e destino/);
+  assert.equal(r.severity, 'warn');
+  assert.equal(r.cta.kind, 'edit-dates');
+});
+
+test('decideNextAction: d > 90 → pesquisar voos e hospedagem', () => {
+  const r = na.decideNextAction({ status: 'planned', d: 120 });
+  assert.match(r.label, /Pesquisar voos e hospedagem/);
+});
+
+test('decideNextAction: 60 < d <= 90 sem voos confirmados → comprar voos', () => {
+  const r = na.decideNextAction({ status: 'planned', d: 75, confirmedFlights: 0 });
+  assert.match(r.label, /Comprar voos/);
+  assert.equal(r.severity, 'warn');
+});
+
+test('decideNextAction: 30 < d <= 60 sem stays → reservar hospedagem', () => {
+  const r = na.decideNextAction({ status: 'planned', d: 45, confirmedFlights: 2, hasStays: false });
+  assert.match(r.label, /Reservar hospedagem/);
+});
+
+test('decideNextAction: d < 0 sem memória → registrar lembranças', () => {
+  const r = na.decideNextAction({ status: 'done', d: -5, hasMemory: false });
+  assert.match(r.label, /Registrar lembranças/);
+});
+
+test('decideNextAction: pendingChecks anexa sufixo (exceto done)', () => {
+  const r = na.decideNextAction({ status: 'planned', d: 120, pendingChecks: 3 });
+  assert.match(r.label, /\(3 itens pendentes\)/);
+  const done = na.decideNextAction({ status: 'done', d: -10, hasMemory: true, pendingChecks: 3 });
+  assert.equal(done.severity, 'done');
+  assert.ok(!/pendente/.test(done.label));
+});
+
 // ── overlay.js (U4 — POIs + integração Fase 1) ────────────────────────
 const overlay = await import(`${ROOT}/src/core/overlay.js`);
 
