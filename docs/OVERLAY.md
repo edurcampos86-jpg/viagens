@@ -138,7 +138,12 @@ Também exposto em `window.viagensOverlay` pra inspeção no console.
 - ✅ **U4 (Fase 2)** — POIs no mapa: `_topLevel.pois[]` renderizados como
   pins por categoria no Leaflet; add via clique no mapa + popover, remoção
   pela lista; persiste no overlay e entra no snippet de sync.
-- **F5 (Fase 3)** vai persistir ordem do checklist via overlay (provável
-  expansão pra `_topLevel.checklistOrder` ou novo namespace).
+- ✅ **F5 (Fase 3)** — checklist com reordenar (drag/teclado) + prazo por
+  item. Decisão: ordem (`checklistOrder`) e prazos (`checklistDue`) persistem
+  na **sub-seção legada via `saveTripState`** (junto dos checks, fora do
+  snippet de sync do trips.json — são estado pessoal, não dado canônico).
+  Lógica pura em [`src/core/checklist-order.js`](../src/core/checklist-order.js).
+  > Nota: a ideia inicial era `_topLevel.checklistOrder` (sync ao trips.json),
+  > mas optou-se pela sub-seção legada — ordem/prazos são estado pessoal.
 - A entrada existente do BACKLOG [Auto-sync seguro](BACKLOG.md) eventualmente
   pode consumir esse overlay como input do PR automático ao trips.json.

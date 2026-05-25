@@ -445,6 +445,40 @@ test('overlay.diffOverlayVsTrip + buildPatchSnippet: pois entram no snippet', ()
   assert.equal(snip.pois.length, 1);
 });
 
+// ── checklist-order.js (F5 — ordem + prazos) ──────────────────────────
+const clo = await import(`${ROOT}/src/core/checklist-order.js`);
+
+test('applyChecklistOrder: respeita ordem salva; desconhecidos ao fim (estável)', () => {
+  const items = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'novo' }];
+  const out = clo.applyChecklistOrder(items, ['c', 'a']);
+  assert.deepEqual(out.map((i) => i.id), ['c', 'a', 'b', 'novo']);
+});
+
+test('applyChecklistOrder: sem ordem salva devolve cópia na ordem original', () => {
+  const items = [{ id: 'a' }, { id: 'b' }];
+  const out = clo.applyChecklistOrder(items, []);
+  assert.deepEqual(out.map((i) => i.id), ['a', 'b']);
+  assert.notEqual(out, items); // cópia
+});
+
+test('moveItem: insere antes do alvo', () => {
+  assert.deepEqual(clo.moveItem(['a', 'b', 'c'], 'c', 'a'), ['c', 'a', 'b']);
+});
+
+test('moveItem: toId null move pro fim; no-op se id ausente', () => {
+  assert.deepEqual(clo.moveItem(['a', 'b', 'c'], 'a', null), ['b', 'c', 'a']);
+  assert.deepEqual(clo.moveItem(['a', 'b'], 'x', 'a'), ['a', 'b']);
+});
+
+test('isItemOverdue: vencido só se tem prazo, não-checado e antes de hoje', () => {
+  const today = new Date('2026-06-15T12:00:00Z');
+  assert.equal(clo.isItemOverdue('2026-06-10', false, today), true);
+  assert.equal(clo.isItemOverdue('2026-06-10', true, today), false);  // checado
+  assert.equal(clo.isItemOverdue('2026-06-15', false, today), false); // vence hoje
+  assert.equal(clo.isItemOverdue('2026-06-20', false, today), false); // futuro
+  assert.equal(clo.isItemOverdue('', false, today), false);           // sem prazo
+});
+
 // ── Sumário ───────────────────────────────────────────────────────────
 console.log(`\n${passed} passed, ${failed} failed.`);
 if (failed > 0) process.exit(1);
