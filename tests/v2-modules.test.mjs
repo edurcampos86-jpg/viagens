@@ -320,6 +320,131 @@ await asyncTest('customs.run: viagem internacional reporta itens', async () => {
   assert.ok(['green', 'yellow', 'red'].includes(result.overall));
 });
 
+// ── next-action.js (B3 — decideNextAction) ────────────────────────────
+const na = await import(`${ROOT}/src/core/next-action.js`);
+
+test('decideNextAction: wishlist → definir datas', () => {
+  const r = na.decideNextAction({ status: 'wishlist', d: null });
+  assert.match(r.label, /Definir datas e destino/);
+  assert.equal(r.severity, 'warn');
+  assert.equal(r.cta.kind, 'edit-dates');
+});
+
+test('decideNextAction: d > 90 → pesquisar voos e hospedagem', () => {
+  const r = na.decideNextAction({ status: 'planned', d: 120 });
+  assert.match(r.label, /Pesquisar voos e hospedagem/);
+});
+
+test('decideNextAction: 60 < d <= 90 sem voos confirmados → comprar voos', () => {
+  const r = na.decideNextAction({ status: 'planned', d: 75, confirmedFlights: 0 });
+  assert.match(r.label, /Comprar voos/);
+  assert.equal(r.severity, 'warn');
+});
+
+test('decideNextAction: 30 < d <= 60 sem stays → reservar hospedagem', () => {
+  const r = na.decideNextAction({ status: 'planned', d: 45, confirmedFlights: 2, hasStays: false });
+  assert.match(r.label, /Reservar hospedagem/);
+});
+
+test('decideNextAction: d < 0 sem memória → registrar lembranças', () => {
+  const r = na.decideNextAction({ status: 'done', d: -5, hasMemory: false });
+  assert.match(r.label, /Registrar lembranças/);
+});
+
+test('decideNextAction: pendingChecks anexa sufixo (exceto done)', () => {
+  const r = na.decideNextAction({ status: 'planned', d: 120, pendingChecks: 3 });
+  assert.match(r.label, /\(3 itens pendentes\)/);
+  const done = na.decideNextAction({ status: 'done', d: -10, hasMemory: true, pendingChecks: 3 });
+  assert.equal(done.severity, 'done');
+  assert.ok(!/pendente/.test(done.label));
+});
+
+// ── overlay.js (U4 — POIs + integração Fase 1) ────────────────────────
+// Shim mínimo de localStorage p/ exercitar read/write (node não tem).
+globalThis.localStorage = {
+  store: {},
+  getItem(k) { return this.store[k] ?? null; },
+  setItem(k, v) { this.store[k] = String(v); },
+  removeItem(k) { delete this.store[k]; },
+};
+const overlay = await import(`${ROOT}/src/core/overlay.js`);
+
+test('overlay.writeOverlay/readOverlay: round-trip grava e devolve igual', () => {
+  overlay.writeOverlay('t-rt', { checklist: { a: true }, _topLevel: { startDate: '2026-06-13' } });
+  const r = overlay.readOverlay('t-rt');
+  assert.equal(r.checklist.a, true);
+  assert.equal(r._topLevel.startDate, '2026-06-13');
+});
+
+test('overlay.writeOverlay: merge de _topLevel preserva campos + sub-seções coexistem', () => {
+  overlay.writeOverlay('t-merge', { _topLevel: { startDate: '2026-06-13', nts: 9 } });
+  overlay.writeOverlay('t-merge', { _topLevel: { endDate: '2026-06-22' } }); // só adiciona
+  overlay.writeOverlay('t-merge', { checklist: { x: true } });               // sub-seção
+  const r = overlay.readOverlay('t-merge');
+  assert.equal(r._topLevel.startDate, '2026-06-13'); // preservado
+  assert.equal(r._topLevel.nts, 9);                  // preservado
+  assert.equal(r._topLevel.endDate, '2026-06-22');   // adicionado
+  assert.equal(r.checklist.x, true);                 // sub-seção coexiste
+});
+
+test('overlay.clearOverlay: remove só a trip alvo', () => {
+  overlay.writeOverlay('t-keep', { _topLevel: { nts: 3 } });
+  overlay.writeOverlay('t-del', { _topLevel: { nts: 5 } });
+  overlay.clearOverlay('t-del');
+  assert.deepEqual(overlay.readOverlay('t-del'), {});            // removida
+  assert.equal(overlay.readOverlay('t-keep')._topLevel.nts, 3);  // intacta
+});
+
+test('overlay.normalizePoi: POI válido normaliza com kind', () => {
+  const p = overlay.normalizePoi({ name: ' Ibirapuera ', lat: -23.587, lon: -46.657, kind: 'viewpoint' });
+  assert.deepEqual(p, { name: 'Ibirapuera', lat: -23.587, lon: -46.657, kind: 'viewpoint' });
+});
+
+test('overlay.normalizePoi: name vazio → null', () => {
+  assert.equal(overlay.normalizePoi({ name: '   ', lat: 0, lon: 0 }), null);
+});
+
+test('overlay.normalizePoi: lat fora de range → null', () => {
+  assert.equal(overlay.normalizePoi({ name: 'x', lat: 91, lon: 0 }), null);
+  assert.equal(overlay.normalizePoi({ name: 'x', lat: 0, lon: 181 }), null);
+});
+
+test('overlay.normalizePoi: lat/lon não-numérico → null', () => {
+  assert.equal(overlay.normalizePoi({ name: 'x', lat: 'abc', lon: 0 }), null);
+});
+
+test('overlay.normalizePoi: kind desconhecido cai para place', () => {
+  const p = overlay.normalizePoi({ name: 'x', lat: 0, lon: 0, kind: 'spaceship' });
+  assert.equal(p.kind, 'place');
+});
+
+test('overlay.normalizePoi: note opcional é trimada; vazia some', () => {
+  assert.equal(overlay.normalizePoi({ name: 'x', lat: 0, lon: 0, note: '   ' }).note, undefined);
+  assert.equal(overlay.normalizePoi({ name: 'x', lat: 0, lon: 0, note: ' oi ' }).note, 'oi');
+});
+
+test('overlay.mergeOverlayIntoTrip: aplica pois sem corromper campos Fase 1', () => {
+  const trip = { id: 't', startDate: '2026-06-13', nts: 9, name: 'SP' };
+  const ov = { _topLevel: { pois: [{ name: 'A', lat: 1, lon: 2, kind: 'hotel' }] } };
+  const merged = overlay.mergeOverlayIntoTrip(trip, ov);
+  assert.equal(merged.startDate, '2026-06-13'); // Fase 1 intacto
+  assert.equal(merged.nts, 9);
+  assert.equal(merged.pois.length, 1);
+  assert.equal(merged.pois[0].kind, 'hotel');
+  assert.equal(trip.pois, undefined); // não muta o original
+});
+
+test('overlay.diffOverlayVsTrip + buildPatchSnippet: pois entram no snippet', () => {
+  const trip = { id: 't', startDate: '2026-06-13' };
+  const ov = { _topLevel: { pois: [{ name: 'A', lat: 1, lon: 2, kind: 'place' }] } };
+  const diff = overlay.diffOverlayVsTrip(trip, ov);
+  assert.equal(diff.hasChanges, true);
+  assert.ok(diff.fields.some((f) => f.key === 'pois'));
+  const snip = overlay.buildPatchSnippet('t', ov);
+  assert.equal(snip.id, 't');
+  assert.equal(snip.pois.length, 1);
+});
+
 // ── Sumário ───────────────────────────────────────────────────────────
 console.log(`\n${passed} passed, ${failed} failed.`);
 if (failed > 0) process.exit(1);

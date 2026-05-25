@@ -30,6 +30,10 @@ const LS_KEY = 'viagens-trip-state-v1';
 // pra evitar surpresas — adicione conforme necessário.
 export const TOP_LEVEL_FIELDS = ['startDate', 'endDate', 'nts', 'highlights', 'pois'];
 
+// Categorias de POI (U4). 'place' é o fallback genérico. A UI mapeia cada
+// kind para um emoji/label; aqui só validamos contra esta lista.
+export const POI_KINDS = ['place', 'hotel', 'restaurant', 'event', 'beach', 'viewpoint', 'transit'];
+
 function loadAll() {
   try {
     return JSON.parse(localStorage.getItem(LS_KEY) || '{}');
@@ -125,6 +129,26 @@ export function diffOverlayVsTrip(trip, overlay) {
     }
   }
   return out;
+}
+
+// U4 (Fase 2 — POIs no mapa): valida/normaliza um POI vindo da UI.
+// Exige `name` não-vazio e coordenadas finitas dentro do range geográfico.
+// `kind` cai para 'place' se ausente/desconhecido; `note` é opcional.
+// Retorna o POI limpo ({ name, lat, lon, kind, note? }) ou `null` se
+// inválido — quem chama decide o feedback.
+export function normalizePoi(input) {
+  if (!input || typeof input !== 'object') return null;
+  const name = String(input.name ?? '').trim();
+  const lat = Number(input.lat);
+  const lon = Number(input.lon);
+  if (!name) return null;
+  if (!Number.isFinite(lat) || lat < -90 || lat > 90) return null;
+  if (!Number.isFinite(lon) || lon < -180 || lon > 180) return null;
+  const kind = POI_KINDS.includes(input.kind) ? input.kind : 'place';
+  const poi = { name, lat, lon, kind };
+  const note = String(input.note ?? '').trim();
+  if (note) poi.note = note;
+  return poi;
 }
 
 // Conveniência: serializa o overlay top-level de uma trip num snippet

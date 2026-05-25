@@ -41,7 +41,9 @@ pra preservar edições existentes).
       "endDate":   "2026-06-23",
       "nts": 9,
       "highlights": [...],
-      "pois": [...]     // reservado pra U4 (Fase 2)
+      "pois": [         // U4 (Fase 2) — pontos de interesse no mapa
+        { "name": "Parque Ibirapuera", "lat": -23.587, "lon": -46.657, "kind": "viewpoint", "note": "opcional" }
+      ]
     }
   }
 }
@@ -63,6 +65,22 @@ campo novo: incluir aqui + cobrir no diff/snippet.
 ```js
 export const TOP_LEVEL_FIELDS = ['startDate', 'endDate', 'nts', 'highlights', 'pois'];
 ```
+
+### POIs (`_topLevel.pois[]`) — U4
+
+Cada POI: `{ name, lat, lon, kind, note? }`. `kind` é validado contra
+`POI_KINDS` (`overlay.js`) e cai para `'place'` se ausente/desconhecido;
+`note` é opcional. Sempre passe input cru por `overlay.normalizePoi(input)`
+antes de gravar — ela trima, valida coordenadas (lat ∈ [-90,90],
+lon ∈ [-180,180]) e devolve `null` se inválido.
+
+```js
+export const POI_KINDS = ['place', 'hotel', 'restaurant', 'event', 'beach', 'viewpoint', 'transit'];
+```
+
+A UI legada (`assets/app.js`) mapeia cada kind para emoji/label em
+`POI_KIND_META` (pin no mapa + lista). POIs entram no diff/snippet de sync
+como qualquer outro campo top-level (são parte de `TOP_LEVEL_FIELDS`).
 
 ## API
 
@@ -117,7 +135,9 @@ Também exposto em `window.viagensOverlay` pra inspeção no console.
 
 ## Próximos passos
 
-- **U4 (Fase 2)** vai usar `_topLevel.pois[]` pra POIs no mapa.
+- ✅ **U4 (Fase 2)** — POIs no mapa: `_topLevel.pois[]` renderizados como
+  pins por categoria no Leaflet; add via clique no mapa + popover, remoção
+  pela lista; persiste no overlay e entra no snippet de sync.
 - **F5 (Fase 3)** vai persistir ordem do checklist via overlay (provável
   expansão pra `_topLevel.checklistOrder` ou novo namespace).
 - A entrada existente do BACKLOG [Auto-sync seguro](BACKLOG.md) eventualmente

@@ -106,6 +106,16 @@ Sprint pra resolver os achados da auditoria ao vivo do `#plan/sp-junho-2026`
 
 **27/27 testes verdes** ao fim da Fase 1 (era 19/25 antes do fix do path).
 
+### Fase 2 (em andamento)
+
+| Lote | O que mudou | Arquivos-chave |
+|---|---|---|
+| #56 | cor `Outros` `#6b7280` + esconde câmbio p/ BRL (D6) + entrada Gmail no BACKLOG | `src/components/budget.js`, `assets/app.js`, `docs/BACKLOG.md` |
+| U4 | POIs no mapa: `_topLevel.pois[]` com pin por categoria (kind→emoji), add por clique no mapa + popover (ARIA/Esc), remoção pela lista; persiste no overlay e entra no snippet de sync | `src/core/overlay.js` (`normalizePoi`, `POI_KINDS`), `assets/app.js` (`renderPoiPanel`, `openPoiNamePopover`, `POI_KIND_META`), `index.html`, `assets/styles.css` |
+| B-N12 | resolvido junto da U4: `renderMiniMap` desmonta a instância Leaflet anterior antes de re-inicializar (acabou o "Map container is already initialized") | `assets/app.js:renderMiniMap` |
+
+**35/35 testes verdes** ao fim da U4 (+8: `normalizePoi` + integração overlay/POIs).
+
 ---
 
 ## Métricas alcançadas vs PRD

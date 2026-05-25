@@ -169,6 +169,11 @@ manual em batch). Fora do escopo de Sprint 1.
 
 ## B-N12 — Leaflet "Map container is already initialized" em SPA
 
+**Status:** ✅ RESOLVIDO junto da U4 (Fase 2). `renderMiniMap` agora guarda
+a instância em `host._leafletMap` e chama `.remove()` antes de re-inicializar.
+Era agravado pela U4 (edição de POIs re-renderiza o mapa), então foi
+corrigido na mesma leva. Ver `CHANGELOG-V2.md` (Fase 2).
+
 **Severidade:** 🟡 Atenção (polui console, não quebra UX)
 
 **Sintoma:** ao navegar entre páginas de viagens (`#plan/<id>` → outra viagem),

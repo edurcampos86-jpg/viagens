@@ -5,6 +5,7 @@
 import * as overlay from '../src/core/overlay.js';
 import { loadRules, injectChecklistItems } from '../src/components/checklist.js';
 import { deriveDatesFromBookings } from '../src/core/dates.js';
+import { decideNextAction } from '../src/core/next-action.js';
 
 // Exposto pra console + handlers que vivem em outros módulos.
 window.viagensOverlay = overlay;
@@ -2020,12 +2021,32 @@ function buildArc(p1, p2, steps = 20) {
 }
 
 // Mini-map for trip route tab
-function renderMiniMap(host, trip) {
+// U4: metadados das categorias de POI. Chaves alinhadas com overlay.POI_KINDS.
+const POI_KIND_META = {
+  place:      { emoji: '📍', label: 'Lugar' },
+  hotel:      { emoji: '🏨', label: 'Hospedagem' },
+  restaurant: { emoji: '🍽', label: 'Restaurante' },
+  event:      { emoji: '🎫', label: 'Evento' },
+  beach:      { emoji: '🏖', label: 'Praia' },
+  viewpoint:  { emoji: '🌄', label: 'Mirante' },
+  transit:    { emoji: '🚇', label: 'Transporte' },
+};
+function poiEmoji(kind) { return (POI_KIND_META[kind] || POI_KIND_META.place).emoji; }
+
+function renderMiniMap(host, trip, opts = {}) {
+  // B-N12: destrói a instância anterior antes de re-inicializar, senão
+  // Leaflet lança "Map container is already initialized" ao re-renderizar
+  // a plan-page (acontece a cada edição de overlay: período, POIs...).
+  if (host._leafletMap) {
+    try { host._leafletMap.remove(); } catch { /* já desmontado */ }
+    host._leafletMap = null;
+  }
   host.style.height = '240px';
   const m = L.map(host, {
     zoomControl: false, dragging: true, scrollWheelZoom: false, doubleClickZoom: true,
     minZoom: 1, maxZoom: 14
   });
+  host._leafletMap = m;
   L.tileLayer(state.isDark ? TILES.dark : TILES.light, {
     attribution: TILES_ATTR, subdomains: 'abcd'
   }).addTo(m);
@@ -2044,10 +2065,30 @@ function renderMiniMap(host, trip) {
   if (latlngs.length > 1) {
     L.polyline(latlngs, { color: trip.color, weight: 3, opacity: .8 }).addTo(m);
   }
-  if (latlngs.length === 1) {
-    m.setView(latlngs[0], 8);
-  } else {
-    m.fitBounds(latlngs, { padding: [20, 20] });
+  // U4: POIs do overlay (_topLevel.pois) — pin distinto com emoji por kind.
+  const pois = Array.isArray(trip.pois) ? trip.pois : [];
+  const poiLatLngs = [];
+  pois.forEach((p) => {
+    if (!Number.isFinite(p?.lat) || !Number.isFinite(p?.lon)) return;
+    poiLatLngs.push([p.lat, p.lon]);
+    L.marker([p.lat, p.lon], {
+      title: p.name,
+      icon: L.divIcon({
+        html: `<div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;background:#fff;border:2px solid #f59e0b;border-radius:50%;font-size:13px;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.4)">${poiEmoji(p.kind)}</div>`,
+        className: 'poi-pin-wrap',
+        iconSize: [24, 24], iconAnchor: [12, 12]
+      })
+    }).bindTooltip(`${poiEmoji(p.kind)} ${escapeHtml(p.name)}${p.note ? ' — ' + escapeHtml(p.note) : ''}`).addTo(m);
+  });
+  const allLatLngs = [...latlngs, ...poiLatLngs];
+  if (allLatLngs.length === 1) {
+    m.setView(allLatLngs[0], 8);
+  } else if (allLatLngs.length > 1) {
+    m.fitBounds(allLatLngs, { padding: [24, 24] });
+  }
+  // U4: click-to-add (só na plan-page, quando opts.onMapClick é passado).
+  if (typeof opts.onMapClick === 'function') {
+    m.on('click', (e) => opts.onMapClick(e.latlng, e.containerPoint));
   }
   // Allow scroll-wheel zoom on focus
   host.addEventListener('click', () => m.scrollWheelZoom.enable());
@@ -3208,46 +3249,15 @@ function computeNextAction(trip) {
   ).length;
   const hasStays = (bookings.stays || []).length > 0;
 
-  let label, severity = 'info', cta = null;
-
-  if (trip.status === 'wishlist' || d == null) {
-    label = '📌 Definir datas e destino';
-    severity = 'warn';
-    cta = { anchor: 'planHero', kind: 'edit-dates' };
-  } else if (d > 90) {
-    label = '📅 Pesquisar voos e hospedagem';
-    cta = { anchor: 'planReservations' };
-  } else if (d > 60 && confirmedFlights === 0) {
-    label = '✈ Comprar voos (preços tendem a subir)';
-    severity = 'warn';
-    cta = { anchor: 'planReservations' };
-  } else if (d > 30 && !hasStays) {
-    label = '🏨 Reservar hospedagem';
-    severity = 'warn';
-    cta = { anchor: 'planReservations' };
-  } else if (d > 14) {
-    label = '📋 Rodar Despachante Digital + revisar checklist';
-    cta = { anchor: 'planChecklist' };
-  } else if (d > 3) {
-    label = '🧳 Preparar bagagem';
-    cta = { anchor: 'planPacking', tab: 'packing' };
-  } else if (d >= 0) {
-    label = '✈ Check-in online + impressão de docs';
-    severity = 'urgent';
-    cta = { anchor: 'planChecklist' };
-  } else if (!memVal) {
-    label = '📝 Registrar lembranças da viagem';
-    cta = { anchor: 'planPlanning' };
-  } else {
-    label = '✓ Memória registrada';
-    severity = 'done';
-  }
-
-  if (pendingChecks > 0 && severity !== 'done') {
-    label += ` (${pendingChecks} ${pendingChecks === 1 ? 'item pendente' : 'itens pendentes'})`;
-  }
-
-  return { label, severity, cta };
+  // B3: árvore de decisão extraída pra módulo puro testável.
+  return decideNextAction({
+    status: trip.status,
+    d,
+    confirmedFlights,
+    hasStays,
+    hasMemory: !!memVal,
+    pendingChecks,
+  });
 }
 
 function renderPlanQuickstats(trip) {
@@ -3296,18 +3306,156 @@ function renderPlanMap(trip) {
   const list = document.getElementById('planRouteList');
   host.innerHTML = ''; host.dataset.ready = '';
   list.innerHTML = '';
+  const poisHost = document.getElementById('planPois');
   if (trip.lat == null || trip.lon == null) {
+    if (host._leafletMap) { try { host._leafletMap.remove(); } catch { /* noop */ } host._leafletMap = null; }
     host.innerHTML = '<p class="cost-note" style="padding:14px">Sem coordenadas para esta viagem.</p>';
+    if (poisHost) poisHost.innerHTML = ''; // sem mapa, não dá pra adicionar POI
     return;
   }
-  // Defer leaflet init (offsetParent may be 0 if hidden)
-  setTimeout(() => renderMiniMap(host, trip), 50);
+  // Defer leaflet init (offsetParent may be 0 if hidden). onMapClick só
+  // dispara um POI novo quando o modo "adicionar" está armado (U4).
+  setTimeout(() => renderMiniMap(host, trip, {
+    onMapClick: (latlng, containerPoint) => {
+      if (!poiAddArmed) return;
+      poiAddArmed = false;
+      host.style.cursor = '';
+      openPoiNamePopover(trip, latlng, host, containerPoint);
+    },
+  }), 50);
   const stops = trip.route && trip.route.length
     ? trip.route
     : [{ name: trip.name, lat: trip.lat, lon: trip.lon }];
   list.innerHTML = stops.map(stop =>
     `<li><span>${escapeHtml(stop.name)}</span><span class="route-coord">${stop.lat.toFixed(2)}, ${stop.lon.toFixed(2)}</span></li>`
   ).join('');
+  renderPoiPanel(trip);
+}
+
+// U4: painel de POIs abaixo da rota — lista com remover + botão adicionar.
+// Persiste no overlay._topLevel.pois e re-hidrata (espelha o padrão do
+// editor de período B1). Marcadores aparecem no mapa via renderMiniMap.
+let poiAddArmed = false;
+
+function renderPoiPanel(trip) {
+  const hostEl = document.getElementById('planPois');
+  if (!hostEl) return;
+  const pois = Array.isArray(trip.pois) ? trip.pois : [];
+  const items = pois.map((p, i) => {
+    const meta = POI_KIND_META[p.kind] || POI_KIND_META.place;
+    return `
+    <li>
+      <span class="poi-name" title="${escapeHtml(meta.label)}">${meta.emoji} ${escapeHtml(p.name)}</span>
+      <span class="route-coord">${p.lat.toFixed(2)}, ${p.lon.toFixed(2)}</span>
+      <button type="button" class="poi-del" data-poi-del="${i}" title="Remover ponto" aria-label="Remover ${escapeHtml(p.name)}">✕</button>
+    </li>`;
+  }).join('');
+  hostEl.innerHTML = `
+    <div class="poi-head">
+      <strong>📍 Pontos de interesse</strong>
+      <button type="button" class="poi-add-btn" data-poi-add aria-label="Adicionar ponto de interesse">➕ Adicionar</button>
+    </div>
+    ${pois.length
+      ? `<ul class="poi-list">${items}</ul>`
+      : '<p class="cost-note" style="margin:6px 0 0">Nenhum ponto ainda. Clique em “Adicionar” e toque no mapa.</p>'}
+  `;
+  hostEl.querySelector('[data-poi-add]')?.addEventListener('click', () => {
+    poiAddArmed = true;
+    const mh = document.getElementById('planMiniMap');
+    if (mh) mh.style.cursor = 'crosshair';
+    toast('📍 Toque no mapa para escolher o local do ponto.');
+  });
+  hostEl.querySelectorAll('[data-poi-del]').forEach((b) => {
+    b.addEventListener('click', () => removeTripPoi(trip, Number(b.dataset.poiDel)));
+  });
+}
+
+function addTripPoi(trip, poi) {
+  const cur = overlay.readOverlay(trip.id);
+  const pois = Array.isArray(cur?._topLevel?.pois) ? cur._topLevel.pois.slice() : [];
+  pois.push(poi);
+  overlay.writeOverlay(trip.id, { _topLevel: { pois } });
+  const original = state.trips.find((x) => x.id === trip.id) || trip;
+  hydratePlanPage(original);
+  toast(`📍 “${poi.name}” adicionado (overlay local).`);
+}
+
+function removeTripPoi(trip, index) {
+  const cur = overlay.readOverlay(trip.id);
+  const pois = Array.isArray(cur?._topLevel?.pois) ? cur._topLevel.pois.slice() : [];
+  if (index < 0 || index >= pois.length) return;
+  const [removed] = pois.splice(index, 1);
+  overlay.writeOverlay(trip.id, { _topLevel: { pois } });
+  const original = state.trips.find((x) => x.id === trip.id) || trip;
+  hydratePlanPage(original);
+  toast(`🗑 “${removed?.name || 'Ponto'}” removido.`);
+}
+
+// U4: popover pra nomear/categorizar um POI clicado no mapa. Espelha o
+// estilo/UX de openDateEditorPopover (ARIA, Esc, foco, click-fora).
+function openPoiNamePopover(trip, latlng, host, containerPoint) {
+  document.querySelectorAll('.poi-name-popover').forEach((el) => el.remove());
+
+  const pop = document.createElement('div');
+  pop.className = 'poi-name-popover';
+  pop.setAttribute('role', 'dialog');
+  pop.setAttribute('aria-label', 'Nomear ponto de interesse');
+  pop.style.cssText = 'position:absolute;z-index:9001;background:#fff;color:#0f172a;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 25px 50px -12px rgba(0,0,0,.35);padding:14px;font:14px Inter,system-ui,sans-serif;width:min(260px,calc(100vw - 24px));box-sizing:border-box;';
+
+  const inputCss = 'width:100%;box-sizing:border-box;padding:6px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;margin-bottom:6px;';
+  const kindOpts = Object.entries(POI_KIND_META)
+    .map(([k, v]) => `<option value="${k}">${v.emoji} ${v.label}</option>`).join('');
+
+  pop.innerHTML = `
+    <h4 style="margin:0 0 8px;font-size:14px;font-weight:700;">📍 Novo ponto</h4>
+    <input type="text" id="poi-name" placeholder="Nome (ex: Parque Ibirapuera)" style="${inputCss}" aria-label="Nome do ponto" />
+    <select id="poi-kind" style="${inputCss}" aria-label="Categoria">${kindOpts}</select>
+    <input type="text" id="poi-note" placeholder="Nota (opcional)" style="${inputCss}" aria-label="Nota" />
+    <div style="font-size:11px;color:#64748b;margin-bottom:8px;">${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}</div>
+    <div style="display:flex;justify-content:flex-end;gap:6px;">
+      <button type="button" id="poi-cancel" style="padding:6px 12px;border:1px solid #cbd5e1;background:#fff;border-radius:6px;cursor:pointer;font:inherit;">Cancelar</button>
+      <button type="button" id="poi-save" style="padding:6px 12px;border:0;background:#0f172a;color:#fff;border-radius:6px;cursor:pointer;font:inherit;">Salvar</button>
+    </div>
+  `;
+
+  const r = host.getBoundingClientRect();
+  const px = window.scrollX + r.left + (containerPoint?.x ?? r.width / 2);
+  const py = window.scrollY + r.top + (containerPoint?.y ?? r.height / 2);
+  pop.style.left = `${Math.max(8, Math.min(px, window.scrollX + window.innerWidth - 268))}px`;
+  pop.style.top = `${py + 6}px`;
+  document.body.appendChild(pop);
+
+  const nameInput = pop.querySelector('#poi-name');
+  const kindInput = pop.querySelector('#poi-kind');
+  const noteInput = pop.querySelector('#poi-note');
+
+  function close() {
+    pop.remove();
+    document.removeEventListener('keydown', onKey);
+    document.removeEventListener('click', onClickOutside, true);
+  }
+  function onKey(e) {
+    if (e.key === 'Escape') { e.preventDefault(); close(); }
+    else if (e.key === 'Enter' && e.target === nameInput) { e.preventDefault(); save(); }
+  }
+  function onClickOutside(e) {
+    if (!pop.contains(e.target)) close();
+  }
+  function save() {
+    const poi = overlay.normalizePoi({
+      name: nameInput.value, lat: latlng.lat, lon: latlng.lng,
+      kind: kindInput.value, note: noteInput.value,
+    });
+    if (!poi) { nameInput.style.borderColor = '#b91c1c'; nameInput.focus(); return; }
+    close();
+    addTripPoi(trip, poi);
+  }
+
+  pop.querySelector('#poi-cancel').addEventListener('click', close);
+  pop.querySelector('#poi-save').addEventListener('click', save);
+  document.addEventListener('keydown', onKey);
+  setTimeout(() => document.addEventListener('click', onClickOutside, true), 0);
+  nameInput.focus();
 }
 
 function renderPlanContext(trip) {
