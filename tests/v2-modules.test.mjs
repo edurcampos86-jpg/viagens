@@ -360,7 +360,40 @@ test('decideNextAction: pendingChecks anexa sufixo (exceto done)', () => {
 });
 
 // ── overlay.js (U4 — POIs + integração Fase 1) ────────────────────────
+// Shim mínimo de localStorage p/ exercitar read/write (node não tem).
+globalThis.localStorage = {
+  store: {},
+  getItem(k) { return this.store[k] ?? null; },
+  setItem(k, v) { this.store[k] = String(v); },
+  removeItem(k) { delete this.store[k]; },
+};
 const overlay = await import(`${ROOT}/src/core/overlay.js`);
+
+test('overlay.writeOverlay/readOverlay: round-trip grava e devolve igual', () => {
+  overlay.writeOverlay('t-rt', { checklist: { a: true }, _topLevel: { startDate: '2026-06-13' } });
+  const r = overlay.readOverlay('t-rt');
+  assert.equal(r.checklist.a, true);
+  assert.equal(r._topLevel.startDate, '2026-06-13');
+});
+
+test('overlay.writeOverlay: merge de _topLevel preserva campos + sub-seções coexistem', () => {
+  overlay.writeOverlay('t-merge', { _topLevel: { startDate: '2026-06-13', nts: 9 } });
+  overlay.writeOverlay('t-merge', { _topLevel: { endDate: '2026-06-22' } }); // só adiciona
+  overlay.writeOverlay('t-merge', { checklist: { x: true } });               // sub-seção
+  const r = overlay.readOverlay('t-merge');
+  assert.equal(r._topLevel.startDate, '2026-06-13'); // preservado
+  assert.equal(r._topLevel.nts, 9);                  // preservado
+  assert.equal(r._topLevel.endDate, '2026-06-22');   // adicionado
+  assert.equal(r.checklist.x, true);                 // sub-seção coexiste
+});
+
+test('overlay.clearOverlay: remove só a trip alvo', () => {
+  overlay.writeOverlay('t-keep', { _topLevel: { nts: 3 } });
+  overlay.writeOverlay('t-del', { _topLevel: { nts: 5 } });
+  overlay.clearOverlay('t-del');
+  assert.deepEqual(overlay.readOverlay('t-del'), {});            // removida
+  assert.equal(overlay.readOverlay('t-keep')._topLevel.nts, 3);  // intacta
+});
 
 test('overlay.normalizePoi: POI válido normaliza com kind', () => {
   const p = overlay.normalizePoi({ name: ' Ibirapuera ', lat: -23.587, lon: -46.657, kind: 'viewpoint' });
