@@ -471,6 +471,10 @@ function bindEvents() {
     }
   });
 
+  // TEMP DORMENT: handler do Despachante. O botão .dp-bar está com
+  // display:none em populateChecklist enquanto o bug de "click inerte" não
+  // está resolvido. Os listeners continuam aqui pra reativar fácil quando
+  // a investigação avançar.
   // H2 (B6): handler delegado do botão "🛂 Rodar Despachante Digital".
   // Em vez de bindar por nó (que era zerado pelo innerHTML do renderPlanChecklist
   // mas com o atributo data-dp-wired sobrevivendo e mascarando o problema),
@@ -1626,7 +1630,10 @@ function populateChecklist(node, trip) {
       <div class="cl-progress-bar"><div class="cl-progress-fill" style="width:${pct}%"></div></div>
       <span class="cl-progress-lbl">${doneN}/${total} concluídos · ${pct}%</span>
     </div>
-    <div class="dp-bar" role="button" tabindex="0" aria-label="Rodar Despachante Digital nesta viagem">
+    <!-- TEMP HIDDEN: botão Despachante click inerte (bug não-resolvido).
+         Reativar removendo display:none quando wiring estiver corrigido.
+         Funcionalidade segue acessível via viagensV2.openCustoms() no console. -->
+    <div class="dp-bar" role="button" tabindex="0" aria-label="Rodar Despachante Digital nesta viagem" style="display:none">
       <button type="button" class="dp-btn" data-dp-run aria-hidden="true" tabindex="-1">
         🛂 Rodar Despachante Digital
       </button>
