@@ -1578,55 +1578,68 @@ function populateChecklist(node, trip) {
     });
   });
 
-  // Despachante Digital — handler na BARRA inteira (hit-area generosa, PR #1.5A)
-  // .dp-btn e .dp-hint têm pointer-events: none no CSS, então o clique sempre cai aqui.
-  const dpBar = panel.querySelector('.dp-bar');
-  if (dpBar) {
-    dpBar.addEventListener('click', async () => {
-      // B6: guard claro se o módulo v2 ainda não carregou
-      if (!window.viagensV2 || typeof window.viagensV2.openCustoms !== 'function') {
-        toast('Despachante ainda não carregou. Recarregue a página e tente novamente.');
-        return;
-      }
-      // B6: profile vazio em viagem internacional → toast informativo
-      // (não bloqueia — só avisa que checks de passaporte/visto/vacinas
-      // vão ficar amarelos por falta de dado).
-      const isIntl =
-        (trip.country_code || '').toUpperCase() !== 'BR' &&
-        (trip.country || '').toLowerCase() !== 'brasil';
-      let profile = null;
-      try { profile = JSON.parse(localStorage.getItem('viagens.v2.profile') || 'null'); } catch { /* corrupted */ }
-      if (isIntl && !profile) {
-        toast('⚠ Perfil vazio — Despachante avaliará só voltagem/direção. Preencha passaporte/vacinas em viagensV2.customs.saveProfile(...) no console.');
-      }
-      // B6: loading state + erro visível
-      const btn = dpBar.querySelector('.dp-btn');
-      const originalLabel = btn?.textContent;
-      dpBar.setAttribute('aria-busy', 'true');
-      if (btn) btn.textContent = '⏳ Rodando Despachante…';
-      try {
-        await window.viagensV2.openCustoms(trip);
-      } catch (err) {
-        console.error('Despachante falhou:', err);
-        toast(`❌ Despachante falhou: ${err?.message || 'erro desconhecido'}`);
-      } finally {
-        dpBar.removeAttribute('aria-busy');
-        if (btn && originalLabel) btn.textContent = originalLabel;
-      }
-    });
-    // Acessibilidade: permitir ativar via teclado também
-    dpBar.setAttribute('role', 'button');
-    dpBar.setAttribute('tabindex', '0');
-    dpBar.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        dpBar.click();
-      }
-    });
-  }
+  // B6/H2: religa o botão "Rodar Despachante" — mesma posição/padrão que
+  // wireChecklistControls (F5/PR #58) pra ficar óbvio que ambos precisam
+  // ser re-aplicados depois de innerHTML em renderPlanChecklist.
+  wireDespachanteBar(panel, trip);
 
   // F5: reordenação (drag/teclado) + editor de prazo por item.
   wireChecklistControls(panel, trip, () => populateChecklist(node, trip));
+}
+
+// H2 (B6) — religa o botão "🛂 Rodar Despachante Digital" num container já
+// renderizado. Mesmo motivo que wireChecklistControls (F5/PR #58): o
+// renderPlanChecklist faz `host.innerHTML = tmp.firstChild.innerHTML`, que
+// descarta os listeners bindados em populateChecklist. Sem religar, o
+// clique no botão cai no vazio (sintoma do "silêncio total" reportado
+// pelo Eduardo no iPad). Idempotente via data-dp-wired.
+//
+// Despachante é LOCAL (customs.run usa destination_rules.json + perfil em
+// localStorage). Não exige PAT — guard de PAT bloquearia uso offline.
+// Se um dia migrar pra LLM, replicar o padrão do Concierge.
+function wireDespachanteBar(root, trip) {
+  if (!root) return;
+  const dpBar = root.querySelector('.dp-bar');
+  if (!dpBar) return;
+  if (dpBar.dataset.dpWired === '1') return;
+  dpBar.dataset.dpWired = '1';
+
+  dpBar.addEventListener('click', async () => {
+    if (!window.viagensV2 || typeof window.viagensV2.openCustoms !== 'function') {
+      console.warn('[Despachante] window.viagensV2.openCustoms ausente — módulo v2 não carregou.');
+      toast('Despachante ainda não carregou. Recarregue a página e tente novamente.');
+      return;
+    }
+    const isIntl =
+      (trip.country_code || '').toUpperCase() !== 'BR' &&
+      (trip.country || '').toLowerCase() !== 'brasil';
+    let profile = null;
+    try { profile = JSON.parse(localStorage.getItem('viagens.v2.profile') || 'null'); } catch { /* corrupted */ }
+    if (isIntl && !profile) {
+      toast('⚠ Perfil vazio — Despachante avaliará só voltagem/direção. Preencha passaporte/vacinas em viagensV2.customs.saveProfile(...) no console.');
+    }
+    const btn = dpBar.querySelector('.dp-btn');
+    const originalLabel = btn?.textContent;
+    dpBar.setAttribute('aria-busy', 'true');
+    if (btn) btn.textContent = '⏳ Rodando Despachante…';
+    try {
+      await window.viagensV2.openCustoms(trip);
+    } catch (err) {
+      console.error('[Despachante] customs.run falhou:', err);
+      toast(`❌ Despachante falhou: ${err?.message || 'erro desconhecido'}`);
+    } finally {
+      dpBar.removeAttribute('aria-busy');
+      if (btn && originalLabel) btn.textContent = originalLabel;
+    }
+  });
+  dpBar.setAttribute('role', 'button');
+  dpBar.setAttribute('tabindex', '0');
+  dpBar.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      dpBar.click();
+    }
+  });
 }
 
 // F5 — religa os controles do checklist (handles de reordenar + botões de
@@ -3715,7 +3728,9 @@ function renderPlanChecklist(trip) {
     });
   });
   // F5: religa reordenar + prazos (innerHTML copiado perde os listeners).
+  // H2 (B6): mesmo motivo — religa também a barra do Despachante.
   const clRoot = document.getElementById('planChecklist');
+  wireDespachanteBar(clRoot, trip);
   wireChecklistControls(clRoot, trip, () => { renderPlanChecklist(trip); renderPlanQuickstats(trip); });
 }
 
