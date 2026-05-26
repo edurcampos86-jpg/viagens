@@ -513,6 +513,117 @@ test('isItemOverdue: vencido só se tem prazo, não-checado e antes de hoje', ()
   assert.equal(clo.isItemOverdue('', false, today), false);           // sem prazo
 });
 
+// ── overlay-tracked.js (H1.5 — multi-branch diff/sync) ────────────────
+const ot = await import(`${ROOT}/src/core/overlay-tracked.js`);
+
+// Defs reproduzem (em forma compacta) o TRACKED_BRANCHES do app.js:
+// _topLevel para campos diretos da trip, committed para trip.budget.committed.
+const H15_DEFS = [
+  {
+    branch: '_topLevel',
+    listFields: (st) => Object.keys(st?._topLevel || {}),
+    canonicalGetter: (trip, field) => trip[field],
+    overrideGetter: (st, field) => st?._topLevel?.[field],
+    applyToCanonical: (out, field, value) => { out[field] = value; },
+    clear: (st) => { delete st._topLevel; },
+  },
+  {
+    branch: 'committed',
+    listFields: (st) => Object.keys(st?.committed || {}),
+    canonicalGetter: (trip, field) => +(trip?.budget?.committed?.[field] || 0),
+    overrideGetter: (st, field) => +(st?.committed?.[field] || 0),
+    applyToCanonical: (out, field, value) => {
+      out.budget = out.budget || {};
+      out.budget.committed = out.budget.committed || {};
+      out.budget.committed[field] = value;
+    },
+    clear: (st) => { delete st.committed; },
+  },
+];
+
+test('computeTrackedEdits: committed.voos editado → item com path "committed.voos"', () => {
+  const trip = { id: 'sp', budget: { committed: { voos: 0 } } };
+  const st = { committed: { voos: 800 } };
+  const { items, snippet } = ot.computeTrackedEdits(trip, st, H15_DEFS);
+  assert.equal(items.length, 1);
+  assert.equal(items[0].path, 'committed.voos');
+  assert.equal(items[0].branch, 'committed');
+  assert.equal(items[0].field, 'voos');
+  assert.equal(items[0].original, 0);
+  assert.equal(items[0].override, 800);
+  assert.deepEqual(snippet, { id: 'sp', budget: { committed: { voos: 800 } } });
+});
+
+test('computeTrackedEdits: count incrementa com edits em _topLevel E committed', () => {
+  const trip = {
+    id: 'sp',
+    startDate: '2026-06-13',
+    budget: { committed: { voos: 0, hospedagem: 5000 } },
+  };
+  const st = {
+    _topLevel: { startDate: '2026-06-14' },
+    committed: { voos: 800, hospedagem: 5000 }, // hospedagem inalterada — não conta
+  };
+  const { items, snippet } = ot.computeTrackedEdits(trip, st, H15_DEFS);
+  assert.equal(items.length, 2);
+  const paths = items.map((i) => i.path).sort();
+  assert.deepEqual(paths, ['_topLevel.startDate', 'committed.voos']);
+  // Snippet deve combinar os dois ramos no formato canônico do trips.json:
+  assert.equal(snippet.startDate, '2026-06-14');
+  assert.equal(snippet.budget.committed.voos, 800);
+});
+
+test('computeTrackedEdits: sem mudanças → items vazio + snippet null', () => {
+  const trip = { id: 'sp', startDate: '2026-06-13', budget: { committed: { voos: 100 } } };
+  const st = { _topLevel: { startDate: '2026-06-13' }, committed: { voos: 100 } };
+  const { items, snippet } = ot.computeTrackedEdits(trip, st, H15_DEFS);
+  assert.equal(items.length, 0);
+  assert.equal(snippet, null);
+});
+
+test('clearTrackedBranches: limpa committed também (REGRESSÃO do bug do iPad)', () => {
+  // Cenário reportado pelo Eduardo: descartar edições removia _topLevel mas
+  // committed.voos persistia silenciosamente. Esse teste garante que a
+  // varredura genérica limpa todos os ramos rastreados.
+  const st = {
+    statusOverride: 'planned',
+    _topLevel: { startDate: '2026-06-14' },
+    committed: { voos: 800 },
+    checklist: { flights: true },  // sub-seção NÃO rastreada — deve sobreviver
+    notes: 'lembrar de levar adaptador',
+  };
+  ot.clearTrackedBranches(st, H15_DEFS);
+  assert.equal(st._topLevel, undefined, '_topLevel deve sumir');
+  assert.equal(st.committed, undefined, 'committed deve sumir (era o bug)');
+  assert.equal(st.statusOverride, 'planned', 'statusOverride fora do scope dos defs — preservado');
+  assert.deepEqual(st.checklist, { flights: true }, 'sub-seção runtime preservada');
+  assert.equal(st.notes, 'lembrar de levar adaptador', 'notes preservadas');
+});
+
+test('applyTrackedEdits: in-place no trip canônico aplica committed.* corretamente', () => {
+  // Simula o que downloadTripsJson faz: pega trip do trips.json, aplica
+  // overrides do localStorage in-place.
+  const trip = {
+    id: 'sp',
+    startDate: '2026-06-13',
+    budget: { committed: { voos: 0 } },
+  };
+  const st = {
+    _topLevel: { startDate: '2026-06-14' },
+    committed: { voos: 800, comida: 2000 },
+  };
+  ot.applyTrackedEdits(trip, st, H15_DEFS);
+  assert.equal(trip.startDate, '2026-06-14');
+  assert.equal(trip.budget.committed.voos, 800);
+  assert.equal(trip.budget.committed.comida, 2000);
+});
+
+test('computeTrackedEdits: defaults benignos para inputs inválidos', () => {
+  assert.deepEqual(ot.computeTrackedEdits(null, {}, H15_DEFS), { items: [], snippet: null });
+  assert.deepEqual(ot.computeTrackedEdits({ id: 't' }, null, H15_DEFS), { items: [], snippet: null });
+  assert.deepEqual(ot.computeTrackedEdits({ id: 't' }, {}, null), { items: [], snippet: null });
+});
+
 // ── Sumário ───────────────────────────────────────────────────────────
 console.log(`\n${passed} passed, ${failed} failed.`);
 if (failed > 0) process.exit(1);

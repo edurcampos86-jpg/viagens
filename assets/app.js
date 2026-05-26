@@ -3,6 +3,7 @@
 // =================================================================
 
 import * as overlay from '../src/core/overlay.js';
+import { computeTrackedEdits, applyTrackedEdits, clearTrackedBranches } from '../src/core/overlay-tracked.js';
 import { loadRules, injectChecklistItems } from '../src/components/checklist.js';
 import { deriveDatesFromBookings } from '../src/core/dates.js';
 import { decideNextAction } from '../src/core/next-action.js';
@@ -10,6 +11,43 @@ import { applyChecklistOrder, moveItem, isItemOverdue } from '../src/core/checkl
 
 // Exposto pra console + handlers que vivem em outros módulos.
 window.viagensOverlay = overlay;
+
+// H1.5 — ramos do overlay que entram no diff/sync UI. Adicionar entrada
+// aqui = a nova área aparece automaticamente no contador "edições", modal
+// de exportar, patch JSON, downloadTripsJson e clearAllEdits.
+// Sub-seções NÃO listadas (checklist, packing, notes, comments, ...) são
+// intencionalmente runtime-local — não vão pro trips.json.
+const TRACKED_BRANCHES = [
+  {
+    branch: '_topLevel',
+    listFields: (st) => Object.keys(st?._topLevel || {}).filter(k => overlay.TOP_LEVEL_FIELDS.includes(k)),
+    canonicalGetter: (trip, field) => trip[field],
+    overrideGetter: (st, field) => st?._topLevel?.[field],
+    applyToCanonical: (target, field, value) => { target[field] = value; },
+    clear: (st) => { if (st) delete st._topLevel; },
+  },
+  {
+    branch: 'committed',
+    listFields: (st) => Object.keys(st?.committed || {}),
+    canonicalGetter: (trip, field) => +(trip?.budget?.committed?.[field] || 0),
+    overrideGetter: (st, field) => +(st?.committed?.[field] || 0),
+    applyToCanonical: (target, field, value) => {
+      target.budget = target.budget || {};
+      target.budget.committed = target.budget.committed || {};
+      target.budget.committed[field] = value;
+    },
+    clear: (st) => { if (st) delete st.committed; },
+  },
+];
+
+// Labels legíveis pra cada branch+field na UI. Fallback = field cru.
+const BRANCH_FIELD_LABELS = {
+  committed: { voos: '✈ Voos', hospedagem: '🏨 Hospedagem', passeios: '🎟 Passeios', comida: '🍴 Comida' },
+};
+
+function labelForOverlayEdit(branch, field) {
+  return BRANCH_FIELD_LABELS[branch]?.[field] || field;
+}
 
 // Cache de destination_rules carregado uma vez. populateChecklist usa
 // pra injetar itens contextuais (B7). Async; quando carrega e a plan-page
@@ -1160,10 +1198,12 @@ function statusLabel(status) {
   })[status] || status;
 }
 
-// ── Edições locais + exportar (Fase 7a + B5) ────────────────────────
-// Conta: (1) statusOverride legados; (2) cada campo top-level alterado
-// no overlay vs a trip canônica em state.trips (que só é mutada pelo
-// statusOverride no boot — top-level continua canônico).
+// ── Edições locais + exportar (Fase 7a + B5 + H1.5) ─────────────────
+// Conta: (1) statusOverride legados; (2) cada campo de cada ramo
+// rastreado em TRACKED_BRANCHES (_topLevel, committed) alterado no
+// overlay vs a trip canônica em state.trips (que só é mutada pelo
+// statusOverride no boot — top-level e budget.committed continuam
+// canônicos vindos de trips.json).
 function countPendingEdits() {
   try {
     const all = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
@@ -1171,12 +1211,10 @@ function countPendingEdits() {
     for (const [tripId, st] of Object.entries(all)) {
       if (!st) continue;
       if (st.statusOverride) n++;
-      if (st._topLevel) {
-        const trip = (state.trips || []).find(t => t.id === tripId);
-        if (trip) {
-          const diff = overlay.diffOverlayVsTrip(trip, st);
-          n += diff.fields.length;
-        }
+      const trip = (state.trips || []).find(t => t.id === tripId);
+      if (trip) {
+        const { items } = computeTrackedEdits(trip, st, TRACKED_BRANCHES);
+        n += items.length;
       }
     }
     return n;
@@ -1190,9 +1228,18 @@ function refreshEditsIndicator() {
   if (n > 0) el.editsBadgeN.textContent = String(n);
 }
 
-// Formata um valor de campo top-level pra exibição compacta no diff.
-// Arrays longos (ex: pois) viram contagem; valores simples viram JSON.
-function formatFieldValueForDiff(value) {
+// Formata um valor pra exibição compacta no diff. Sensível ao branch+field:
+// - pois → "N POI(s)"; committed.* → "R$ N" (currency); arrays longos → "[N itens]"
+// - resto → JSON
+function formatOverlayValueForDiff(branch, field, value, trip) {
+  if (branch === '_topLevel' && field === 'pois') {
+    const n = Array.isArray(value) ? value.length : 0;
+    return `${n} POI(s)`;
+  }
+  if (branch === 'committed') {
+    const curr = trip?.budget?.currency || trip?.cost?.currency || 'BRL';
+    return formatMoney(+value || 0, curr);
+  }
   if (Array.isArray(value)) {
     if (value.length === 0) return '[]';
     if (value.length <= 2) return JSON.stringify(value);
@@ -1216,36 +1263,26 @@ function buildExportList() {
       totalEdits++;
     }
 
-    let patchSnippet = null;
-    if (st._topLevel && trip) {
-      const diff = overlay.diffOverlayVsTrip(trip, st);
-      for (const f of diff.fields) {
-        // Tratamento especial de pois: mostrar contagem + delta no lugar do array bruto.
-        if (f.key === 'pois') {
-          const origN = Array.isArray(f.original) ? f.original.length : 0;
-          const newN = Array.isArray(f.override) ? f.override.length : 0;
-          const delta = newN - origN;
-          const deltaTxt = delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : 'editados';
-          changes.push(
-            `<strong>pois</strong>: ` +
-            `<span class="overlay-sync-old">${origN} POI(s)</span>` +
-            ` → <span class="overlay-sync-new">${newN} POI(s) (${deltaTxt})</span>`
-          );
-        } else {
-          changes.push(
-            `<strong>${escapeHtml(f.key)}</strong>: ` +
-            `<span class="overlay-sync-old">${escapeHtml(formatFieldValueForDiff(f.original))}</span>` +
-            ` → <span class="overlay-sync-new">${escapeHtml(formatFieldValueForDiff(f.override))}</span>`
-          );
-        }
+    let snippet = null;
+    if (trip) {
+      const tracked = computeTrackedEdits(trip, st, TRACKED_BRANCHES);
+      for (const it of tracked.items) {
+        const label = labelForOverlayEdit(it.branch, it.field);
+        const beforeStr = formatOverlayValueForDiff(it.branch, it.field, it.original, trip);
+        const afterStr = formatOverlayValueForDiff(it.branch, it.field, it.override, trip);
+        changes.push(
+          `<strong>${escapeHtml(label)}</strong>: ` +
+          `<span class="overlay-sync-old">${escapeHtml(beforeStr)}</span>` +
+          ` → <span class="overlay-sync-new">${escapeHtml(afterStr)}</span>`
+        );
         totalEdits++;
       }
-      if (diff.hasChanges) patchSnippet = overlay.buildPatchSnippet(tripId, st);
+      snippet = tracked.snippet;
     }
 
     if (!changes.length) continue;
 
-    const snippetJson = patchSnippet ? JSON.stringify(patchSnippet, null, 2) : '';
+    const snippetJson = snippet ? JSON.stringify(snippet, null, 2) : '';
     items.push(`
       <div class="export-list-item">
         <span class="ic" aria-hidden="true">✎</span>
@@ -1292,11 +1329,8 @@ async function downloadTripsJson() {
       const st = all[trip.id];
       if (!st) continue;
       if (st.statusOverride) trip.status = st.statusOverride;
-      if (st._topLevel) {
-        for (const field of overlay.TOP_LEVEL_FIELDS) {
-          if (st._topLevel[field] !== undefined) trip[field] = st._topLevel[field];
-        }
-      }
+      // Aplica _topLevel + committed (e qualquer ramo rastreado futuro).
+      applyTrackedEdits(trip, st, TRACKED_BRANCHES);
     }
     data.atualizado_em = new Date().toISOString().slice(0, 10);
     const content = JSON.stringify(data, null, 2) + '\n';
@@ -1319,13 +1353,14 @@ async function downloadTripsJson() {
 function clearAllEdits() {
   const n = countPendingEdits();
   if (n === 0) return;
-  if (!confirm(`Descartar ${n} edição(ões) local(is)?\n\nFaça isso APENAS após exportar e aplicar no GitHub. Senão você perde as mudanças.\n\nSub-seções (checklist, orçamento, reservas) ficam preservadas.`)) return;
+  if (!confirm(`Descartar ${n} edição(ões) local(is)?\n\nFaça isso APENAS após exportar e aplicar no GitHub. Senão você perde as mudanças.\n\nSub-seções (checklist, packing, notes, comments) ficam preservadas.`)) return;
   try {
     const all = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
     for (const id of Object.keys(all)) {
       if (!all[id]) continue;
       delete all[id].statusOverride;
-      delete all[id]._topLevel;
+      // Limpa todos os ramos rastreados (_topLevel, committed, …) de uma vez.
+      clearTrackedBranches(all[id], TRACKED_BRANCHES);
     }
     localStorage.setItem(LS_KEY, JSON.stringify(all));
     location.reload();
@@ -1883,6 +1918,8 @@ function populateBudget(node, trip) {
       const com2 = loadTripState(trip.id).committed || {};
       com2[inp.dataset.key] = +inp.value || 0;
       saveTripState(trip.id, { committed: com2 });
+      // H1.5: cada edição de orçamento conta no diff/sync — atualiza header.
+      refreshEditsIndicator();
       // Light re-render: update summary + bars without losing focus
       const tot = Object.values(com2).reduce((a,b) => a+(+b||0), 0);
       panel.querySelectorAll('.bd-summary-v')[1].textContent = formatMoney(tot, curr);
