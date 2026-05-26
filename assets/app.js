@@ -1598,33 +1598,11 @@ function populateChecklist(node, trip) {
 // localStorage). Não exige PAT — guard de PAT bloquearia uso offline.
 // Se um dia migrar pra LLM, replicar o padrão do Concierge.
 function wireDespachanteBar(root, trip) {
-  // ─── DEBUG TEMPORÁRIO (H2 diagnóstico, REVERTER após o iPad reportar) ───
-  const __dbgTs = Date.now();
-  const __dbgRootDesc = root
-    ? `<${root.tagName?.toLowerCase()}${root.id ? '#' + root.id : ''}${root.className ? '.' + String(root.className).replace(/\s+/g, '.') : ''}>`
-    : '<null>';
-  const __dbgAllBars = document.querySelectorAll('.dp-bar');
-  console.warn('[wireDespachanteBar] ts:', __dbgTs, 'root:', __dbgRootDesc, 'trip:', trip?.id);
-  console.warn('[wireDespachanteBar] .dp-bar globais no DOM:', __dbgAllBars.length);
-  console.warn('[wireDespachanteBar] nós encontrados:',
-    Array.from(__dbgAllBars).map((n, i) => ({
-      idx: i,
-      visible: n.offsetParent !== null,
-      parentId: n.parentElement?.id || null,
-      parentClass: n.parentElement?.className || null,
-      wired: n.dataset.dpWired === '1',
-      hasOnclick: !!n.onclick,
-    }))
-  );
-  // ─── /DEBUG TEMPORÁRIO ───
-
-  if (!root) { console.warn('[wireDespachanteBar] ABORT: root nulo'); return; }
+  if (!root) return;
   const dpBar = root.querySelector('.dp-bar');
-  if (!dpBar) { console.warn('[wireDespachanteBar] ABORT: nenhum .dp-bar dentro de', __dbgRootDesc); return; }
-  console.warn('[wireDespachanteBar] nó alvo escolhido:', dpBar, 'já wired?', dpBar.dataset.dpWired === '1');
-  if (dpBar.dataset.dpWired === '1') { console.warn('[wireDespachanteBar] ABORT: dpWired=1 (idempotência) — listener NÃO foi re-anexado'); return; }
+  if (!dpBar) return;
+  if (dpBar.dataset.dpWired === '1') return;
   dpBar.dataset.dpWired = '1';
-  console.warn('[wireDespachanteBar] ✓ listener anexado ao nó alvo (ts:', __dbgTs, ')');
 
   dpBar.addEventListener('click', async () => {
     if (!window.viagensV2 || typeof window.viagensV2.openCustoms !== 'function') {
@@ -3752,11 +3730,6 @@ function renderPlanChecklist(trip) {
   // F5: religa reordenar + prazos (innerHTML copiado perde os listeners).
   // H2 (B6): mesmo motivo — religa também a barra do Despachante.
   const clRoot = document.getElementById('planChecklist');
-  // ─── DEBUG TEMPORÁRIO (H2 diagnóstico, REVERTER após o iPad reportar) ───
-  console.warn('[renderPlanChecklist] ts pós-innerHTML:', Date.now(),
-    '.dp-bar visíveis no DOM agora:', document.querySelectorAll('.dp-bar').length,
-    'dentro de #planChecklist:', clRoot?.querySelectorAll('.dp-bar').length);
-  // ─── /DEBUG TEMPORÁRIO ───
   wireDespachanteBar(clRoot, trip);
   wireChecklistControls(clRoot, trip, () => { renderPlanChecklist(trip); renderPlanQuickstats(trip); });
 }
