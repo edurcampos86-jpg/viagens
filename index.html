@@ -47,7 +47,12 @@
       <button class="icon-btn" id="installBtn" hidden aria-label="Instalar como aplicativo">
         <span aria-hidden="true">⬇</span> <span class="btn-label">Instalar</span>
       </button>
-      <button class="icon-btn edits-btn" id="editsBtn" hidden aria-label="Edições pendentes para exportar">
+      <!-- TEMP HIDDEN: contador de edições e botão Exportar. Sistema de
+           sync overlay não rastreia committed.* corretamente, confunde o
+           usuário ao prometer sync parcial. Reativar quando diff cobrir
+           todos os ramos rastreados (ver docs/BACKLOG.md). Overlay local
+           (localStorage) continua funcionando — só a UI de sync some. -->
+      <button class="icon-btn edits-btn" id="editsBtn" hidden aria-label="Edições pendentes para exportar" style="display:none">
         <span class="edits-badge" id="editsBadgeN">0</span>
         <span class="btn-label">edições</span>
       </button>
@@ -222,15 +227,17 @@
         <button class="plan-action" data-pp-action="ics">📆 Agenda (.ics)</button>
         <button class="plan-action" data-pp-action="share">📤 Compartilhar</button>
         <button class="plan-action" data-pp-action="link">🔗 Copiar link</button>
-        <button class="plan-action" data-pp-action="overlay-sync" id="planOverlaySyncBtn" hidden>📤 Sincronizar com trips.json</button>
-        <button class="plan-action" data-pp-action="overlay-export" id="planOverlayExportBtn" hidden>📥 Exportar overlay</button>
+        <!-- TEMP HIDDEN: sync/export overlay. Diff incompleto (não cobre committed.*). Ver docs/BACKLOG.md. -->
+        <button class="plan-action" data-pp-action="overlay-sync" id="planOverlaySyncBtn" hidden style="display:none">📤 Sincronizar com trips.json</button>
+        <button class="plan-action" data-pp-action="overlay-export" id="planOverlayExportBtn" hidden style="display:none">📥 Exportar overlay</button>
         <button class="plan-action plan-action-primary" data-pp-action="promote" id="ppPromote" hidden></button>
       </div>
     </header>
     <div class="plan-hero" id="planHero">
       <div class="plan-hero-bg" id="planHeroBg"></div>
       <div class="plan-hero-overlay"></div>
-      <button type="button" class="plan-hero-overlay-flag" id="planOverlayFlag" data-pp-action="overlay-sync" hidden aria-label="Ver edições locais não sincronizadas" style="position:absolute;top:14px;right:14px;z-index:5;background:#f59e0b;color:#0f172a;border:0;border-radius:999px;padding:6px 12px;font:600 12px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 10px -2px rgba(15,23,42,.3);">✏ Edições não sincronizadas</button>
+      <!-- TEMP HIDDEN: badge "Edições não sincronizadas". Diff incompleto. Ver docs/BACKLOG.md. -->
+      <button type="button" class="plan-hero-overlay-flag" id="planOverlayFlag" data-pp-action="overlay-sync" hidden aria-label="Ver edições locais não sincronizadas" style="display:none;position:absolute;top:14px;right:14px;z-index:5;background:#f59e0b;color:#0f172a;border:0;border-radius:999px;padding:6px 12px;font:600 12px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 10px -2px rgba(15,23,42,.3);">✏ Edições não sincronizadas</button>
       <div class="plan-hero-inner">
         <div class="plan-hero-flag" id="planHeroFlag" aria-hidden="true"></div>
         <h1 class="plan-hero-name" id="planPageTitle"></h1>

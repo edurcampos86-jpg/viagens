@@ -244,5 +244,62 @@ campos podem ser removidos. Não fazer antes — quebraria o site público.
 
 ---
 
+## Features hidden temporariamente
+
+### Despachante Digital — botão UI hidden
+
+- **Quando:** hotfix sprint pós-validação iPad/Chrome (2026-05-26)
+- **Motivo:** click no botão `.dp-bar` não dispara handler. Múltiplas
+  tentativas de fix não resolveram completamente:
+  - PR de rebind no `renderPlanChecklist` (commit `f6def60`) — atributo
+    `data-dp-wired` sobrevivia ao `innerHTML` e o guard de idempotência
+    abortava o re-bind no nó novo.
+  - PR de event delegation no `document.body` (commit `79f098c`) —
+    listener instalado, mas a evidência empírica no Chrome desktop
+    mostrou `data-dp-wired="1"` persistente e click ainda inerte.
+  - Causa-raiz residual não identificada.
+- **Workaround atual:** chamar `viagensV2.openCustoms({id, country_code})`
+  via console.
+- **Para reativar:**
+  1. Remover `style="display:none"` do `<div class="dp-bar">` em
+     `populateChecklist` (assets/app.js, próximo da linha 1636).
+  2. Investigar empiricamente no Chrome real (não automação) com
+     `console.log` dentro do handler delegado em `bindEvents` (próximo
+     da linha 478) para confirmar se o click chega.
+  3. Se o click NÃO chega ao handler delegado, suspeitar de algum
+     wrapper de `.dp-bar` interceptando `pointer-events` ou um z-index
+     coberto por outro nó.
+  4. Os listeners delegados (click + keydown) em `bindEvents` já
+     existem dormentes — só precisa do botão visível pra exercitar.
+
+### Export/Sync Overlay — UI hidden
+
+- **Quando:** hotfix sprint pós-validação iPad/Chrome (2026-05-26)
+- **Motivo:** contador "edições" no header (`#editsBtn`), badge laranja
+  "Edições não sincronizadas" no hero da plan-page (`#planOverlayFlag`)
+  e botões de sync/export (`#planOverlaySyncBtn`, `#planOverlayExportBtn`)
+  prometem sincronização do overlay local com `trips.json`, mas o diff
+  ainda tem bugs latentes em rastreio de overlays mal-formados (campos
+  raw na raiz do estado vs wrapper `_topLevel`). UX confusa pro usuário
+  que vê "0 edições" mesmo com `committed.voos = 800` persistido.
+- **Workaround atual:** edições continuam persistidas em `localStorage`
+  (chave `viagens-trip-state-v1`) via overlay. Para sincronizar com
+  `trips.json`, copiar manualmente os campos modificados — ou usar as
+  conveniências de console:
+  - `window.viagensOverlay.inspectEdits('trip-id')` → mostra os diffs
+  - `window.viagensOverlay.clearAllEditsForTrip('trip-id')` → limpa
+- **Para reativar:**
+  1. Validar que `computeTrackedEdits` cobre 100% dos cenários reais
+     (com seed do `data/trips.json`, não mock). O def `_topLevel` já é
+     tolerante a wrapper E raw desde o commit `7edbf41`, mas vale uma
+     pasagem manual no Chrome com overlays gravados de várias formas.
+  2. Remover `style="display:none"` de `#editsBtn` em `index.html`
+     (linha ~50), de `#planOverlayFlag` (linha ~239) e dos 2 botões
+     `data-pp-action="overlay-sync"/"overlay-export"` (linhas ~230-231).
+  3. Re-validar: editar Voos no card de Orçamento, conferir que o
+     contador `editsBtn` incrementa em tempo real.
+
+---
+
 *Documento vivo. Quando algo daqui virar trabalho, mover para um PR/issue
 com referência cruzada a esta entrada.*
