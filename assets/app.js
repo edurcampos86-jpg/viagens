@@ -11,20 +11,55 @@ import { applyChecklistOrder, moveItem, isItemOverdue } from '../src/core/checkl
 
 // Exposto pra console + handlers que vivem em outros módulos.
 window.viagensOverlay = overlay;
+// H1.5: APIs de inspeção by-trip-id — sem ter que passar trip/overlay
+// como argumento. Útil pra debug do Eduardo no console.
+window.viagensOverlay.inspectEdits = (tripId) => {
+  const trip = (state.trips || []).find(t => t.id === tripId);
+  const st = overlay.readOverlay(tripId);
+  if (!trip) return { error: `trip ${tripId} não está em state.trips (boot completo?)` };
+  return computeTrackedEdits(trip, st, TRACKED_BRANCHES);
+};
+window.viagensOverlay.clearAllEditsForTrip = (tripId) => {
+  try {
+    const all = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    if (!all[tripId]) return { ok: false, reason: 'sem overlay' };
+    delete all[tripId].statusOverride;
+    clearTrackedBranches(all[tripId], TRACKED_BRANCHES);
+    localStorage.setItem(LS_KEY, JSON.stringify(all));
+    refreshEditsIndicator();
+    return { ok: true, overlayAposLimpar: all[tripId] };
+  } catch (e) { return { ok: false, error: String(e) }; }
+};
 
 // H1.5 — ramos do overlay que entram no diff/sync UI. Adicionar entrada
 // aqui = a nova área aparece automaticamente no contador "edições", modal
 // de exportar, patch JSON, downloadTripsJson e clearAllEdits.
 // Sub-seções NÃO listadas (checklist, packing, notes, comments, ...) são
 // intencionalmente runtime-local — não vão pro trips.json.
+//
+// O def do _topLevel é TOLERANTE a dois formatos:
+//   (a) wrapper formal: `st._topLevel = { startDate, pois, ... }` — o que a
+//       UI grava em openDateEditorPopover/addTripPoi/etc.
+//   (b) raw na raiz: `st.startDate`, `st.pois` direto — formato que aparece
+//       em overlays órfãos de testes antigos ou writes via console manual.
+// Detectamos os dois e limpamos os dois. Snippet de saída sempre canônico.
 const TRACKED_BRANCHES = [
   {
     branch: '_topLevel',
-    listFields: (st) => Object.keys(st?._topLevel || {}).filter(k => overlay.TOP_LEVEL_FIELDS.includes(k)),
+    listFields: (st) => {
+      const inWrapper = Object.keys(st?._topLevel || {}).filter(k => overlay.TOP_LEVEL_FIELDS.includes(k));
+      const onRoot = Object.keys(st || {}).filter(k => overlay.TOP_LEVEL_FIELDS.includes(k));
+      return [...new Set([...inWrapper, ...onRoot])];
+    },
     canonicalGetter: (trip, field) => trip[field],
-    overrideGetter: (st, field) => st?._topLevel?.[field],
+    // Prefere wrapper; cai para raw se o wrapper não tem o campo.
+    overrideGetter: (st, field) => (st?._topLevel?.[field] !== undefined ? st._topLevel[field] : st?.[field]),
     applyToCanonical: (target, field, value) => { target[field] = value; },
-    clear: (st) => { if (st) delete st._topLevel; },
+    clear: (st) => {
+      if (!st) return;
+      delete st._topLevel;
+      for (const k of overlay.TOP_LEVEL_FIELDS) delete st[k];
+    },
   },
   {
     branch: 'committed',

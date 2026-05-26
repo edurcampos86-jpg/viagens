@@ -624,6 +624,106 @@ test('computeTrackedEdits: defaults benignos para inputs inválidos', () => {
   assert.deepEqual(ot.computeTrackedEdits({ id: 't' }, {}, null), { items: [], snippet: null });
 });
 
+// ── Teste de INTEGRAÇÃO com seed real do data/trips.json ──────────────
+// Garante que os defs do app.js (replicados em H15_DEFS_REAL abaixo)
+// detectam corretamente startDate, pois e committed.voos num trip
+// concreto do trips.json — o caso reportado pelo Eduardo no Chrome
+// desktop em 2026-05-25 que parecia regressão.
+const tripsJsonPath = fileURLToPath(new URL('../data/trips.json', import.meta.url));
+const tripsData = JSON.parse(readFileSync(tripsJsonPath, 'utf8'));
+const realTrip = tripsData.trips.find((t) => t.id === 'sp-junho-2026');
+
+// Defs do app.js, replicados aqui. overlay.TOP_LEVEL_FIELDS importado real.
+const H15_DEFS_REAL = [
+  {
+    branch: '_topLevel',
+    listFields: (st) => {
+      // Aceita ambos os formatos: dentro de _topLevel (UI) ou na raiz
+      // (overlays órfãos / console). União de fields candidatos.
+      const inWrapper = Object.keys(st?._topLevel || {}).filter((k) => overlay.TOP_LEVEL_FIELDS.includes(k));
+      const onRoot = Object.keys(st || {}).filter((k) => overlay.TOP_LEVEL_FIELDS.includes(k));
+      return [...new Set([...inWrapper, ...onRoot])];
+    },
+    canonicalGetter: (trip, field) => trip[field],
+    overrideGetter: (st, field) => (st?._topLevel?.[field] !== undefined ? st._topLevel[field] : st?.[field]),
+    applyToCanonical: (out, field, value) => { out[field] = value; },
+    clear: (st) => {
+      delete st._topLevel;
+      for (const k of overlay.TOP_LEVEL_FIELDS) delete st[k];
+    },
+  },
+  {
+    branch: 'committed',
+    listFields: (st) => Object.keys(st?.committed || {}),
+    canonicalGetter: (trip, field) => +(trip?.budget?.committed?.[field] || 0),
+    overrideGetter: (st, field) => +(st?.committed?.[field] || 0),
+    applyToCanonical: (out, field, value) => {
+      out.budget = out.budget || {};
+      out.budget.committed = out.budget.committed || {};
+      out.budget.committed[field] = value;
+    },
+    clear: (st) => { delete st.committed; },
+  },
+];
+
+test('REGRESSÃO H1.5: seed real + overlay UI (com wrapper _topLevel)', () => {
+  assert.ok(realTrip, 'sp-junho-2026 deve existir em data/trips.json');
+  const st = {
+    _topLevel: {
+      startDate: '2026-06-14',
+      pois: [{ name: 'Hotel Tivoli', kind: 'hotel', lat: -23.55, lon: -46.63 }],
+    },
+    committed: { voos: 999 },
+  };
+  const { items, snippet } = ot.computeTrackedEdits(realTrip, st, H15_DEFS_REAL);
+  const paths = items.map((i) => i.path).sort();
+  assert.deepEqual(paths, ['_topLevel.pois', '_topLevel.startDate', 'committed.voos']);
+  assert.equal(snippet.startDate, '2026-06-14');
+  assert.equal(snippet.pois.length, 1);
+  assert.equal(snippet.budget.committed.voos, 999);
+});
+
+test('REGRESSÃO H1.5: seed real + overlay RAW (campos na raiz, sem wrapper)', () => {
+  // Esse é o overlay EXATO reportado pelo Eduardo no Chrome desktop —
+  // gravado fora da UI (console manual, migração, teste antigo). O fix
+  // deve tolerar esse formato e detectar as 3 edições mesmo assim.
+  const st = {
+    startDate: '2026-06-14',
+    pois: [{ name: 'Hotel Tivoli', kind: 'hotel', lat: -23.55, lng: -46.63 }],
+    committed: { voos: 999 },
+  };
+  const { items, snippet } = ot.computeTrackedEdits(realTrip, st, H15_DEFS_REAL);
+  const paths = items.map((i) => i.path).sort();
+  assert.deepEqual(
+    paths,
+    ['_topLevel.pois', '_topLevel.startDate', 'committed.voos'],
+    'overlay com fields na raiz (formato console) também deve ser detectado'
+  );
+  assert.equal(snippet.startDate, '2026-06-14');
+  assert.equal(snippet.budget.committed.voos, 999);
+});
+
+test('REGRESSÃO H1.5: clearTrackedBranches limpa overlay RAW também', () => {
+  // O Eduardo reportou: "Descartar edições locais" não limpava nem
+  // committed nem _topLevel quando os campos estavam na raiz. Esse
+  // teste garante que o clear cobre os 3 formatos.
+  const st = {
+    statusOverride: 'planned',          // fora do scope (preservar)
+    startDate: '2026-06-14',            // raw — limpar
+    pois: [{ name: 'X', lat: 0, lon: 0, kind: 'place' }],  // raw — limpar
+    _topLevel: { endDate: '2026-06-23' },  // wrapper — limpar
+    committed: { voos: 999 },           // committed — limpar
+    checklist: { flights: true },       // sub-seção (preservar)
+  };
+  ot.clearTrackedBranches(st, H15_DEFS_REAL);
+  assert.equal(st.startDate, undefined, 'startDate raw deve sumir');
+  assert.equal(st.pois, undefined, 'pois raw deve sumir');
+  assert.equal(st._topLevel, undefined, '_topLevel wrapper deve sumir');
+  assert.equal(st.committed, undefined, 'committed deve sumir');
+  assert.equal(st.statusOverride, 'planned', 'statusOverride preservado');
+  assert.deepEqual(st.checklist, { flights: true }, 'checklist preservado');
+});
+
 // ── Sumário ───────────────────────────────────────────────────────────
 console.log(`\n${passed} passed, ${failed} failed.`);
 if (failed > 0) process.exit(1);
