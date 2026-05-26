@@ -398,6 +398,25 @@ function bindEvents() {
     }
   });
 
+  // H2 (B6): handler delegado do botão "🛂 Rodar Despachante Digital".
+  // Em vez de bindar por nó (que era zerado pelo innerHTML do renderPlanChecklist
+  // mas com o atributo data-dp-wired sobrevivendo e mascarando o problema),
+  // bindamos UM listener no document.body que sobrevive a qualquer re-render.
+  document.body.addEventListener('click', (e) => {
+    const dpBar = e.target.closest('.dp-bar');
+    if (!dpBar) return;
+    e.preventDefault();
+    handleDespachanteClick(dpBar);
+  });
+  // Keyboard equivalente (.dp-bar tem role=button + tabindex=0 no markup).
+  document.body.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const dpBar = e.target.closest?.('.dp-bar');
+    if (!dpBar || e.target !== dpBar) return;
+    e.preventDefault();
+    handleDespachanteClick(dpBar);
+  });
+
   // Status tabs
   $$('.status-btn').forEach(b => b.addEventListener('click', () => {
     state.filters.status = b.dataset.status;
@@ -1537,8 +1556,8 @@ function populateChecklist(node, trip) {
       <div class="cl-progress-bar"><div class="cl-progress-fill" style="width:${pct}%"></div></div>
       <span class="cl-progress-lbl">${doneN}/${total} concluídos · ${pct}%</span>
     </div>
-    <div class="dp-bar">
-      <button type="button" class="dp-btn" data-dp-run aria-label="Rodar Despachante Digital nesta viagem">
+    <div class="dp-bar" role="button" tabindex="0" aria-label="Rodar Despachante Digital nesta viagem">
+      <button type="button" class="dp-btn" data-dp-run aria-hidden="true" tabindex="-1">
         🛂 Rodar Despachante Digital
       </button>
       <span class="dp-hint">Verifica passaporte, visto, vacinas, voltagem e direção</span>
@@ -1578,68 +1597,70 @@ function populateChecklist(node, trip) {
     });
   });
 
-  // B6/H2: religa o botão "Rodar Despachante" — mesma posição/padrão que
-  // wireChecklistControls (F5/PR #58) pra ficar óbvio que ambos precisam
-  // ser re-aplicados depois de innerHTML em renderPlanChecklist.
-  wireDespachanteBar(panel, trip);
+  // B6/H2: o handler do .dp-bar é DELEGADO no document.body (em bindEvents),
+  // não bindado por nó. Motivo: o innerHTML do renderPlanChecklist copia
+  // o markup do tmp pro DOM real, mas listeners ficam no tmp e somem.
+  // Atributos como data-dp-wired ainda são copiados, mascarando o problema.
+  // Event delegation no body sobrevive a qualquer innerHTML futuro.
 
   // F5: reordenação (drag/teclado) + editor de prazo por item.
   wireChecklistControls(panel, trip, () => populateChecklist(node, trip));
 }
 
-// H2 (B6) — religa o botão "🛂 Rodar Despachante Digital" num container já
-// renderizado. Mesmo motivo que wireChecklistControls (F5/PR #58): o
-// renderPlanChecklist faz `host.innerHTML = tmp.firstChild.innerHTML`, que
-// descarta os listeners bindados em populateChecklist. Sem religar, o
-// clique no botão cai no vazio (sintoma do "silêncio total" reportado
-// pelo Eduardo no iPad). Idempotente via data-dp-wired.
+// H2 (B6) — handler do "🛂 Rodar Despachante Digital".
+//
+// Descobre a trip pelo contexto do clique:
+//   1. Card legado (timeline/grid): ancestral com [data-trip-id]
+//   2. Plan-page dedicada: state.activePlanId (não há data-trip-id no ancestral imediato)
+//
+// Bindado por delegação em bindEvents() — sobrevive a qualquer innerHTML
+// porque o listener vive no document.body, não no nó .dp-bar.
 //
 // Despachante é LOCAL (customs.run usa destination_rules.json + perfil em
 // localStorage). Não exige PAT — guard de PAT bloquearia uso offline.
 // Se um dia migrar pra LLM, replicar o padrão do Concierge.
-function wireDespachanteBar(root, trip) {
-  if (!root) return;
-  const dpBar = root.querySelector('.dp-bar');
-  if (!dpBar) return;
-  if (dpBar.dataset.dpWired === '1') return;
-  dpBar.dataset.dpWired = '1';
+async function handleDespachanteClick(dpBar) {
+  // Resolve trip a partir do contexto do nó clicado.
+  let trip = null;
+  const card = dpBar.closest('[data-trip-id]');
+  if (card?.dataset.tripId) {
+    trip = (state.trips || []).find(t => t.id === card.dataset.tripId);
+  }
+  if (!trip && state.activePlanId) {
+    trip = (state.trips || []).find(t => t.id === state.activePlanId);
+  }
+  if (!trip) {
+    console.warn('[Despachante] trip não identificada do contexto do clique.');
+    toast('Não consegui identificar a viagem deste botão. Recarregue a página.');
+    return;
+  }
 
-  dpBar.addEventListener('click', async () => {
-    if (!window.viagensV2 || typeof window.viagensV2.openCustoms !== 'function') {
-      console.warn('[Despachante] window.viagensV2.openCustoms ausente — módulo v2 não carregou.');
-      toast('Despachante ainda não carregou. Recarregue a página e tente novamente.');
-      return;
-    }
-    const isIntl =
-      (trip.country_code || '').toUpperCase() !== 'BR' &&
-      (trip.country || '').toLowerCase() !== 'brasil';
-    let profile = null;
-    try { profile = JSON.parse(localStorage.getItem('viagens.v2.profile') || 'null'); } catch { /* corrupted */ }
-    if (isIntl && !profile) {
-      toast('⚠ Perfil vazio — Despachante avaliará só voltagem/direção. Preencha passaporte/vacinas em viagensV2.customs.saveProfile(...) no console.');
-    }
-    const btn = dpBar.querySelector('.dp-btn');
-    const originalLabel = btn?.textContent;
-    dpBar.setAttribute('aria-busy', 'true');
-    if (btn) btn.textContent = '⏳ Rodando Despachante…';
-    try {
-      await window.viagensV2.openCustoms(trip);
-    } catch (err) {
-      console.error('[Despachante] customs.run falhou:', err);
-      toast(`❌ Despachante falhou: ${err?.message || 'erro desconhecido'}`);
-    } finally {
-      dpBar.removeAttribute('aria-busy');
-      if (btn && originalLabel) btn.textContent = originalLabel;
-    }
-  });
-  dpBar.setAttribute('role', 'button');
-  dpBar.setAttribute('tabindex', '0');
-  dpBar.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      dpBar.click();
-    }
-  });
+  if (!window.viagensV2 || typeof window.viagensV2.openCustoms !== 'function') {
+    console.warn('[Despachante] window.viagensV2.openCustoms ausente — módulo v2 não carregou.');
+    toast('Despachante ainda não carregou. Recarregue a página e tente novamente.');
+    return;
+  }
+  const isIntl =
+    (trip.country_code || '').toUpperCase() !== 'BR' &&
+    (trip.country || '').toLowerCase() !== 'brasil';
+  let profile = null;
+  try { profile = JSON.parse(localStorage.getItem('viagens.v2.profile') || 'null'); } catch { /* corrupted */ }
+  if (isIntl && !profile) {
+    toast('⚠ Perfil vazio — Despachante avaliará só voltagem/direção. Preencha passaporte/vacinas em viagensV2.customs.saveProfile(...) no console.');
+  }
+  const btn = dpBar.querySelector('.dp-btn');
+  const originalLabel = btn?.textContent;
+  dpBar.setAttribute('aria-busy', 'true');
+  if (btn) btn.textContent = '⏳ Rodando Despachante…';
+  try {
+    await window.viagensV2.openCustoms(trip);
+  } catch (err) {
+    console.error('[Despachante] customs.run falhou:', err);
+    toast(`❌ Despachante falhou: ${err?.message || 'erro desconhecido'}`);
+  } finally {
+    dpBar.removeAttribute('aria-busy');
+    if (btn && originalLabel) btn.textContent = originalLabel;
+  }
 }
 
 // F5 — religa os controles do checklist (handles de reordenar + botões de
@@ -3728,9 +3749,9 @@ function renderPlanChecklist(trip) {
     });
   });
   // F5: religa reordenar + prazos (innerHTML copiado perde os listeners).
-  // H2 (B6): mesmo motivo — religa também a barra do Despachante.
+  // H2 (B6): o .dp-bar é bindado por delegação em document.body — não precisa
+  // re-bindar por nó, sobrevive a qualquer innerHTML futuro.
   const clRoot = document.getElementById('planChecklist');
-  wireDespachanteBar(clRoot, trip);
   wireChecklistControls(clRoot, trip, () => { renderPlanChecklist(trip); renderPlanQuickstats(trip); });
 }
 
