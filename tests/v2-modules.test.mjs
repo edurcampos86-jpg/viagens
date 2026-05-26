@@ -445,6 +445,40 @@ test('overlay.diffOverlayVsTrip + buildPatchSnippet: pois entram no snippet', ()
   assert.equal(snip.pois.length, 1);
 });
 
+// H1 (B5) regression guard: diffOverlayVsTrip DEVE receber a trip canônica
+// como primeiro argumento. Passar a trip já mesclada com overlay causa o
+// bug histórico — diff sempre retorna hasChanges=false porque trip[field]
+// já espelha override. Esse teste falha se alguém reverter o contrato.
+test('overlay.diffOverlayVsTrip: contrato canonical-vs-merged (regressão B5)', () => {
+  const canonical = { id: 't-b5', startDate: '2026-06-13', endDate: '2026-06-22', nts: 9 };
+  const ov = { _topLevel: { startDate: '2026-06-14', nts: 8 } };
+  const merged = overlay.mergeOverlayIntoTrip(canonical, ov);
+  // Chamada CORRETA: trip canônica primeiro.
+  const correct = overlay.diffOverlayVsTrip(canonical, ov);
+  assert.equal(correct.hasChanges, true);
+  assert.equal(correct.fields.length, 2);
+  // Chamada INCORRETA (era o bug): passar a merged trip. Diff vai dar vazio
+  // porque merged.startDate === ov._topLevel.startDate. O teste documenta
+  // explicitamente esse comportamento pra ninguém repetir o erro.
+  const wrong = overlay.diffOverlayVsTrip(merged, ov);
+  assert.equal(wrong.hasChanges, false, 'merged trip não pode substituir trip canônica');
+});
+
+test('overlay.diffOverlayVsTrip: sem overlay → diff vazio', () => {
+  const trip = { id: 't', startDate: '2026-06-13', endDate: '2026-06-22', nts: 9 };
+  assert.equal(overlay.diffOverlayVsTrip(trip, {}).hasChanges, false);
+  assert.equal(overlay.diffOverlayVsTrip(trip, { _topLevel: {} }).hasChanges, false);
+});
+
+test('overlay.diffOverlayVsTrip: 1 campo editado → 1 field só', () => {
+  const trip = { id: 't', startDate: '2026-06-13', endDate: '2026-06-22', nts: 9 };
+  const diff = overlay.diffOverlayVsTrip(trip, { _topLevel: { startDate: '2026-06-14' } });
+  assert.equal(diff.fields.length, 1);
+  assert.equal(diff.fields[0].key, 'startDate');
+  assert.equal(diff.fields[0].original, '2026-06-13');
+  assert.equal(diff.fields[0].override, '2026-06-14');
+});
+
 // ── checklist-order.js (F5 — ordem + prazos) ──────────────────────────
 const clo = await import(`${ROOT}/src/core/checklist-order.js`);
 

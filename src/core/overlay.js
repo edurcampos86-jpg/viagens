@@ -114,15 +114,18 @@ export function mergeOverlayIntoTrip(trip, overlay) {
 }
 
 // Calcula diff legível entre a trip canônica e o overlay top-level.
+// IMPORTANTE: o primeiro argumento DEVE ser a trip canônica (vinda de
+// data/trips.json / state.trips), nunca uma trip já mesclada — senão o
+// diff sempre retorna vazio porque os campos do trip já espelham o
+// overlay. Bug histórico do B5 (Sprint SP-Junho 2026).
 // Retorna { hasChanges, fields: [{ key, original, override }] }.
-// Útil pra UI de sync mostrar o que será gravado em trips.json.
-export function diffOverlayVsTrip(trip, overlay) {
+export function diffOverlayVsTrip(canonicalTrip, overlay) {
   const out = { hasChanges: false, fields: [] };
-  if (!trip || !overlay?._topLevel) return out;
+  if (!canonicalTrip || !overlay?._topLevel) return out;
   for (const field of TOP_LEVEL_FIELDS) {
     const override = overlay._topLevel[field];
     if (override === undefined) continue;
-    const original = trip[field];
+    const original = canonicalTrip[field];
     if (JSON.stringify(original) !== JSON.stringify(override)) {
       out.fields.push({ key: field, original, override });
       out.hasChanges = true;

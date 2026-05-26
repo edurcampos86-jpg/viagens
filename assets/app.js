@@ -1141,13 +1141,24 @@ function statusLabel(status) {
   })[status] || status;
 }
 
-// ── Edições locais + exportar (Fase 7a) ────────────────────────────
+// ── Edições locais + exportar (Fase 7a + B5) ────────────────────────
+// Conta: (1) statusOverride legados; (2) cada campo top-level alterado
+// no overlay vs a trip canônica em state.trips (que só é mutada pelo
+// statusOverride no boot — top-level continua canônico).
 function countPendingEdits() {
   try {
     const all = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
     let n = 0;
-    for (const st of Object.values(all)) {
-      if (st && st.statusOverride) n++;
+    for (const [tripId, st] of Object.entries(all)) {
+      if (!st) continue;
+      if (st.statusOverride) n++;
+      if (st._topLevel) {
+        const trip = (state.trips || []).find(t => t.id === tripId);
+        if (trip) {
+          const diff = overlay.diffOverlayVsTrip(trip, st);
+          n += diff.fields.length;
+        }
+      }
     }
     return n;
   } catch { return 0; }
@@ -1160,27 +1171,90 @@ function refreshEditsIndicator() {
   if (n > 0) el.editsBadgeN.textContent = String(n);
 }
 
+// Formata um valor de campo top-level pra exibição compacta no diff.
+// Arrays longos (ex: pois) viram contagem; valores simples viram JSON.
+function formatFieldValueForDiff(value) {
+  if (Array.isArray(value)) {
+    if (value.length === 0) return '[]';
+    if (value.length <= 2) return JSON.stringify(value);
+    return `[${value.length} itens]`;
+  }
+  return JSON.stringify(value);
+}
+
 function buildExportList() {
   const all = (() => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; } })();
   const items = [];
+  let totalEdits = 0;
   for (const [tripId, st] of Object.entries(all)) {
-    if (!st || !st.statusOverride) continue;
-    const trip = state.trips.find(t => t.id === tripId);
+    if (!st) continue;
+    const trip = (state.trips || []).find(t => t.id === tripId);
+    const tripName = (trip && trip.name) || tripId;
+    const changes = [];
+
+    if (st.statusOverride) {
+      changes.push(`status → <strong>${statusLabel(st.statusOverride)}</strong>`);
+      totalEdits++;
+    }
+
+    let patchSnippet = null;
+    if (st._topLevel && trip) {
+      const diff = overlay.diffOverlayVsTrip(trip, st);
+      for (const f of diff.fields) {
+        // Tratamento especial de pois: mostrar contagem + delta no lugar do array bruto.
+        if (f.key === 'pois') {
+          const origN = Array.isArray(f.original) ? f.original.length : 0;
+          const newN = Array.isArray(f.override) ? f.override.length : 0;
+          const delta = newN - origN;
+          const deltaTxt = delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : 'editados';
+          changes.push(
+            `<strong>pois</strong>: ` +
+            `<span class="overlay-sync-old">${origN} POI(s)</span>` +
+            ` → <span class="overlay-sync-new">${newN} POI(s) (${deltaTxt})</span>`
+          );
+        } else {
+          changes.push(
+            `<strong>${escapeHtml(f.key)}</strong>: ` +
+            `<span class="overlay-sync-old">${escapeHtml(formatFieldValueForDiff(f.original))}</span>` +
+            ` → <span class="overlay-sync-new">${escapeHtml(formatFieldValueForDiff(f.override))}</span>`
+          );
+        }
+        totalEdits++;
+      }
+      if (diff.hasChanges) patchSnippet = overlay.buildPatchSnippet(tripId, st);
+    }
+
+    if (!changes.length) continue;
+
+    const snippetJson = patchSnippet ? JSON.stringify(patchSnippet, null, 2) : '';
     items.push(`
       <div class="export-list-item">
         <span class="ic" aria-hidden="true">✎</span>
-        <div>
-          <div class="trip-name">${(trip && trip.name) || tripId}</div>
-          <div class="change">status → <strong>${statusLabel(st.statusOverride)}</strong></div>
+        <div style="flex:1;min-width:0;">
+          <div class="trip-name">${escapeHtml(tripName)}</div>
+          ${changes.map(c => `<div class="change">${c}</div>`).join('')}
+          ${snippetJson ? `
+            <details style="margin-top:6px;">
+              <summary style="cursor:pointer;font-size:12px;color:#475569;">Patch JSON minimal (campos editados)</summary>
+              <pre class="overlay-patch-snippet" style="background:#0f172a;color:#e2e8f0;padding:8px;border-radius:6px;font:11px/1.4 'SF Mono',Menlo,monospace;overflow:auto;max-height:200px;margin:6px 0 0;white-space:pre;">${escapeHtml(snippetJson)}</pre>
+              <button type="button" class="export-copy-patch" data-snippet="${escapeHtml(snippetJson)}" style="margin-top:4px;padding:4px 10px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;cursor:pointer;font:12px Inter,system-ui,sans-serif;">📋 Copiar patch</button>
+            </details>
+          ` : ''}
         </div>
       </div>
     `);
   }
-  if (el.exportCount) el.exportCount.textContent = String(items.length);
+  if (el.exportCount) el.exportCount.textContent = String(totalEdits);
   if (el.exportList) {
     el.exportList.innerHTML = items.length
       ? items.join('')
       : '<div class="export-list-empty">Sem edições pendentes</div>';
+    el.exportList.querySelectorAll('.export-copy-patch').forEach(btn => {
+      btn.addEventListener('click', () => {
+        copyText(btn.dataset.snippet);
+        toast('📋 Patch copiado.');
+      });
+    });
   }
 }
 
@@ -1197,7 +1271,13 @@ async function downloadTripsJson() {
     const all = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
     for (const trip of data.trips) {
       const st = all[trip.id];
-      if (st && st.statusOverride) trip.status = st.statusOverride;
+      if (!st) continue;
+      if (st.statusOverride) trip.status = st.statusOverride;
+      if (st._topLevel) {
+        for (const field of overlay.TOP_LEVEL_FIELDS) {
+          if (st._topLevel[field] !== undefined) trip[field] = st._topLevel[field];
+        }
+      }
     }
     data.atualizado_em = new Date().toISOString().slice(0, 10);
     const content = JSON.stringify(data, null, 2) + '\n';
@@ -1220,11 +1300,13 @@ async function downloadTripsJson() {
 function clearAllEdits() {
   const n = countPendingEdits();
   if (n === 0) return;
-  if (!confirm(`Descartar ${n} edição(ões) local(is)?\n\nFaça isso APENAS após exportar e aplicar no GitHub. Senão você perde as mudanças.`)) return;
+  if (!confirm(`Descartar ${n} edição(ões) local(is)?\n\nFaça isso APENAS após exportar e aplicar no GitHub. Senão você perde as mudanças.\n\nSub-seções (checklist, orçamento, reservas) ficam preservadas.`)) return;
   try {
     const all = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
     for (const id of Object.keys(all)) {
-      if (all[id]) delete all[id].statusOverride;
+      if (!all[id]) continue;
+      delete all[id].statusOverride;
+      delete all[id]._topLevel;
     }
     localStorage.setItem(LS_KEY, JSON.stringify(all));
     location.reload();
@@ -3107,6 +3189,7 @@ function openOverlaySyncModal(trip) {
       overlay.clearTopLevelOverlay(trip.id);
       dlg.close();
       hydratePlanPage(trip);
+      refreshEditsIndicator();
       toast('🗑 Edições top-level descartadas.');
     };
   }
@@ -3231,6 +3314,7 @@ function openDateEditorPopover(trip, anchor) {
     close();
     const original = state.trips.find((x) => x.id === trip.id) || trip;
     hydratePlanPage(original);
+    refreshEditsIndicator();
     toast('↺ Datas revertidas ao trips.json.');
   });
 
@@ -3243,6 +3327,7 @@ function openDateEditorPopover(trip, anchor) {
     close();
     const original = state.trips.find((x) => x.id === trip.id) || trip;
     hydratePlanPage(original);
+    refreshEditsIndicator();
     toast('✓ Período atualizado (overlay local).');
   });
 
@@ -3256,8 +3341,10 @@ function hydratePlanPage(trip) {
   // (checklist, committed, etc) continuam sendo lidas via loadTripState
   // dentro dos populate*/render* — não duplicamos a leitura aqui.
   const tripOverlay = overlay.readOverlay(trip.id);
+  const canonicalTrip = trip;
   trip = overlay.mergeOverlayIntoTrip(trip, tripOverlay);
-  syncOverlayHeaderUI(trip, tripOverlay);
+  // Diff precisa da trip canônica (sem overlay aplicado) — senão hasChanges sempre false.
+  syncOverlayHeaderUI(canonicalTrip, tripOverlay);
 
   const isWish = trip.status === 'wishlist';
   // Header
@@ -3507,6 +3594,7 @@ function addTripPoi(trip, poi) {
   overlay.writeOverlay(trip.id, { _topLevel: { pois } });
   const original = state.trips.find((x) => x.id === trip.id) || trip;
   hydratePlanPage(original);
+  refreshEditsIndicator();
   toast(`📍 “${poi.name}” adicionado (overlay local).`);
 }
 
@@ -3518,6 +3606,7 @@ function removeTripPoi(trip, index) {
   overlay.writeOverlay(trip.id, { _topLevel: { pois } });
   const original = state.trips.find((x) => x.id === trip.id) || trip;
   hydratePlanPage(original);
+  refreshEditsIndicator();
   toast(`🗑 “${removed?.name || 'Ponto'}” removido.`);
 }
 
