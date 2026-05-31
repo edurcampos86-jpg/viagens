@@ -1,0 +1,245 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edurcampos86-jpg.github.io/viagens/schemas/evento.schema.json",
+  "title": "Evento",
+  "description": "Schema canônico de um evento agendado dentro de uma viagem (festival, festa, show, passeio, restaurante reservado, etc.). Unidade de planejamento ao nível-dia/hora. Cada evento referencia uma viagem-pai via 'viagem_id' (FK para trip.id). Distinto de bookings.experiences[] em trip.schema.json — Evento é mais rico: traz 'local' estruturado, 'preparacao' (dress code, bring list), 'companhia' (quem vai junto), 'prioridade' e campos pós-evento ('rating_pessoal', 'reflexao_pos'). Ver docs/ADR-002-entidade-evento.md.",
+
+  "type": "object",
+  "required": [
+    "id",
+    "schema_version",
+    "viagem_id",
+    "titulo",
+    "tipo",
+    "data",
+    "status",
+    "ingresso",
+    "created_at"
+  ],
+
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "minLength": 1,
+      "maxLength": 80,
+      "description": "Identificador único do evento, kebab-case sem prefixo. Ex: 'sp-micareta', 'brasilia-festa-lili-jantar'."
+    },
+    "schema_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Versão deste schema. Incrementar em breaking changes."
+    },
+    "viagem_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "FK para trip.id em data/trips.json. Mesmo pattern de trip.schema.json. Ex: 'sp-junho-2026'."
+    },
+
+    "titulo":    { "type": "string", "minLength": 1, "maxLength": 200 },
+    "descricao": { "type": ["string", "null"], "maxLength": 2000 },
+
+    "tipo": {
+      "type": "string",
+      "enum": ["festival", "festa", "show", "passeio", "restaurante", "ritual", "evento_corporativo", "outro"],
+      "description": "Categoria principal. festival=multi-palco/dia inteiro · festa=festa fechada/clube · show=concerto de artista único · passeio=tour/atividade · restaurante=reserva premium · ritual=cerimônia/casamento · evento_corporativo=conferência/keynote · outro=fallback."
+    },
+    "subtipo": {
+      "type": ["string", "null"],
+      "maxLength": 60,
+      "description": "Sub-categoria livre — taxonomia rica em expansão (ex: 'micareta', 'pride', 'musica_eletronica', 'omakase'). Sem enum por design."
+    },
+
+    "data": {
+      "type": "string",
+      "format": "date",
+      "description": "Data principal YYYY-MM-DD. Para eventos que viram a noite, usar data de início."
+    },
+    "horario_inicio": {
+      "type": ["string", "null"],
+      "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
+      "description": "HH:MM em 24h. Null quando indefinido."
+    },
+    "horario_fim": {
+      "type": ["string", "null"],
+      "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+    },
+    "duracao_estimada_horas": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 72
+    },
+    "vira_noite": {
+      "type": ["boolean", "null"],
+      "description": "True quando o evento atravessa a meia-noite (afeta agendamento de Uber/descanso do dia seguinte)."
+    },
+
+    "local": {
+      "description": "Local físico estruturado. Null quando ainda não definido.",
+      "anyOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "properties": {
+            "nome":            { "type": ["string", "null"], "maxLength": 200 },
+            "endereco":        { "type": ["string", "null"], "maxLength": 300 },
+            "bairro":          { "type": ["string", "null"], "maxLength": 100 },
+            "cidade":          { "type": ["string", "null"], "maxLength": 100 },
+            "estado_regiao":   { "type": ["string", "null"], "maxLength": 100 },
+            "pais":            { "type": ["string", "null"], "maxLength": 100 },
+            "google_place_id": { "type": ["string", "null"], "maxLength": 200 },
+            "lat":             { "type": ["number", "null"], "minimum": -90,  "maximum": 90 },
+            "lng":             { "type": ["number", "null"], "minimum": -180, "maximum": 180 },
+            "url_mapa":        { "type": ["string", "null"], "format": "uri" }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+
+    "ingresso": {
+      "type": "object",
+      "description": "Sub-objeto sempre presente. Quando o evento não exige ingresso, basta 'necessita_ingresso: false' e demais campos ficam null/ausentes.",
+      "required": ["necessita_ingresso"],
+      "properties": {
+        "necessita_ingresso": { "type": "boolean" },
+        "status": {
+          "type": ["string", "null"],
+          "enum": [
+            "nao_aplicavel",
+            "pendente",
+            "comprado",
+            "compartilhado_enviado",
+            "compartilhado_recebido",
+            "vendido",
+            "cancelado_reembolsado",
+            null
+          ],
+          "description": "Ciclo de vida do ingresso. compartilhado_enviado=ingresso enviado a outra pessoa via app · vendido=repassado a terceiro (não-app)."
+        },
+        "plataforma": {
+          "type": ["string", "null"],
+          "maxLength": 60,
+          "description": "Plataforma de venda livre (ex: 'ingresse', 'folia_tickets', 'sympla', 'eventim'). Sem enum por design."
+        },
+        "codigo_reserva": {
+          "type": ["string", "null"],
+          "maxLength": 60,
+          "description": "Localizador (PNR, número de pedido). Tolerado aqui nested em ingresso{} — BANIDO no top-level do evento (ver 'not' abaixo)."
+        },
+        "lote_categoria": {
+          "type": ["string", "null"],
+          "maxLength": 120,
+          "description": "Ex: 'Pista Premium', 'Camarote VIP', 'Circuito Total - QUI', 'Passaporte 2 dias - dia 1'."
+        },
+        "quantidade":     { "type": ["integer", "null"], "minimum": 0, "maximum": 100 },
+        "valor_unitario": { "type": ["number",  "null"], "minimum": 0 },
+        "valor_total":    { "type": ["number",  "null"], "minimum": 0 },
+        "moeda": {
+          "type": ["string", "null"],
+          "enum": ["BRL", "USD", "EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD", "ZAR", null]
+        },
+        "url_ingresso": {
+          "type": ["string", "null"],
+          "format": "uri"
+        },
+        "email_referencia": {
+          "type": ["string", "null"],
+          "maxLength": 40,
+          "description": "Gmail message ID em hex (do parser do backend). Usado para deduplicar imports."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "companhia": {
+      "type": "array",
+      "description": "Codinomes/relações livres das pessoas que vão. Lista vazia = sozinho. Ex: ['pe_marido', 'gustavo']. Sem enum por design — domínio cresce a cada nova viagem.",
+      "items": { "type": "string", "minLength": 1, "maxLength": 60 }
+    },
+
+    "prioridade": {
+      "type": ["string", "null"],
+      "enum": ["imperdivel", "alta", "media", "baixa", null],
+      "description": "imperdivel=cancela a viagem se não rolar · alta=peso forte na decisão · media=positivo · baixa=opcional/se sobrar tempo. Mapeia para peso_criticidade quando este evento referencia booking em trip.bookings.experiences[]."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["planejado", "confirmado", "em_duvida", "cancelado", "realizado"],
+      "description": "planejado=ideia inicial sem confirmar · confirmado=ingresso comprado/agenda fechada · em_duvida=oscilando entre opções · cancelado=descartado conscientemente (manter histórico) · realizado=já aconteceu (foco em pós-evento)."
+    },
+
+    "preparacao": {
+      "description": "Anotações operacionais pré-evento. Null quando não há preparação especial.",
+      "anyOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "properties": {
+            "dress_code":       { "type": ["string", "null"], "maxLength": 300 },
+            "levar":            {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1, "maxLength": 200 },
+              "description": "Checklist de itens a levar."
+            },
+            "notas_preparacao": { "type": ["string", "null"], "maxLength": 1000 }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+
+    "notas": { "type": ["string", "null"], "maxLength": 2000 },
+
+    "rating_pessoal": {
+      "type": ["integer", "null"],
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Avaliação 1-5 preenchida no pós-evento."
+    },
+    "reflexao_pos": {
+      "type": ["string", "null"],
+      "maxLength": 5000,
+      "description": "Texto livre pós-evento (o que ficou, o que aprendeu, com quem reencontrou)."
+    },
+
+    "fotos_ids": {
+      "type": "array",
+      "description": "IDs locais de fotos (cruzam com media/<viagem-id>/...).",
+      "items": { "type": "string", "minLength": 1, "maxLength": 200 }
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags livres em kebab-case ou snake-case (ex: 'bloco', 'pride', 'raiz-baiana', 'noite'). Sem enum.",
+      "items": { "type": "string", "minLength": 1, "maxLength": 60 }
+    },
+
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 com timezone. Ex: '2026-05-30T23:50:00-03:00'."
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  },
+
+  "not": {
+    "description": "Defense-in-depth: bana PII e códigos sensíveis no top-level do evento. Códigos legítimos de reserva ficam nested em ingresso.codigo_reserva.",
+    "anyOf": [
+      { "required": ["cpf"] },
+      { "required": ["passaporte_numero"] },
+      { "required": ["passaporte_num"] },
+      { "required": ["passport_number"] },
+      { "required": ["cartao"] },
+      { "required": ["cartao_numero"] },
+      { "required": ["cvv"] },
+      { "required": ["codigo_reserva"] },
+      { "required": ["reserva_numero"] },
+      { "required": ["booking_code"] }
+    ]
+  },
+
+  "additionalProperties": false
+}

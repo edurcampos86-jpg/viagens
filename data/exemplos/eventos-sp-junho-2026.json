@@ -1,0 +1,278 @@
+[
+  {
+    "id": "sp-micareta",
+    "schema_version": 1,
+    "viagem_id": "sp-junho-2026",
+
+    "titulo": "Micareta Sao Paulo 2026",
+    "descricao": "Carnaval fora de epoca em SP. Acesso Circuito Total para 2 pessoas. Energia de bloco baiano em SP - mistura perfeita da nossa raiz.",
+
+    "tipo": "festival",
+    "subtipo": "micareta",
+
+    "data": "2026-06-04",
+    "horario_inicio": null,
+    "horario_fim": null,
+    "duracao_estimada_horas": 8,
+    "vira_noite": true,
+
+    "local": {
+      "nome": null,
+      "endereco": null,
+      "bairro": null,
+      "cidade": "Sao Paulo",
+      "estado_regiao": "SP",
+      "pais": "Brasil",
+      "google_place_id": null,
+      "lat": null,
+      "lng": null,
+      "url_mapa": null
+    },
+
+    "ingresso": {
+      "necessita_ingresso": true,
+      "status": "comprado",
+      "plataforma": "folia_tickets",
+      "codigo_reserva": "016558F",
+      "lote_categoria": "Circuito Total - QUI",
+      "quantidade": 2,
+      "valor_unitario": 564.30,
+      "valor_total": 1128.60,
+      "moeda": "BRL",
+      "url_ingresso": null,
+      "email_referencia": "19d6fe8601107211"
+    },
+
+    "companhia": ["pe_marido"],
+
+    "prioridade": "imperdivel",
+    "status": "confirmado",
+
+    "preparacao": {
+      "dress_code": "Look de bloco - leve, colorido, confortavel para o dia inteiro.",
+      "levar": [
+        "Protetor solar",
+        "Garrafa de agua reutilizavel",
+        "Ingresso no celular (Folia Tickets)",
+        "Dinheiro/cartao para bar"
+      ],
+      "notas_preparacao": "Energia para chegar do voo (11h45) e ir direto - precisa de almoco rapido e descanso de 1-2h em Frei Caneca antes de sair."
+    },
+
+    "notas": "Pedido 016558F - 2 ingressos Circuito Total nominais (EDUARDO RODRIGUES CAMPOS). Quinta 04/06/2026.",
+
+    "rating_pessoal": null,
+    "reflexao_pos": null,
+
+    "fotos_ids": [],
+    "tags": ["bloco", "carnaval", "raiz-baiana"],
+
+    "created_at": "2026-05-30T23:50:00-03:00",
+    "updated_at": null
+  },
+
+  {
+    "id": "sp-stb-sexta-vendido",
+    "schema_version": 1,
+    "viagem_id": "sp-junho-2026",
+
+    "titulo": "So Track Boa Festival 2026 - Sexta (vendido)",
+    "descricao": "Ingresso de festival de 2 dias. Optamos por trocar a sexta pela Festa Black Pride - ingresso da sexta sera vendido para amigo.",
+
+    "tipo": "festival",
+    "subtipo": "musica_eletronica",
+
+    "data": "2026-06-05",
+    "horario_inicio": "15:30",
+    "horario_fim": null,
+    "duracao_estimada_horas": null,
+    "vira_noite": true,
+
+    "local": {
+      "nome": "Autodromo de Interlagos",
+      "endereco": "Avenida Senador Teotonio Vilela, Interlagos",
+      "bairro": "Interlagos",
+      "cidade": "Sao Paulo",
+      "estado_regiao": "SP",
+      "pais": "Brasil",
+      "google_place_id": null,
+      "lat": null,
+      "lng": null,
+      "url_mapa": null
+    },
+
+    "ingresso": {
+      "necessita_ingresso": true,
+      "status": "compartilhado_enviado",
+      "plataforma": "ingresse",
+      "codigo_reserva": null,
+      "lote_categoria": "Passaporte 2 dias - dia 1",
+      "quantidade": 1,
+      "valor_unitario": null,
+      "valor_total": null,
+      "moeda": "BRL",
+      "url_ingresso": null,
+      "email_referencia": "19af9704c4fbcd6d"
+    },
+
+    "companhia": [],
+
+    "prioridade": "baixa",
+    "status": "cancelado",
+
+    "preparacao": null,
+    "notas": "Decisao operacional: optamos pela Festa Black Pride na sexta (20h). Este ingresso sera vendido a amigo. O passaporte do So Track Boa ainda sera USADO no sabado 06/06 (ver evento sp-stb-sabado).",
+
+    "rating_pessoal": null,
+    "reflexao_pos": null,
+
+    "fotos_ids": [],
+    "tags": ["vendido", "musica-eletronica"],
+
+    "created_at": "2026-05-30T23:50:00-03:00",
+    "updated_at": null
+  },
+
+  {
+    "id": "sp-festa-black",
+    "schema_version": 1,
+    "viagem_id": "sp-junho-2026",
+
+    "titulo": "Festa Black Pride Sao Paulo",
+    "descricao": "Festa Black Pride na sexta a noite. Coracao da semana da Pride em SP. Dois ingressos comprados.",
+
+    "tipo": "festa",
+    "subtipo": "pride",
+
+    "data": "2026-06-05",
+    "horario_inicio": "20:00",
+    "horario_fim": null,
+    "duracao_estimada_horas": 8,
+    "vira_noite": true,
+
+    "local": {
+      "nome": null,
+      "endereco": null,
+      "bairro": null,
+      "cidade": "Sao Paulo",
+      "estado_regiao": "SP",
+      "pais": "Brasil",
+      "google_place_id": null,
+      "lat": null,
+      "lng": null,
+      "url_mapa": null
+    },
+
+    "ingresso": {
+      "necessita_ingresso": true,
+      "status": "comprado",
+      "plataforma": "ingresse",
+      "codigo_reserva": null,
+      "lote_categoria": null,
+      "quantidade": 2,
+      "valor_unitario": null,
+      "valor_total": null,
+      "moeda": "BRL",
+      "url_ingresso": null,
+      "email_referencia": "19d4acee5e4f6da9"
+    },
+
+    "companhia": ["pe_marido"],
+
+    "prioridade": "imperdivel",
+    "status": "confirmado",
+
+    "preparacao": {
+      "dress_code": null,
+      "levar": [
+        "Ingresso no app Ingresse",
+        "Documento com foto"
+      ],
+      "notas_preparacao": "Dia da sexta totalmente livre/descanso ate a festa - chegamos com energia maxima."
+    },
+
+    "notas": "1 dos ingressos foi compartilhado/aceito por jodson.cfo@gmail.com. Confirmar endereco com Ingresse mais perto da data.",
+
+    "rating_pessoal": null,
+    "reflexao_pos": null,
+
+    "fotos_ids": [],
+    "tags": ["pride", "noite", "afeto"],
+
+    "created_at": "2026-05-30T23:50:00-03:00",
+    "updated_at": null
+  },
+
+  {
+    "id": "sp-stb-sabado",
+    "schema_version": 1,
+    "viagem_id": "sp-junho-2026",
+
+    "titulo": "So Track Boa Festival 2026 - Sabado",
+    "descricao": "Segundo dia do festival. Aqui usamos o passaporte de 2 dias - sabado e o dia que vai com tudo.",
+
+    "tipo": "festival",
+    "subtipo": "musica_eletronica",
+
+    "data": "2026-06-06",
+    "horario_inicio": "15:30",
+    "horario_fim": null,
+    "duracao_estimada_horas": 10,
+    "vira_noite": true,
+
+    "local": {
+      "nome": "Autodromo de Interlagos",
+      "endereco": "Avenida Senador Teotonio Vilela, Interlagos",
+      "bairro": "Interlagos",
+      "cidade": "Sao Paulo",
+      "estado_regiao": "SP",
+      "pais": "Brasil",
+      "google_place_id": null,
+      "lat": null,
+      "lng": null,
+      "url_mapa": null
+    },
+
+    "ingresso": {
+      "necessita_ingresso": true,
+      "status": "comprado",
+      "plataforma": "ingresse",
+      "codigo_reserva": null,
+      "lote_categoria": "Passaporte 2 dias - dia 2",
+      "quantidade": 1,
+      "valor_unitario": null,
+      "valor_total": null,
+      "moeda": "BRL",
+      "url_ingresso": null,
+      "email_referencia": "19af6588a2059ee0"
+    },
+
+    "companhia": ["pe_marido"],
+
+    "prioridade": "imperdivel",
+    "status": "confirmado",
+
+    "preparacao": {
+      "dress_code": "Festival eletronico ao ar livre - conforto + estilo + protetor solar",
+      "levar": [
+        "Ingresso no app Ingresse",
+        "Protetor solar",
+        "Capa de chuva fina (Interlagos pega vento)",
+        "Bateria portatil",
+        "Documento com foto"
+      ],
+      "notas_preparacao": "Almoco cedo + descanso pela manha. Sair de Frei Caneca para Interlagos exige ~40-60 min de Uber."
+    },
+
+    "notas": "Mesmo passaporte do sp-stb-sexta-vendido (compra unica). O dia 1 sera vendido, dia 2 sera usado.",
+
+    "rating_pessoal": null,
+    "reflexao_pos": null,
+
+    "fotos_ids": [],
+    "tags": ["festival", "interlagos", "eletronica", "noite"],
+
+    "created_at": "2026-05-30T23:50:00-03:00",
+    "updated_at": null
+  }
+]
