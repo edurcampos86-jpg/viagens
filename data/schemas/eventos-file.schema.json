@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edurcampos86-jpg.github.io/viagens/schemas/eventos-file.schema.json",
+  "title": "Arquivo de eventos por viagem",
+  "description": "Schema de um arquivo data/exemplos/eventos-<viagem-id>.json (ou futuro data/eventos/<viagem-id>.json após Fase 3). Array bruto de eventos. Coerência viagem_id↔nome-de-arquivo é checada por convenção (não pelo schema).",
+
+  "type": "array",
+  "minItems": 0,
+  "items": { "$ref": "./evento.schema.json" }
+}

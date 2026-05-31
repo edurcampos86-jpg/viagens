@@ -5,6 +5,46 @@
 
 ---
 
+## Sprint 3.0 Fase 3 — popular eventos retro nas viagens planned
+
+**Contexto:** [ADR-002](ADR-002-entidade-evento.md) (este PR) introduziu a entidade `Evento`
+com schema rígido (`data/schemas/evento.schema.json`) e 1 exemplo validado em
+`data/exemplos/eventos-sp-junho-2026.json`. As outras viagens `planned` /
+`em_planejamento` ativas no `data/trips.json` ainda não têm eventos populados.
+
+**Viagens-alvo (snapshot 2026-05-31):**
+
+- `sp-junho-2026` — exemplo já existe; **promover** de `data/exemplos/` para
+  `data/eventos/sp-junho-2026.json` quando a Fase 3 começar.
+- `sp-agosto-2026` (Sao Paulo - IA) — eventos a coletar: keynotes, jantares,
+  meetings.
+- `brasilia-festa-lili-2026` — cerimônia + jantares + traslados.
+- `san-island-2026` — passeios/excursões.
+- Outras viagens `planned` a confirmar via `jq '.trips[] | select(.status==
+  "planned" or .status=="em_planejamento") | .id' data/trips.json`.
+
+**Caminhos viáveis:**
+
+1. **Manual via overlay** — Eduardo edita cada evento na UI quando ela existir
+   (Fase 5). Custo: alto esforço pontual, baixo risco. Pré-requisito: UI pronta.
+2. **Import do Gmail** — reaproveitar `backend/functions/gmail-parser/` (hoje
+   inerte, ver entrada "Gmail OAuth pronto pra deploy" abaixo) para extrair
+   eventos de e-mails de confirmação. Custo: depende do deploy do backend
+   Supabase.
+3. **Import manual em batch via script** — `scripts/import_eventos.py` que
+   lê CSV/JSON colado pelo Eduardo e gera arquivos `data/eventos/<viagem>.json`
+   validados. Custo: 1 script novo (~50 linhas), valida via
+   `validate_schemas.py` em loop.
+
+**Pré-requisito:** decidir formato canônico de `data/eventos/`. Hoje o
+`eventos-file.schema.json` é só `array of evento`. Avaliar wrapper
+`{viagem_id, eventos: []}` antes de promover para evitar re-migração.
+
+**Decisão pendente:** qual caminho seguir. Volume real esperado ~5-15 eventos
+por viagem planned; ~3-5 viagens planned ativas a qualquer momento.
+
+---
+
 ## Auto-sync seguro (originado em Sprint 1 T2)
 
 **Contexto:** o botão "Sync agora" foi removido em 2026-05-24 por armazenar

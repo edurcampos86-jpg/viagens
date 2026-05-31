@@ -32,6 +32,9 @@ TARGETS = [
     (DATA_DIR / "trips.json",       SCHEMAS_DIR / "trips-file.schema.json"),
     (DATA_DIR / "documentos.json",  SCHEMAS_DIR / "documentos.schema.json"),
     (DATA_DIR / "preferencias.json", SCHEMAS_DIR / "preferencias.schema.json"),
+    # Sprint 3.0 — entidade Evento (ver docs/ADR-002-entidade-evento.md).
+    # Fase 3 promoverá este exemplo para data/eventos/<viagem-id>.json.
+    (DATA_DIR / "exemplos" / "eventos-sp-junho-2026.json", SCHEMAS_DIR / "eventos-file.schema.json"),
 ]
 
 
