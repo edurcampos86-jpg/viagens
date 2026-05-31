@@ -1,6 +1,6 @@
-# Portal de Viagens — Eduardo Campos
+# Vida & Carreira — Eduardo Campos
 
-Memória + planejamento de viagens. Site estático em GitHub Pages, evoluído na v2.0 para uma ferramenta híbrida com 7 agentes especialistas, edição inline via GitHub API, integração com Gmail e visualizações sobre o histórico.
+Vida & Carreira — meu diário de viagens e marcos pessoais. Site estático em GitHub Pages, evoluído na v2.0 para uma ferramenta híbrida com 7 agentes especialistas, edição inline via GitHub API, integração com Gmail e visualizações sobre o histórico.
 
 **Site público:** https://edurcampos86-jpg.github.io/viagens/
 
