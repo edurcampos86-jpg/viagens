@@ -24,11 +24,11 @@ if (!self.workbox) {
   // Bump VERSION em cada deploy que muda assets/* ou index.html — Workbox
   // entao expira a entrada precacheada antiga e baixa a nova. Faz o papel
   // do cache-busting via query string sem precisar de build.
-  const VERSION = 'viagens-v3-pwa-4';
+  const VERSION = 'viagens-v3-pwa-5';
 
   // Precache do app shell completo (HTML + CSS + JS criticos com revision).
-  // URLs relativas ao scope do SW (que agora é /viagens/ porque o script
-  // está na raiz do projeto). Antes começavam com '/' e apontavam para fora
+  // URLs relativas ao scope do SW (que é /viagens/ no GitHub Pages, ou / no
+  // domínio vidacarreira.com.br). O script está na raiz; antes começavam com '/' e apontavam para fora
   // do GitHub Pages do projeto — PR #1.5B corrigiu scope e paths juntos.
   precaching.precacheAndRoute([
     { url: './', revision: VERSION },

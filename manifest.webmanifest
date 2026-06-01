@@ -1,7 +1,7 @@
 {
-  "name": "Minhas Viagens — Eduardo Campos",
-  "short_name": "Viagens",
-  "description": "Portfólio de viagens, memórias e planejamento de Eduardo Campos.",
+  "name": "Vida & Carreira — Eduardo Campos",
+  "short_name": "Vida & Carreira",
+  "description": "Vida & Carreira — diário de viagens e marcos pessoais de Eduardo Campos.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

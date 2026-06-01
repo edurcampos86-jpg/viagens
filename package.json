@@ -2,7 +2,7 @@
   "name": "viagens",
   "version": "2.0.0-alpha.0",
   "private": true,
-  "description": "Portal de viagens do Eduardo Campos — memória + planejamento (v2.0)",
+  "description": "Vida & Carreira — diário de viagens e marcos pessoais do Eduardo Campos (v2.0)",
   "type": "module",
   "scripts": {
     "dev": "vite",

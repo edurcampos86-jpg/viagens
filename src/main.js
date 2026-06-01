@@ -87,7 +87,8 @@ try {
 }
 
 // Registra o Service Worker v2 (Workbox) — substitui o sw.js antigo.
-// PR #1.5B: script movido para a raiz para que o scope /viagens/ seja permitido.
+// PR #1.5B: script movido para a raiz para que o scope /viagens/ seja permitido
+// (path do GitHub Pages; serve como / no domínio próprio vidacarreira.com.br).
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
