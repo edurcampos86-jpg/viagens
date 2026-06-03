@@ -41,3 +41,15 @@
   --vc-font-display: 'Fraunces', Georgia, serif;
   --vc-font-ui: 'Manrope', system-ui, sans-serif;
 }
+
+/* Modo papel-escuro (dark) — Sprint 3B Slice 1.
+ * Só os neutros papel/tinta flipam; pilares e marca permanecem idênticos.
+ * Mesmo seletor que o app aplica no tema escuro (assets/app.js -> documentElement). */
+html[data-theme="dark"], :root[data-theme="dark"] {
+  --vc-paper: #221D18;
+  --vc-paper-2: #2C251E;
+  --vc-paper-3: #3C342B;
+  --vc-ink: #F4EBDC;
+  --vc-ink-soft: #C4B7A3;
+  --vc-ink-faint: #8C8070;
+}

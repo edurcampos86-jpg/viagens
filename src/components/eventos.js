@@ -1,9 +1,9 @@
 // Timeline de eventos de uma viagem — módulo ISOLADO (Sprint 3A · Etapa 2).
 //
 // Renderiza a linha do tempo de eventos no formato de data/schemas/evento.schema.json.
-// NÃO está integrado ao detalhe da viagem ainda (isso é a Etapa 3) e NÃO aplica a
-// identidade visual nova (Fraunces/pilares/tokens --vc-*). Estilo funcional neutro,
-// classes com prefixo próprio `.ev-*`.
+// Sprint 3B Slice 1: aplica a identidade "Vida & Carreira" (Fraunces/pilares/tokens
+// --vc-*) SOMENTE nesta timeline; marcação e renderItem inalterados. Classes com
+// prefixo próprio `.ev-*`.
 //
 // Uso (browser):
 //   import { renderEventos } from '../components/eventos.js';
@@ -139,23 +139,42 @@ function renderItem(ev) {
   );
 }
 
-// ── CSS funcional neutro (sem tokens --vc-) ──────────────────────────────
+// ── Pele "Vida & Carreira" (tokens --vc-*) · Sprint 3B Slice 1 ────────────
+// Identidade aplicada SOMENTE à timeline (.ev-*). Marcação e renderItem
+// inalterados. Cores via tokens --vc-* (tokens.css); nada hardcodado.
 
 const CSS = `
-.ev-timeline { font: inherit; }
-.ev-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.ev-item { display: flex; gap: 12px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; background: #fff; }
-.ev-quando { flex: 0 0 96px; font-size: 13px; color: #555; }
-.ev-quando time { font-weight: 600; color: #222; display: block; }
-.ev-hora { color: #777; }
-.ev-corpo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.ev-tipo { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: #888; }
-.ev-titulo { margin: 0; font-size: 15px; font-weight: 600; color: #1a1a1a; }
-.ev-ingresso { font-size: 12px; color: #555; }
-.ev-ingresso--repassado { color: #999; text-decoration: line-through; }
-.ev-item--cancelado { opacity: .6; }
-.ev-item--cancelado .ev-titulo { text-decoration: line-through; }
-.ev-empty { margin: 0; padding: 16px; text-align: center; color: #888; font-size: 14px; border: 1px dashed #ccc; border-radius: 8px; }
+.ev-timeline{font:inherit}
+.ev-list{list-style:none;margin:0;padding:0;position:relative;display:flex;flex-direction:column;gap:4px}
+.ev-list::before{content:"";position:absolute;top:10px;bottom:10px;left:78px;width:2px;background:linear-gradient(180deg,var(--vc-paper-3),var(--vc-ink-faint) 22%,var(--vc-ink-faint) 78%,var(--vc-paper-3));opacity:.55}
+.ev-item{--acc:var(--vc-ink-faint);position:relative;display:grid;grid-template-columns:64px 1fr;gap:24px;padding:8px 0;align-items:start;animation:evIn .5s cubic-bezier(.2,.7,.2,1) both}
+.ev-item::before{content:"";position:absolute;left:72px;top:16px;width:14px;height:14px;border-radius:50%;background:var(--acc);border:3px solid var(--vc-paper-2);box-shadow:0 0 0 1px var(--acc);z-index:1}
+.ev-quando{text-align:right;padding-top:9px;line-height:1.15}
+.ev-quando time{display:block;font-family:var(--vc-font-display);font-weight:600;font-size:15px;color:var(--vc-ink);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.ev-hora{display:block;margin-top:3px;font-size:11.5px;font-weight:600;color:var(--vc-ink-soft);letter-spacing:.02em}
+.ev-corpo{position:relative;min-width:0;background:var(--vc-paper);border:1px solid var(--vc-paper-3);border-left:4px solid var(--acc);border-radius:12px;padding:13px 16px 14px;box-shadow:0 1px 0 #fff inset,0 14px 26px -22px rgba(43,38,32,.5);display:flex;flex-direction:column;gap:5px}
+.ev-tipo{align-self:flex-start;font-size:10.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--acc)}
+.ev-corpo .ev-titulo{margin:0;font-family:var(--vc-font-display);font-weight:600;font-size:19px;line-height:1.18;letter-spacing:-.015em;color:var(--vc-ink)}
+.ev-ingresso{align-self:flex-start;margin-top:3px;font-size:11.5px;font-weight:600;color:var(--vc-ink-soft);background:var(--vc-paper-2);border:1px solid var(--vc-paper-3);border-radius:999px;padding:4px 10px;display:inline-flex;align-items:center;gap:6px;letter-spacing:.01em}
+.ev-ingresso::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--vc-material)}
+.ev-ingresso--repassado{color:var(--vc-ink-faint);text-decoration:line-through;text-decoration-thickness:1px}
+.ev-ingresso--repassado::before{background:var(--vc-ink-faint)}
+.ev-item--cancelado{opacity:.62}
+.ev-item--cancelado .ev-corpo{background:repeating-linear-gradient(135deg,var(--vc-paper-2),var(--vc-paper-2) 7px,var(--vc-paper) 7px,var(--vc-paper) 14px);box-shadow:none}
+.ev-item--cancelado::before{background:var(--vc-paper-2);box-shadow:0 0 0 1px var(--vc-ink-faint)}
+.ev-item--cancelado .ev-corpo .ev-titulo{text-decoration:line-through;text-decoration-color:var(--vc-ink-faint)}
+.ev-item[data-tipo="festival"]{--acc:var(--vc-brand-1)}
+.ev-item[data-tipo="festa"]{--acc:var(--vc-relacoes)}
+.ev-item[data-tipo="show"]{--acc:var(--vc-espiritual)}
+.ev-item[data-tipo="passeio"]{--acc:var(--vc-material)}
+.ev-item[data-tipo="restaurante"]{--acc:var(--vc-familia)}
+.ev-item[data-tipo="ritual"]{--acc:var(--vc-saude)}
+.ev-item[data-tipo="evento_corporativo"]{--acc:var(--vc-trabalho)}
+.ev-empty{margin:0;padding:22px;text-align:center;color:var(--vc-ink-soft);font-size:14px;background:var(--vc-paper);border:1px dashed var(--vc-paper-3);border-radius:12px}
+@keyframes evIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+.ev-item:nth-child(1){animation-delay:.04s}.ev-item:nth-child(2){animation-delay:.11s}.ev-item:nth-child(3){animation-delay:.18s}.ev-item:nth-child(4){animation-delay:.25s}
+@media (prefers-reduced-motion:reduce){.ev-item{animation:none}}
+@media (max-width:560px){.ev-list::before{left:62px}.ev-item{grid-template-columns:52px 1fr;gap:18px}.ev-item::before{left:56px}}
 `;
 
 function ensureCss() {
