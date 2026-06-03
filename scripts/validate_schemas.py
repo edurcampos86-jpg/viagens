@@ -27,14 +27,24 @@ DATA_DIR = REPO_ROOT / "data"
 SCHEMAS_DIR = DATA_DIR / "schemas"
 
 
+EVENTOS_SCHEMA = SCHEMAS_DIR / "eventos-file.schema.json"
+
 # (arquivo de dados, arquivo de schema)
 TARGETS = [
     (DATA_DIR / "trips.json",       SCHEMAS_DIR / "trips-file.schema.json"),
     (DATA_DIR / "documentos.json",  SCHEMAS_DIR / "documentos.schema.json"),
     (DATA_DIR / "preferencias.json", SCHEMAS_DIR / "preferencias.schema.json"),
     # Sprint 3.0 — entidade Evento (ver docs/ADR-002-entidade-evento.md).
-    # Fase 3 promoverá este exemplo para data/eventos/<viagem-id>.json.
-    (DATA_DIR / "exemplos" / "eventos-sp-junho-2026.json", SCHEMAS_DIR / "eventos-file.schema.json"),
+    # Exemplo histórico mantido coberto explicitamente.
+    (DATA_DIR / "exemplos" / "eventos-sp-junho-2026.json", EVENTOS_SCHEMA),
+]
+
+# Cobertura por glob da pasta canônica de eventos (ADR-002 Fase 3): qualquer
+# arquivo data/eventos/*.json entra no validador automaticamente, sem edição
+# manual. sorted() garante ordem determinística no CI.
+TARGETS += [
+    (evento_file, EVENTOS_SCHEMA)
+    for evento_file in sorted((DATA_DIR / "eventos").glob("*.json"))
 ]
 
 
