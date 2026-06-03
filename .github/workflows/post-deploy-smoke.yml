@@ -70,7 +70,7 @@ jobs:
             echo "  ✓ $label ($size bytes, '$must_contain' present)"
           }
 
-          check_url "$BASE/"                    "Minhas Viagens"     5000   "index.html"
+          check_url "$BASE/"                    "Vida &amp; Carreira" 5000  "index.html"
           check_url "$BASE/assets/app.js"       "data-dp-run"        100000 "app.js"
           check_url "$BASE/assets/styles.css"   "AGENTES"            50000  "styles.css"
           # Checa invariantes (Workbox precache configurado + constante VERSION
@@ -82,7 +82,7 @@ jobs:
           # cleanup-pat.js (one-time B-N1 cleanup) tambem entra no smoke
           # — adicionado junto com o desacoplamento do check de versao.
           check_url "$BASE/assets/cleanup-pat.js" "viagens.cleanup.b-n1.done" 200 "cleanup-pat.js (B-N1 cleanup)"
-          check_url "$BASE/manifest.webmanifest" "Minhas Viagens"    200    "manifest"
+          check_url "$BASE/manifest.webmanifest" "Vida & Carreira"   200    "manifest"
           check_url "$BASE/src/main.js"         "openCustoms"        1000   "main.js"
 
           echo "All smoke checks passed ✓"
