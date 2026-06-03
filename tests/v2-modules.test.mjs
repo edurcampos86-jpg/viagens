@@ -724,6 +724,106 @@ test('REGRESSÃO H1.5: clearTrackedBranches limpa overlay RAW também', () => {
   assert.deepEqual(st.checklist, { flights: true }, 'checklist preservado');
 });
 
+// ── components/eventos.js (Sprint 3A · Etapa 2) ──────────────────────────
+const eventos = await import(`${ROOT}/src/components/eventos.js`);
+
+// Fixtures mínimas no formato de evento.schema.json (fora de ordem de propósito).
+const EV_FIXTURES = [
+  {
+    id: 'ev-c',
+    titulo: 'Show C',
+    tipo: 'show',
+    data: '2026-06-06',
+    ingresso: { necessita_ingresso: true, status: 'comprado' },
+  },
+  {
+    id: 'ev-a',
+    titulo: 'Festival A',
+    tipo: 'festival',
+    data: '2026-06-04',
+    horario_inicio: '15:30',
+    ingresso: { necessita_ingresso: true, status: 'vendido' },
+  },
+  {
+    id: 'ev-b',
+    titulo: 'Festa B',
+    tipo: 'festa',
+    data: '2026-06-05',
+    ingresso: { necessita_ingresso: true, status: 'comprado' },
+  },
+];
+
+test('eventos.sortEventos: ordena por data ascendente', () => {
+  const ids = eventos.sortEventos(EV_FIXTURES).map((e) => e.id);
+  assert.deepEqual(ids, ['ev-a', 'ev-b', 'ev-c']);
+});
+
+test('eventos.sortEventos: não muta o array de entrada', () => {
+  const original = EV_FIXTURES.map((e) => e.id);
+  eventos.sortEventos(EV_FIXTURES);
+  assert.deepEqual(
+    EV_FIXTURES.map((e) => e.id),
+    original
+  );
+});
+
+test('eventos.renderEventos: rende N eventos em ordem', () => {
+  const html = eventos.renderEventos(EV_FIXTURES);
+  const matches = html.match(/class="ev-item/g) || [];
+  assert.equal(matches.length, 3, 'deve renderizar 3 itens');
+  // Ordem no HTML segue a data: A antes de B antes de C.
+  assert.ok(
+    html.indexOf('Festival A') < html.indexOf('Festa B') &&
+      html.indexOf('Festa B') < html.indexOf('Show C'),
+    'itens devem aparecer ordenados por data'
+  );
+  assert.ok(html.includes('04/06/2026'), 'deve formatar a data DD/MM/YYYY');
+});
+
+test('eventos.renderEventos: lista vazia → estado vazio', () => {
+  const html = eventos.renderEventos([]);
+  assert.ok(html.includes('ev-timeline--empty'), 'deve marcar estado vazio');
+  assert.ok(html.includes('Sem eventos'), 'deve mostrar texto vazio');
+  assert.ok(!html.includes('class="ev-item'), 'não deve haver itens');
+});
+
+test('eventos.renderEventos: entrada inválida (null) → estado vazio', () => {
+  const html = eventos.renderEventos(null);
+  assert.ok(html.includes('ev-timeline--empty'));
+});
+
+test('eventos.renderEventos: evento sem campos opcionais não quebra', () => {
+  const minimo = [{ id: 'min', titulo: 'Mínimo', tipo: 'outro', data: '2026-07-01' }];
+  const html = eventos.renderEventos(minimo);
+  assert.ok(html.includes('Mínimo'), 'título renderizado');
+  assert.ok(html.includes('01/07/2026'), 'data renderizada');
+  assert.ok(html.includes('class="ev-item'), 'item renderizado mesmo sem ingresso/horario');
+});
+
+test('eventos.renderEventos: ingresso vendido/trocado → indicação neutra', () => {
+  const html = eventos.renderEventos([EV_FIXTURES[1]]); // status vendido
+  assert.ok(html.includes('ev-ingresso--repassado'), 'marca vendido como repassado');
+  assert.ok(html.includes('Vendido'), 'rótulo Vendido');
+});
+
+test('eventos.renderEventos: evento sem data vai para o fim', () => {
+  const comSemData = [
+    { id: 'sem-data', titulo: 'Sem data', tipo: 'outro' },
+    { id: 'com-data', titulo: 'Com data', tipo: 'show', data: '2026-06-04' },
+  ];
+  const html = eventos.renderEventos(comSemData);
+  assert.ok(html.indexOf('Com data') < html.indexOf('Sem data'), 'com data vem antes');
+  assert.ok(html.includes('Data a definir'), 'evento sem data mostra placeholder');
+});
+
+test('eventos.renderEventos: escapa HTML no título (XSS-safe)', () => {
+  const html = eventos.renderEventos([
+    { id: 'x', titulo: '<img src=x onerror=alert(1)>', tipo: 'outro', data: '2026-06-04' },
+  ]);
+  assert.ok(!html.includes('<img src=x'), 'tag crua não deve aparecer');
+  assert.ok(html.includes('&lt;img'), 'deve estar escapado');
+});
+
 // ── Sumário ───────────────────────────────────────────────────────────
 console.log(`\n${passed} passed, ${failed} failed.`);
 if (failed > 0) process.exit(1);
