@@ -824,6 +824,65 @@ test('eventos.renderEventos: escapa HTML no título (XSS-safe)', () => {
   assert.ok(html.includes('&lt;img'), 'deve estar escapado');
 });
 
+// ── core/eventos-data.js (Sprint 3A · Etapa 3a) ──────────────────────────
+const eventosData = await import(`${ROOT}/src/core/eventos-data.js`);
+
+// Fake fetch injetável: mapeia URL -> resposta. Sem rede.
+function fakeFetch(map) {
+  return async (url) => {
+    if (Object.prototype.hasOwnProperty.call(map, url)) return map[url];
+    return { ok: false, status: 404, json: async () => ({}) };
+  };
+}
+const okJson = (data) => ({ ok: true, status: 200, json: async () => data });
+
+await asyncTest('eventos-data.loadEventos: arquivo válido → array de eventos', async () => {
+  eventosData.clearEventosCache();
+  const evs = [{ id: 'a', titulo: 'A', tipo: 'show', data: '2026-06-04' }];
+  const got = await eventosData.loadEventos('viagem-ok', {
+    fetchImpl: fakeFetch({ 'data/eventos/viagem-ok.json': okJson(evs) }),
+  });
+  assert.equal(got.length, 1);
+  assert.equal(got[0].id, 'a');
+});
+
+await asyncTest('eventos-data.loadEventos: 404 → [] (estado vazio)', async () => {
+  eventosData.clearEventosCache();
+  const got = await eventosData.loadEventos('sem-arquivo', { fetchImpl: fakeFetch({}) });
+  assert.deepEqual(got, []);
+});
+
+await asyncTest('eventos-data.loadEventos: JSON não-array → []', async () => {
+  eventosData.clearEventosCache();
+  const got = await eventosData.loadEventos('ruim', {
+    fetchImpl: fakeFetch({ 'data/eventos/ruim.json': okJson({ nao: 'array' }) }),
+  });
+  assert.deepEqual(got, []);
+});
+
+await asyncTest('eventos-data.loadEventos: fetch lança → [] (nunca quebra)', async () => {
+  eventosData.clearEventosCache();
+  const got = await eventosData.loadEventos('explode', {
+    fetchImpl: async () => {
+      throw new Error('network down');
+    },
+  });
+  assert.deepEqual(got, []);
+});
+
+await asyncTest('eventos-data.loadEventos: id inválido → [] sem fetch', async () => {
+  eventosData.clearEventosCache();
+  let called = false;
+  const got = await eventosData.loadEventos('', {
+    fetchImpl: async () => {
+      called = true;
+      return okJson([]);
+    },
+  });
+  assert.deepEqual(got, []);
+  assert.equal(called, false, 'não deve chamar fetch para id vazio');
+});
+
 // ── Sumário ───────────────────────────────────────────────────────────
 console.log(`\n${passed} passed, ${failed} failed.`);
 if (failed > 0) process.exit(1);
