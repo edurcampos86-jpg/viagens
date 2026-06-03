@@ -10,7 +10,9 @@ import { decideNextAction } from '../src/core/next-action.js';
 import { applyChecklistOrder, moveItem, isItemOverdue } from '../src/core/checklist-order.js';
 
 // Exposto pra console + handlers que vivem em outros módulos.
-window.viagensOverlay = overlay;
+// `overlay` é um module namespace selado (import * as) — copiamos para um
+// objeto liso para poder anexar os helpers de debug abaixo sem TypeError.
+window.viagensOverlay = { ...overlay };
 // H1.5: APIs de inspeção by-trip-id — sem ter que passar trip/overlay
 // como argumento. Útil pra debug do Eduardo no console.
 window.viagensOverlay.inspectEdits = (tripId) => {
