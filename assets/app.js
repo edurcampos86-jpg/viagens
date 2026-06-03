@@ -8,6 +8,8 @@ import { loadRules, injectChecklistItems } from '../src/components/checklist.js'
 import { deriveDatesFromBookings } from '../src/core/dates.js';
 import { decideNextAction } from '../src/core/next-action.js';
 import { applyChecklistOrder, moveItem, isItemOverdue } from '../src/core/checklist-order.js';
+import { renderEventos } from '../src/components/eventos.js';
+import { loadEventos } from '../src/core/eventos-data.js';
 
 // Exposto pra console + handlers que vivem em outros módulos.
 // `overlay` é um module namespace selado (import * as) — copiamos para um
@@ -3509,6 +3511,7 @@ function hydratePlanPage(trip) {
   renderPlanContext(trip);
   renderPlanChecklist(trip);
   renderPlanReservations(trip);
+  renderPlanEventos(trip);
   renderPlanBudget(trip);
   renderPlanPlanning(trip);
   renderPlanPacking(trip);
@@ -3850,6 +3853,17 @@ function renderPlanReservations(trip) {
       renderPlanReservations(trip);
     });
   });
+}
+
+// Timeline de eventos da viagem (Sprint 3A · Etapa 3a). Estilo neutro do
+// módulo eventos.js; identidade visual entra na 3b. Carga async por viagem_id.
+function renderPlanEventos(trip) {
+  const host = document.getElementById('planEventos');
+  if (!host) return;
+  host.innerHTML = '<p class="ev-empty">Carregando eventos…</p>';
+  loadEventos(trip.id)
+    .then((evs) => renderEventos(evs, { container: host }))
+    .catch(() => renderEventos([], { container: host }));
 }
 
 function renderPlanBudget(trip) {

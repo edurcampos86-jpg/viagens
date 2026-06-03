@@ -1,0 +1,43 @@
+/* =============================================================================
+ * tokens.css — Fonte canônica dos design tokens "Vida & Carreira"
+ * Sprint 3A · Etapa 1
+ * -----------------------------------------------------------------------------
+ * Materialização da paleta/tipografia aprovada nos mockups do Sprint 3A.
+ * Esta é a ÚNICA fonte da verdade dos tokens --vc-*; nenhum outro arquivo
+ * deve redefinir estes valores.
+ *
+ * Etapa 1 (este arquivo): tokens apenas DEFINIDOS. Nenhum seletor os aplica
+ * ainda, portanto o site permanece pixel-a-pixel idêntico. A aplicação aos
+ * componentes acontece nas etapas seguintes.
+ *
+ * Nota tipográfica: --vc-font-display ('Fraunces') está DEFINIDA mas a fonte
+ * NÃO é carregada nesta etapa (ver index.html). Os títulos legados seguem no
+ * fallback Georgia/serif. A Fraunces será carregada na Etapa 3. Manrope
+ * (--vc-font-ui) é carregada via Google Fonts mas ainda não aplicada.
+ * ===========================================================================*/
+
+:root {
+  /* Modo papel (claro) */
+  --vc-paper: #FBF6EC;
+  --vc-paper-2: #F4EADA;
+  --vc-paper-3: #EADDC8;
+  --vc-ink: #2B2620;
+  --vc-ink-soft: #6E6457;
+  --vc-ink-faint: #A89B88;
+
+  /* 6 pilares */
+  --vc-saude: #E24B4A;
+  --vc-familia: #E27D5C;
+  --vc-trabalho: #E0A33C;
+  --vc-relacoes: #8C84E8;
+  --vc-material: #3FB389;
+  --vc-espiritual: #5BA3D9;
+
+  /* Marca */
+  --vc-brand-1: #FF7A3D;
+  --vc-brand-2: #F2901C;
+
+  /* Tipografia */
+  --vc-font-display: 'Fraunces', Georgia, serif;
+  --vc-font-ui: 'Manrope', system-ui, sans-serif;
+}
