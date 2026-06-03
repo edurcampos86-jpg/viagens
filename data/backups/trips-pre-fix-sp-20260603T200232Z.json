@@ -2757,78 +2757,39 @@
       "year": 2026,
       "month": 6,
       "label": "Jun 2026",
-      "startDate": "2026-06-04",
-      "endDate": "2026-06-07",
+      "startDate": "2026-06-13",
+      "endDate": "2026-06-22",
       "lat": -23.5505,
       "lon": -46.6333,
       "col": "#a855f7",
       "pax": "amigos",
-      "air": "SSA→CGH / GRU→SSA (LATAM · UJWZTO)",
-      "nts": 3,
+      "air": "FLN→GRU (TAM)",
+      "nts": 8,
       "km": 860,
       "type": "festival",
       "highlights": [
-        "Micareta SP",
-        "Festa Black Pride",
-        "Só Track Boa (sábado · Interlagos)"
+        "Só Track Boa 13/06",
+        "Pride SP 22/06",
+        "Vida noturna paulistana"
       ],
       "memory": "",
       "logistics": {
-        "hotels": ["Casa do Ricardo (Frei Caneca)"],
+        "hotels": [],
         "restaurants": [],
-        "tips": "Voos LATAM confirmados (UJWZTO). Hospedagem resolvida: Casa do Ricardo (Frei Caneca)."
+        "tips": "Passagem já comprada pela TAM. Falta hotel."
       },
-      "hospedagem": [
-        {
-          "nome": "Casa do Ricardo",
-          "cidade": "São Paulo",
-          "check_in": "2026-06-04",
-          "check_out": "2026-06-07",
-          "noites": 3,
-          "confirmada": true,
-          "tipo": "casa_amigo",
-          "observacao": "Bairro Frei Caneca. Override manual (origem: manual). Espelho legacy de bookings.stays[]."
-        }
-      ],
       "bookings": {
         "flights": [
           {
             "id": "sp-junho-2026-fl-001",
-            "titulo": "LA3870 SSA→CGH",
-            "status": "confirmado",
-            "data": "2026-06-04",
+            "titulo": "FLN→GRU (TAM)",
+            "status": "pendente",
             "criticidade": "alta",
-            "confirmada": true,
-            "localizador": "UJWZTO",
-            "notas": "Confirmado via localizador UJWZTO (compra LA9579192EHHW). LATAM. Trecho de ida."
-          },
-          {
-            "id": "sp-junho-2026-fl-002",
-            "titulo": "LA3346 GRU→SSA",
-            "status": "confirmado",
-            "data": "2026-06-07",
-            "criticidade": "alta",
-            "confirmada": true,
-            "localizador": "UJWZTO",
-            "notas": "Confirmado via localizador UJWZTO (compra LA9579192EHHW). LATAM. Trecho de volta."
+            "confirmada": false,
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
           }
         ],
-        "stays": [
-          {
-            "id": "sp-junho-2026-st-001",
-            "titulo": "Casa do Ricardo",
-            "nome": "Casa do Ricardo",
-            "status": "confirmado",
-            "data": "2026-06-04",
-            "confirmada": true,
-            "criticidade": "media",
-            "origem": "manual",
-            "bairro": "Frei Caneca",
-            "cidade": "São Paulo",
-            "tipo": "casa_amigo",
-            "notas": "Override manual (origem: manual). Hospedagem na casa do Ricardo, Frei Caneca. 04→07 jun."
-          }
-        ],
+        "stays": [],
         "experiences": []
       },
       "budget": {
@@ -2838,7 +2799,7 @@
       },
       "checklist": [],
       "created_at": "2026-06-01T00:00:00Z",
-      "updated_at": "2026-06-03T20:02:32Z",
+      "updated_at": "2026-05-19T01:30:18Z",
       "_schema": 2
     },
     {
