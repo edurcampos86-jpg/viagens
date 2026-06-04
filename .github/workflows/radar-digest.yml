@@ -1,0 +1,53 @@
+name: radar-digest
+
+on:
+  schedule:
+    # Toda segunda às 8h America/Bahia (UTC-3, sem horário de verão) = 11h UTC
+    - cron: "0 11 * * 1"
+  workflow_dispatch:
+    inputs:
+      simulate_today:
+        description: "Sobrescrever 'today' (YYYY-MM-DD)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Só imprime o digest, não posta no Slack (true/false)"
+        required: false
+        default: "false"
+
+# Read-only: o digest só lê os dados e posta no Slack. Sem escrita no repo.
+permissions:
+  contents: read
+
+concurrency:
+  group: radar-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: scripts/requirements-radar.txt
+
+      - name: Install deps
+        run: pip install -r scripts/requirements-radar.txt
+
+      - name: Run radar digest
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RADAR_TODAY: ${{ github.event.inputs.simulate_today }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python scripts/radar_digest.py --dry-run
+          else
+            python scripts/radar_digest.py
+          fi
