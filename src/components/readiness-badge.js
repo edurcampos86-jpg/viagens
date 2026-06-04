@@ -1,9 +1,11 @@
-// Badge de prontidão nos cards — Sprint Radar · Etapa B (UI aditiva, só leitura).
+// Badge de prontidão nos cards — Sprint Radar · Etapas B/B.2 (UI aditiva, só leitura).
 //
-// Para cada card de viagem FUTURA renderizado em #grid, injeta um selo com o
-// score de prontidão (computeReadiness) e, no hover/focus, a lista do que falta.
-// NÃO altera nenhum dado nem o markup dos cards existentes: observa #grid via
-// MutationObserver e acrescenta um elemento próprio (.rdy-*) ao hero do card.
+// Para cada card de viagem FUTURA, injeta um selo com o score de prontidão
+// (computeReadiness) e, no hover/focus, a lista do que falta. Funciona em
+// múltiplas superfícies (ver SURFACES): a Linha do Tempo (#grid) e o Dashboard
+// "Próximas Viagens" (#dashKanban). NÃO altera dados nem o markup existente:
+// observa cada container via MutationObserver e só ACRESCENTA um elemento
+// próprio (.rdy-*) ao card.
 //
 // Cores na identidade "Vida & Carreira" (tokens --vc-*): verde (completo),
 // âmbar (parcial), vermelho (baixo E perto da data).
@@ -47,11 +49,11 @@ function nivel(r) {
 
 const NIVEL_LABEL = { ok: 'Tudo pronto', parcial: 'Faltam itens', urgente: 'Atenção: perto da data' };
 
-function buildBadge(r) {
+function buildBadge(r, variant) {
   const lvl = nivel(r);
   const pct = Math.round(r.score * 100);
   const wrap = document.createElement('div');
-  wrap.className = `rdy rdy--${lvl}`;
+  wrap.className = `rdy rdy--${lvl}${variant ? ' ' + variant : ''}`;
   wrap.dataset.rdy = r.id;
   wrap.tabIndex = 0;
   wrap.setAttribute('role', 'status');
@@ -79,9 +81,44 @@ function buildPop(r, lvl) {
   return `<div class="rdy-pop" role="tooltip">${head}${body}</div>`;
 }
 
-async function enhanceCard(card) {
-  if (!card || card.querySelector(':scope > .card-body [data-rdy]')) return;
-  const id = card.dataset.tripId;
+// ── Superfícies ───────────────────────────────────────────────────────────
+// Cada superfície descreve ONDE os cards de viagem vivem e COMO ancorar o pill,
+// sem duplicar a regra de score (computeReadiness continua a única fonte). O
+// injetor é genérico: observa o container e enriquece cada card que casar.
+const SURFACES = [
+  {
+    // Linha do Tempo (#grid): card completo com hero. Pill no canto do hero.
+    name: 'timeline',
+    container: () => document.getElementById('grid'),
+    cardSel: '.card[data-trip-id]',
+    tripId: (c) => c.dataset.tripId || null,
+    variant: '',
+    mount: (c, badge) => {
+      const hero = c.querySelector('[data-hero]');
+      if (hero && !hero.querySelector('[data-rdy]')) hero.appendChild(badge);
+    },
+  },
+  {
+    // Dashboard / "Próximas Viagens" (#dashKanban): mini-card <a href="#plan/ID">.
+    // Sem data-trip-id — o id vem do href. Versão compacta (rdy--mini).
+    name: 'dashboard',
+    container: () => document.getElementById('dashKanban'),
+    cardSel: 'a.dash-mini[href]',
+    tripId: (c) => {
+      const m = (c.getAttribute('href') || '').match(/plan\/([^/?#]+)/);
+      return m ? m[1] : null;
+    },
+    variant: 'rdy--mini',
+    mount: (c, badge) => {
+      const host = c.querySelector('.dash-mini-top') || c;
+      if (!host.querySelector('[data-rdy]')) host.appendChild(badge);
+    },
+  },
+];
+
+async function enhanceCard(card, surface) {
+  if (!card || card.querySelector('[data-rdy]')) return;
+  const id = surface.tripId(card);
   if (!id) return;
   await loadTrips();
   const trip = tripsById.get(id);
@@ -89,40 +126,37 @@ async function enhanceCard(card) {
 
   const r = await readinessFor(trip);
   if (!r.future) return; // badge só em viagens futuras
-
-  const hero = card.querySelector('[data-hero]');
-  if (!hero || hero.querySelector('[data-rdy]')) return;
-  hero.appendChild(buildBadge(r));
+  surface.mount(card, buildBadge(r, surface.variant)); // mount revalida dedupe
 }
 
-function scanGrid(grid) {
-  grid.querySelectorAll('.card[data-trip-id]').forEach((c) => {
-    enhanceCard(c).catch(() => {});
-  });
-}
-
-let started = false;
-export function initReadinessBadges() {
-  if (started) return;
-  const grid = document.getElementById('grid');
-  if (!grid) return;
-  started = true;
-  ensureCss();
+function initSurface(surface) {
+  const container = surface.container();
+  if (!container) return; // superfície ainda não existe no DOM
+  const scan = () =>
+    container.querySelectorAll(surface.cardSel).forEach((c) => enhanceCard(c, surface).catch(() => {}));
 
   const obs = new MutationObserver((mutations) => {
     for (const m of mutations) {
       for (const node of m.addedNodes) {
         if (node.nodeType !== 1) continue;
-        if (node.matches && node.matches('.card[data-trip-id]')) {
-          enhanceCard(node).catch(() => {});
+        if (node.matches && node.matches(surface.cardSel)) {
+          enhanceCard(node, surface).catch(() => {});
         } else if (node.querySelectorAll) {
-          node.querySelectorAll('.card[data-trip-id]').forEach((c) => enhanceCard(c).catch(() => {}));
+          node.querySelectorAll(surface.cardSel).forEach((c) => enhanceCard(c, surface).catch(() => {}));
         }
       }
     }
   });
-  obs.observe(grid, { childList: true, subtree: true });
-  scanGrid(grid); // cards já presentes
+  obs.observe(container, { childList: true, subtree: true });
+  scan(); // cards já presentes
+}
+
+let started = false;
+export function initReadinessBadges() {
+  if (started) return;
+  started = true;
+  ensureCss();
+  for (const surface of SURFACES) initSurface(surface);
 }
 
 // ── CSS (tokens --vc-*) — selo claro, alegre, sem quebrar o card ──────────
@@ -163,6 +197,18 @@ const CSS = `
   .card-hero-info{padding-right:70px}
   .card-hero-name,.card-hero-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
+
+/* ── Dashboard "Próximas Viagens" (#dashKanban): versão compacta inline ──────
+   O pill entra na linha do topo do mini-card (bandeira | … | countdown · pill),
+   sem posição absoluta nem reserva de canto — flui com o conteúdo. */
+.rdy--mini{position:relative;display:inline-flex;align-items:center;
+  top:auto;right:auto;bottom:auto;margin-left:6px;flex:none}
+.rdy--mini .rdy-pill{padding:2px 7px;font-size:11px;gap:5px}
+.rdy--mini .rdy-dot{width:6px;height:6px}
+.dash-mini-top{flex-wrap:nowrap}
+.dash-mini .dash-mini-flag{margin-right:auto;min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.rdy--mini .rdy-pop{top:calc(100% + 8px);bottom:auto}
 `;
 
 function ensureCss() {
