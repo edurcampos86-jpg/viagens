@@ -26,6 +26,7 @@ import {
   computeScores,
   attachDecisionToTrip,
 } from './components/decision-matrix.js';
+import { initReadinessBadges } from './components/readiness-badge.js';
 
 const v2 = (window.viagensV2 = window.viagensV2 || {});
 v2.openTripEditor = openTripEditor;
@@ -802,8 +803,18 @@ viagensV2.syncQueue.list()           // Fila offline pendente</pre>
 }
 v2.openHelpModal = openHelpModal;
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', injectFloatingButton);
-} else {
+function bootstrapV2() {
   injectFloatingButton();
+  // Radar · Etapa B — selos de prontidão nos cards futuros (aditivo, só leitura).
+  try {
+    initReadinessBadges();
+  } catch (e) {
+    console.warn('[v2] initReadinessBadges falhou:', e);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootstrapV2);
+} else {
+  bootstrapV2();
 }
