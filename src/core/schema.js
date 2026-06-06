@@ -1,8 +1,14 @@
 // Validação e leitura de trips em ambos os formatos (v1 legacy e v2).
 //
-// Princípio: a fonte canônica é v2 (campos novos: dates, bookings, budget,
-// checklist, notes.general). Para registros legacy sem esses campos, os
-// getters caem de volta no v1 (year/month/nts, hospedagem, notes string).
+// Princípio: a fonte canônica é v2 (bookings, budget, checklist, notes.general).
+//
+// DATAS (ADR-003, opção B): a forma CANÔNICA é `startDate`/`endDate` top-level
+// (+ espelhos derivados year/month/nts). É onde os dados moram (42 registros) e
+// o que todo o pipeline Python e o assets/app.js leem. O objeto aninhado
+// `dates.{start,end,computed_from}` está DEPRECADO: serve só como alias de
+// leitura tolerante e NÃO deve mais ser escrito (o editor grava o canônico).
+// `getDates()` é o leitor tolerante único — lê dates.* OU startDate/endDate OU
+// year/month, nessa ordem de preferência.
 //
 // Importante: nunca lance erro só porque um campo legacy está faltando — o
 // site precisa renderizar 100% do histórico mesmo antes da migration rodar.
@@ -64,6 +70,17 @@ export function getDates(trip) {
       nts = Math.round((dEnd - dStart) / 86400000);
     }
     return { start, end, nts: nts ?? trip.nts ?? null, source: 'v2' };
+  }
+  // Canônico (ADR-003): startDate/endDate top-level — dia exato, preferido
+  // sobre year/month (que só tem o mês). É a forma que o editor grava.
+  if (trip.startDate) {
+    const start = trip.startDate;
+    const end = trip.endDate || null;
+    let nts = null;
+    if (start && end) {
+      nts = Math.round((new Date(end) - new Date(start)) / 86400000);
+    }
+    return { start, end, nts: nts ?? trip.nts ?? null, source: 'canonical' };
   }
   // Fallback v1: year/month sem dia exato.
   const y = trip.year,

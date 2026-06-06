@@ -53,6 +53,16 @@ test('schema.getDates: v1 legacy trip (year/month/nts)', () => {
   assert.equal(d.source, 'v1');
 });
 
+test('schema.getDates: canônico startDate/endDate tem precedência sobre year/month (ADR-003)', () => {
+  // europa-tomorrowland: startDate preciso 07-17 coexiste com year/month=07.
+  const trip = { startDate: '2026-07-17', endDate: '2026-07-28', year: 2026, month: 7, nts: 11 };
+  const d = schema.getDates(trip);
+  assert.equal(d.start, '2026-07-17'); // dia exato, NÃO 2026-07-01
+  assert.equal(d.end, '2026-07-28');
+  assert.equal(d.nts, 11);
+  assert.equal(d.source, 'canonical');
+});
+
 test('schema.getDates: empty trip', () => {
   const d = schema.getDates({});
   assert.equal(d.start, null);
@@ -131,6 +141,53 @@ test('dates.deriveDatesFromBookings: from stays only', () => {
 test('dates.deriveDatesFromBookings: empty returns null', () => {
   assert.equal(dates.deriveDatesFromBookings({ flights: [], stays: [] }), null);
   assert.equal(dates.deriveDatesFromBookings(null), null);
+});
+
+// ── dates.js — espelhos legacy canônicos (ADR-003 / B3.1) ────────────
+test('dates.deriveLegacyDateFields: deriva year/month/nts de start/end', () => {
+  const d = dates.deriveLegacyDateFields('2026-10-09', '2026-10-17');
+  assert.equal(d.startDate, '2026-10-09');
+  assert.equal(d.endDate, '2026-10-17');
+  assert.equal(d.year, 2026);
+  assert.equal(d.month, 10);
+  assert.equal(d.nts, 8);
+});
+
+test('dates.deriveLegacyDateFields: só start → year/month, nts null', () => {
+  const d = dates.deriveLegacyDateFields('2026-07-17', null);
+  assert.equal(d.year, 2026);
+  assert.equal(d.month, 7);
+  assert.equal(d.nts, null);
+  assert.equal(d.endDate, null);
+});
+
+test('dates.deriveLegacyDateFields: sem datas → tudo null', () => {
+  const d = dates.deriveLegacyDateFields(null, null);
+  assert.equal(d.startDate, null);
+  assert.equal(d.year, null);
+  assert.equal(d.month, null);
+  assert.equal(d.nts, null);
+});
+
+// ── guarda anti-drift de datas (ADR-003 / B3.3) ──────────────────────
+// Falha se algum registro tiver dates.* divergente de startDate/endDate (ou
+// dates.* órfão sem o canônico). startDate/endDate é a forma canônica; dates.*
+// é deprecado e não deve mais ser escrito. Hoje 0 registros usam dates.*.
+test('guarda B3.3: nenhum registro com drift dates.* × startDate/endDate', () => {
+  const raw = JSON.parse(readFileSync(resolve(ROOT, 'data/trips.json'), 'utf8'));
+  const trips = Array.isArray(raw) ? raw : raw.trips;
+  const drift = [];
+  for (const t of trips) {
+    const ds = t.dates?.start || null;
+    const de = t.dates?.end || null;
+    if (!ds && !de) continue; // sem dates.* → ok (canônico)
+    const ss = t.startDate || null;
+    const se = t.endDate || null;
+    if ((ss && ds && ds !== ss) || (se && de && de !== se) || (ds && !ss) || (de && !se)) {
+      drift.push(t.id);
+    }
+  }
+  assert.equal(drift.length, 0, `registros com drift de datas: ${drift.join(', ')}`);
 });
 
 // ── geo.js ───────────────────────────────────────────────────────────

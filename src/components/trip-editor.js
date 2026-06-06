@@ -22,7 +22,8 @@ import {
   PREFERRED_CC,
 } from '../core/geo.js';
 import { loadRules, injectChecklistItems, renderChecklist } from './checklist.js';
-import { deriveDatesFromBookings } from '../core/dates.js';
+import { deriveDatesFromBookings, deriveLegacyDateFields } from '../core/dates.js';
+import { getDates } from '../core/schema.js';
 import { renderBudget, mergeActual } from './budget.js';
 import { renderBenchmarkBanner } from './benchmark.js';
 import { renderWizardCard } from './wizard.js';
@@ -117,7 +118,7 @@ function validate(trip) {
   if (trip._geoNeedsConfirm) {
     errors.push('Confirme o destino sinalizado (⚠) ou ajuste país/coordenadas manualmente.');
   }
-  if (trip.dates?.start && trip.dates?.end && trip.dates.start > trip.dates.end) {
+  if (trip.startDate && trip.endDate && trip.startDate > trip.endDate) {
     errors.push('Data de início deve ser anterior à data de fim.');
   }
   return errors;
@@ -152,7 +153,15 @@ function buildSeed(mode, source) {
     copy.created_at = now;
   }
   copy.updated_at = now;
-  copy.dates = copy.dates || { start: '', end: '', computed_from: 'manual' };
+  // ADR-003: semeia o estado de trabalho de datas via leitor tolerante, para
+  // editar registros legacy (startDate/endDate ou year/month) SEM perder datas
+  // ao gravar o canônico. dates.* aqui é só estado de UI, não é persistido.
+  const seeded = getDates(source);
+  copy.dates = {
+    start: seeded.start || '',
+    end: seeded.end || '',
+    computed_from: copy.dates?.computed_from || 'manual',
+  };
   copy.bookings = copy.bookings || { flights: [], stays: [], experiences: [] };
   copy.budget = copy.budget || { planned: {}, actual: {}, currency: 'BRL' };
   copy.checklist = copy.checklist || [];
@@ -657,14 +666,19 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
     const out = { ...draft };
     out.name = nameInput.value.trim();
     out.status = statusSelect.value;
-    out.dates = {
-      ...(out.dates || {}),
-      start: startInput.value || null,
-      end: endInput.value || null,
-      computed_from: out.dates?.computed_from || 'manual',
-    };
+    // ADR-003 (opção B): grava a forma CANÔNICA startDate/endDate + espelhos
+    // year/month/nts derivados. dates.* é DEPRECADO e não é mais emitido.
+    const start = startInput.value || null;
+    const end = endInput.value || null;
+    const legacy = deriveLegacyDateFields(start, end);
+    out.startDate = legacy.startDate;
+    out.endDate = legacy.endDate;
+    if (legacy.year != null) out.year = legacy.year;
+    if (legacy.month != null) out.month = legacy.month;
+    if (legacy.nts != null) out.nts = legacy.nts;
+    delete out.dates;
     out.notes = { ...(out.notes || {}), general: notesInput.value.trim() };
-    out.id = out.id || tripIdFrom(out.name, out.dates.start);
+    out.id = out.id || tripIdFrom(out.name, start);
     out.updated_at = new Date().toISOString();
     return out;
   }
