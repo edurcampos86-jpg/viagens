@@ -2956,48 +2956,34 @@
     },
     {
       "id": "sanisland-2026",
-      "name": "San Island — Maldivas",
-      "sub": "Male · Maldivas",
+      "name": "San Island — Praia do Forte",
+      "sub": "Praia do Forte · Bahia · Brasil",
       "status": "planned",
-      "continent": "Asia",
-      "country": "Maldivas",
-      "flag": "🇲🇻",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
       "emoji": "🏖️",
       "year": 2026,
       "month": 10,
       "label": "Out 2026",
       "startDate": "2026-10-09",
       "endDate": "2026-10-17",
-      "lat": 4.1755,
-      "lon": 73.5093,
+      "lat": -12.5775,
+      "lon": -38.0064,
       "col": "#0ea5e9",
       "pax": "casal",
-      "air": "GRU→DXB→MLE",
+      "air": "",
       "nts": 7,
-      "km": 17000,
-      "type": "luxury",
-      "highlights": [
-        "Overwater bungalow",
-        "Mergulho em corais",
-        "San Island Resort"
-      ],
+      "type": "event",
+      "highlights": [],
       "memory": "",
       "logistics": {
         "hotels": [],
         "restaurants": [],
-        "tips": "Viagem completa a planejar. Conexão DXB ou CMB."
+        "tips": "A pesquisar — festa em Praia do Forte (BA). Logística a confirmar."
       },
       "bookings": {
-        "flights": [
-          {
-            "id": "sanisland-2026-fl-001",
-            "titulo": "GRU→DXB→MLE",
-            "status": "pendente",
-            "criticidade": "alta",
-            "confirmada": false,
-            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
-          }
-        ],
+        "flights": [],
         "stays": [],
         "experiences": []
       },
@@ -3007,8 +2993,9 @@
         "currency": "BRL"
       },
       "checklist": [],
+      "_audit_notes": "Correção 2026-06-05: registro foi criado erroneamente pela ingestão do Google Photos (commit 8dd0fd3), que resolveu o nome 'San Island' para o San Island Resort nas Maldivas. Trata-se de festa real em Praia do Forte/BA. Corrigidos destino, país, flag, continente e coords (de docs/drafts-from-places-audit.json); limpos campos fabricados sem fonte real (voo GRU→DXB→MLE, highlights de Maldivas/overwater/resort, km, type=luxury). Datas mantidas como placeholder a confirmar. ID e nome 'San Island' preservados (sem quebrar refs).",
       "created_at": "2026-10-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
+      "updated_at": "2026-06-05T00:00:00Z",
       "_schema": 2
     },
     {
