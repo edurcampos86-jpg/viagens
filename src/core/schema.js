@@ -50,6 +50,17 @@ export function validateTrip(trip, { strict = false } = {}) {
     warnings.push('sem dates (modo strict exige v2)');
   }
 
+  if (trip.heroGallery != null) {
+    if (!Array.isArray(trip.heroGallery)) errors.push('heroGallery deve ser array');
+    else
+      trip.heroGallery.forEach((item, i) => {
+        if (!item || typeof item !== 'object')
+          errors.push(`heroGallery[${i}] deve ser objeto`);
+        else if (!item.url || typeof item.url !== 'string')
+          errors.push(`heroGallery[${i}].url ausente ou inválido`);
+      });
+  }
+
   if (strict && !trip.bookings) warnings.push('sem bookings (v2)');
   if (strict && !trip.budget) warnings.push('sem budget (v2)');
 
@@ -106,6 +117,21 @@ export function getGeoSource(trip) {
   const v = trip?.geo_source;
   if (v === 'manual' || v === 'nominatim') return { source: v, known: true };
   return { source: 'unknown', known: false };
+}
+
+// Carrossel do hero (ADR-004). Leitor tolerante: descarta itens sem `url`
+// válida e normaliza os campos opcionais. Registros legacy sem o campo →
+// [] (o hero cai no gradiente). Nunca lança.
+export function getHeroGallery(trip) {
+  if (!Array.isArray(trip?.heroGallery)) return [];
+  return trip.heroGallery
+    .filter((it) => it && typeof it === 'object' && typeof it.url === 'string' && it.url)
+    .map((it) => ({
+      url: it.url,
+      source: typeof it.source === 'string' ? it.source : '',
+      attribution: typeof it.attribution === 'string' ? it.attribution : '',
+      alt: typeof it.alt === 'string' ? it.alt : '',
+    }));
 }
 
 export function getBookings(trip) {

@@ -10,6 +10,7 @@ import { decideNextAction } from '../src/core/next-action.js';
 import { applyChecklistOrder, moveItem, isItemOverdue } from '../src/core/checklist-order.js';
 import { renderEventos } from '../src/components/eventos.js';
 import { loadEventos } from '../src/core/eventos-data.js';
+import { getHeroGallery } from '../src/core/schema.js';
 
 // Exposto pra console + handlers que vivem em outros módulos.
 // `overlay` é um module namespace selado (import * as) — copiamos para um
@@ -3212,6 +3213,137 @@ function syncStatusButtons(status) {
   });
 }
 
+// ── Hero carousel (ADR-004) ──────────────────────────────────────
+// Estado do carrossel ativo. Guarda o timer e os listeners de hover para
+// teardown limpo ao re-hidratar ou fechar o plano (evita interval vazado).
+let planHeroCarousel = null;
+
+function teardownPlanHeroCarousel() {
+  if (!planHeroCarousel) return;
+  clearInterval(planHeroCarousel.timer);
+  const { hero, onEnter, onLeave } = planHeroCarousel;
+  if (hero) {
+    hero.removeEventListener('mouseenter', onEnter);
+    hero.removeEventListener('mouseleave', onLeave);
+    hero.querySelectorAll('.plan-hero-carousel, .plan-hero-dots, .plan-hero-credit')
+      .forEach((el) => el.remove());
+  }
+  planHeroCarousel = null;
+}
+
+// Renderiza o fundo do hero: carrossel quando trip.heroGallery tem itens;
+// senão mantém o comportamento atual (foto única ou gradiente).
+function renderPlanHeroCarousel(trip) {
+  teardownPlanHeroCarousel();
+  const hero = document.getElementById('planHero');
+  const heroBg = document.getElementById('planHeroBg');
+  if (!hero || !heroBg) return;
+
+  const items = getHeroGallery(trip);
+
+  // Fallback: sem galeria → foto única ou gradiente (comportamento legado).
+  if (!items.length) {
+    heroBg.style.display = '';
+    heroBg.style.backgroundImage = '';
+    if (trip.photo) heroBg.style.backgroundImage = `url("${String(trip.photo).replace(/"/g, '%22')}")`;
+    else heroBg.style.background = `linear-gradient(135deg, ${trip.color || '#0ea5e9'}, ${trip.color2 || '#0369a1'})`;
+    return;
+  }
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  heroBg.style.display = 'none';
+
+  const car = document.createElement('div');
+  car.className = 'plan-hero-carousel' + (reduce ? ' is-reduced' : '');
+  car.setAttribute('role', 'group');
+  car.setAttribute('aria-roledescription', 'carrossel');
+  car.setAttribute('aria-label', 'Fotos da viagem');
+
+  const slides = items.map((it, i) => {
+    const s = document.createElement('div');
+    s.className = 'plan-hero-slide' + (i === 0 ? ' is-active' : '');
+    s.style.backgroundImage = `url("${it.url.replace(/"/g, '%22')}")`;
+    s.setAttribute('role', 'img');
+    s.setAttribute('aria-label', it.alt || `Foto ${i + 1} de ${items.length}`);
+    if (i !== 0) s.setAttribute('aria-hidden', 'true');
+    car.appendChild(s);
+    return s;
+  });
+  // Entre o bg e o overlay, para o overlay/inner/countdown pintarem por cima.
+  hero.insertBefore(car, heroBg.nextSibling);
+
+  // Etiqueta de proveniência (canto superior esquerdo).
+  const credit = document.createElement('div');
+  credit.className = 'plan-hero-credit';
+  hero.appendChild(credit);
+
+  // Dots (só quando há mais de uma foto).
+  let dots = [];
+  if (items.length > 1) {
+    const dotsWrap = document.createElement('div');
+    dotsWrap.className = 'plan-hero-dots';
+    dotsWrap.setAttribute('role', 'tablist');
+    dots = items.map((_it, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'plan-hero-dot' + (i === 0 ? ' is-active' : '');
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-label', `Ir para foto ${i + 1}`);
+      b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+      b.addEventListener('click', () => { goTo(i); restartTimer(); });
+      dotsWrap.appendChild(b);
+      return b;
+    });
+    hero.appendChild(dotsWrap);
+  }
+
+  let idx = 0;
+
+  function updateCredit() {
+    const it = items[idx];
+    const txt = it.attribution || it.source || '';
+    credit.textContent = txt;
+    credit.hidden = !txt;
+  }
+
+  function goTo(n) {
+    const next = ((n % items.length) + items.length) % items.length;
+    slides.forEach((s, i) => {
+      const active = i === next;
+      s.classList.toggle('is-active', active);
+      if (active) s.removeAttribute('aria-hidden');
+      else s.setAttribute('aria-hidden', 'true');
+    });
+    dots.forEach((d, i) => {
+      d.classList.toggle('is-active', i === next);
+      d.setAttribute('aria-selected', i === next ? 'true' : 'false');
+    });
+    idx = next;
+    updateCredit();
+  }
+
+  function startTimer() {
+    // prefers-reduced-motion → sem auto-advance.
+    if (reduce || items.length < 2) return;
+    clearInterval(planHeroCarousel.timer);
+    planHeroCarousel.timer = setInterval(() => goTo(idx + 1), 5000);
+  }
+  function stopTimer() {
+    clearInterval(planHeroCarousel.timer);
+    planHeroCarousel.timer = null;
+  }
+  function restartTimer() { stopTimer(); startTimer(); }
+
+  const onEnter = () => stopTimer();
+  const onLeave = () => startTimer();
+  hero.addEventListener('mouseenter', onEnter);
+  hero.addEventListener('mouseleave', onLeave);
+
+  planHeroCarousel = { timer: null, hero, onEnter, onLeave };
+  updateCredit();
+  startTimer();
+}
+
 // ── Dedicated full-screen plan page ──────────────────────────────
 function openPlanPage(trip) {
   state.activePlanId = trip.id;
@@ -3226,6 +3358,7 @@ function openPlanPage(trip) {
 }
 
 function closePlanPage() {
+  teardownPlanHeroCarousel();
   state.activePlanId = null;
   const tl = document.getElementById('timelineView');
   const pp = document.getElementById('planPage');
@@ -3485,9 +3618,7 @@ function hydratePlanPage(trip) {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); datesEl.click(); }
   };
 
-  const heroBg = document.getElementById('planHeroBg');
-  if (trip.photo) heroBg.style.backgroundImage = `url(${trip.photo})`;
-  else heroBg.style.background = `linear-gradient(135deg, ${trip.color || '#0ea5e9'}, ${trip.color2 || '#0369a1'})`;
+  renderPlanHeroCarousel(trip);
 
   // Countdown
   const d = daysUntil(trip);
