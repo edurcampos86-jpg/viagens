@@ -274,6 +274,37 @@ test('schema.validateTrip: rejeita lat/lon fora do range e geo_source inválido'
   assert.equal(schema.validateTrip({ id: 'x', name: 'X', lat: -12.5, lon: -38, geo_source: 'manual' }).valid, true);
 });
 
+// ── schema.js — heroGallery (ADR-004) ────────────────────────────────
+test('schema.getHeroGallery: ausente/legacy → []', () => {
+  assert.deepEqual(schema.getHeroGallery({}), []);
+  assert.deepEqual(schema.getHeroGallery({ heroGallery: null }), []);
+  assert.deepEqual(schema.getHeroGallery(undefined), []);
+});
+
+test('schema.getHeroGallery: normaliza campos e descarta itens sem url', () => {
+  const got = schema.getHeroGallery({
+    heroGallery: [
+      { url: 'a.jpg', source: 'Unsplash', attribution: 'Foto: X', alt: 'praia' },
+      { url: 'b.jpg' },
+      { source: 'sem url' },
+      { url: '' },
+      'string-solta',
+    ],
+  });
+  assert.equal(got.length, 2);
+  assert.deepEqual(got[0], { url: 'a.jpg', source: 'Unsplash', attribution: 'Foto: X', alt: 'praia' });
+  assert.deepEqual(got[1], { url: 'b.jpg', source: '', attribution: '', alt: '' });
+});
+
+test('schema.validateTrip: aceita heroGallery válido, rejeita item sem url', () => {
+  assert.equal(
+    schema.validateTrip({ id: 'x', name: 'X', heroGallery: [{ url: 'a.jpg', alt: 'a' }] }).valid,
+    true,
+  );
+  assert.equal(schema.validateTrip({ id: 'x', name: 'X', heroGallery: [{ alt: 'sem url' }] }).valid, false);
+  assert.equal(schema.validateTrip({ id: 'x', name: 'X', heroGallery: 'naoarray' }).valid, false);
+});
+
 // ── decision-matrix.js (computeScores) ────────────────────────────────
 const dm = await import(`${ROOT}/src/components/decision-matrix.js`);
 

@@ -1756,10 +1756,49 @@ body.plan-page-open { background: var(--surface2); }
 }
 .plan-hero-overlay {
   position: absolute; inset: 0;
+  z-index: 1;
+  pointer-events: none;
   background: linear-gradient(to top, rgba(0,0,0,.7) 0%, rgba(0,0,0,.2) 50%, rgba(0,0,0,.4) 100%);
+}
+/* ── Hero carousel (ADR-004) ─────────────────────────────────────── */
+.plan-hero-carousel { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+.plan-hero-slide {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  will-change: opacity, transform;
+}
+.plan-hero-slide.is-active { opacity: 1; animation: planHeroKenBurns 12s ease-out forwards; }
+@keyframes planHeroKenBurns { from { transform: scale(1.05); } to { transform: scale(1.18); } }
+.plan-hero-credit {
+  position: absolute; top: 12px; left: 14px; z-index: 3;
+  max-width: 60%;
+  font: 600 11px Inter, system-ui, sans-serif; color: #fff;
+  background: rgba(15,23,42,.55);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,.2); border-radius: 99px;
+  padding: 3px 10px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.plan-hero-dots {
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  z-index: 3; display: flex; gap: 7px;
+}
+.plan-hero-dot {
+  width: 8px; height: 8px; border-radius: 99px; border: 0; padding: 0; cursor: pointer;
+  background: rgba(255,255,255,.45);
+  transition: background .2s, width .2s;
+}
+.plan-hero-dot.is-active { background: #fff; width: 20px; }
+/* Acessibilidade: sem zoom Ken Burns nem crossfade quando o usuário pede menos movimento. */
+.plan-hero-carousel.is-reduced .plan-hero-slide { transition: none; animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .plan-hero-slide { transition: none !important; animation: none !important; }
 }
 .plan-hero-inner {
   position: absolute; bottom: 0; left: 0; right: 240px;
+  z-index: 2;
   padding: 20px 24px;
   color: white;
 }
@@ -1790,6 +1829,7 @@ body.plan-page-open { background: var(--surface2); }
 }
 .plan-hero-countdown {
   position: absolute;
+  z-index: 2;
   top: 50%; right: 24px;
   transform: translateY(-50%);
   text-align: center;

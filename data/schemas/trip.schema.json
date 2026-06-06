@@ -267,8 +267,23 @@
 
     "gallery": {
       "type": "array",
-      "description": "Legado do sync.py — galeria importada do Google Photos. Será substituído por 'fotos' progressivamente.",
+      "description": "Legado do sync.py — galeria importada do Google Photos (array de URLs strings; trip.gallery[0] usado como capa em assets/app.js). Será substituído por 'fotos' progressivamente.",
       "items": { "type": "object" }
+    },
+    "heroGallery": {
+      "type": "array",
+      "description": "Carrossel de fotos do hero do plano (ver docs/ADR-004-hero-gallery.md). Campo ADITIVO e opcional — backward-compatible. Quando ausente/vazio, o hero mantém o gradiente atual. Não confundir com 'gallery' (string[] legacy) nem 'media.gallery' (álbum/lightbox).",
+      "items": {
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "url":         { "type": "string", "minLength": 1, "description": "Path relativo ao root do site ou URL absoluta da imagem em tamanho de hero." },
+          "source":      { "type": "string", "description": "Proveniência da imagem (ex: 'Unsplash', 'Google Photos', 'foto própria')." },
+          "attribution": { "type": "string", "description": "Crédito/atribuição exigido pela fonte (ex: 'Foto: Fulano / Unsplash')." },
+          "alt":         { "type": "string", "description": "Texto alternativo para acessibilidade. Recomendado." }
+        },
+        "additionalProperties": false
+      }
     },
     "budget": {
       "type": "object",
