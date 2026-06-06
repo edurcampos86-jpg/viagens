@@ -61,6 +61,20 @@ Para viabilizar a fórmula de urgência ponderada que vai dirigir o sorting do C
 
 Esses campos são adicionados ao JSON Schema na Fase 2 deste plano e populados manualmente pelo Eduardo (ou via Gmail parser quando aplicável) na Fase 3+.
 
+### 4. Proveniência de geocoding `geo_source` — Frente B (B1)
+
+Adendo posterior (Frente B — robustez do módulo Viagens). Motivado pelo bug `sanisland-2026` (festa em Praia do Forte classificada como Maldivas): o pipeline resolveu um nome de lugar para o país errado e **nada no registro indicava se país/coords vieram de geocoding automático ou de input humano**, então não havia como protegê-los.
+
+- **`geo_source: "manual" | "nominatim"`** — opcional, ADITIVO. Espelha a convenção de `dates.computed_from`:
+  - `manual` — país/`lat`/`lon` digitados à mão pelo Eduardo. **Não é sobrescrito por geocoding automático** (a UI respeita o input humano).
+  - `nominatim` — resolvido pelo autocomplete Nominatim/OSM.
+  - **Ausente** (registros legacy) = proveniência desconhecida; `getGeoSource()` retorna `source: "unknown"`. Backward-compatible: registros sem o campo continuam válidos.
+- **Trava de confiança (B2):** a resolução Nominatim passa a ter viés de região (Brasil por padrão) e marca resultados duvidosos (baixa relevância, ambíguos ou fora da região) como **"⚠ confirmar"** em vez de auto-atribuir — exige confirmação manual. Objetivo: impedir a repetição do caso "San Island → Maldivas".
+
+Leitor tolerante em [`src/core/schema.js`](../src/core/schema.js) (`getGeoSource`, validação de range lat/lon e enum), lógica pura em [`src/core/geo.js`](../src/core/geo.js) (`assessGeoTrust`, `rankByRegion`, `isValidLat/Lon`), UI em [`src/components/trip-editor.js`](../src/components/trip-editor.js). Declarado em [`trip.schema.json`](../data/schemas/trip.schema.json).
+
+> **Débito relacionado (Frente B / B3 — só planejado):** o editor grava `dates.{start,end}` (v2) enquanto registros legacy usam `startDate/endDate` de topo, sem remover os legacy. A normalização `legacy ↔ dates.*` + reconciliação de proveniência será proposta como ADR próprio com migração reversível e dry-run. Não implementado aqui.
+
 ---
 
 ## Consequências

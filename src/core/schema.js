@@ -24,8 +24,14 @@ export function validateTrip(trip, { strict = false } = {}) {
     errors.push(`status inválido: ${trip.status}`);
   if (trip.lat != null && typeof trip.lat !== 'number')
     errors.push('lat deve ser number');
+  else if (typeof trip.lat === 'number' && (trip.lat < -90 || trip.lat > 90))
+    errors.push('lat fora do intervalo -90..90');
   if (trip.lon != null && typeof trip.lon !== 'number')
     errors.push('lon deve ser number');
+  else if (typeof trip.lon === 'number' && (trip.lon < -180 || trip.lon > 180))
+    errors.push('lon fora do intervalo -180..180');
+  if (trip.geo_source != null && !['manual', 'nominatim'].includes(trip.geo_source))
+    errors.push(`geo_source inválido: ${trip.geo_source}`);
 
   if (trip.dates) {
     if (trip.dates.start && !/^\d{4}-\d{2}-\d{2}$/.test(trip.dates.start))
@@ -74,6 +80,15 @@ export function getDates(trip) {
     return { start, end, nts, source: 'v1' };
   }
   return { start: null, end: null, nts, source: 'unknown' };
+}
+
+// Proveniência de país/coords (B1). Espelha getDates: tolerante a registros
+// legacy que não têm o campo (source='unknown'). 'manual' nunca é sobrescrito
+// por geocoding automático.
+export function getGeoSource(trip) {
+  const v = trip?.geo_source;
+  if (v === 'manual' || v === 'nominatim') return { source: v, known: true };
+  return { source: 'unknown', known: false };
 }
 
 export function getBookings(trip) {

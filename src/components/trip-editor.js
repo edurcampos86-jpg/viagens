@@ -12,7 +12,15 @@
 // O modal é completamente autocontido: cria/destrói seu próprio DOM e CSS.
 // Validação mínima local; F1.3 substitui por schema.js completo.
 
-import { flagFromCountryCode, nominatimSearch, slugify, tripIdFrom } from '../core/geo.js';
+import {
+  flagFromCountryCode,
+  nominatimSearch,
+  tripIdFrom,
+  isValidLat,
+  isValidLon,
+  assessGeoTrust,
+  PREFERRED_CC,
+} from '../core/geo.js';
 import { loadRules, injectChecklistItems, renderChecklist } from './checklist.js';
 import { deriveDatesFromBookings } from '../core/dates.js';
 import { renderBudget, mergeActual } from './budget.js';
@@ -98,7 +106,16 @@ function validate(trip) {
   if (!trip.name?.trim()) errors.push('Nome da viagem é obrigatório.');
   if (!trip.status) errors.push('Status é obrigatório.');
   if (typeof trip.lat !== 'number' || typeof trip.lon !== 'number') {
-    errors.push('Selecione um destino na busca para preencher coordenadas.');
+    errors.push('Selecione um destino na busca ou informe país/coordenadas manualmente.');
+  }
+  if (typeof trip.lat === 'number' && (trip.lat < -90 || trip.lat > 90)) {
+    errors.push('Latitude deve estar entre -90 e 90.');
+  }
+  if (typeof trip.lon === 'number' && (trip.lon < -180 || trip.lon > 180)) {
+    errors.push('Longitude deve estar entre -180 e 180.');
+  }
+  if (trip._geoNeedsConfirm) {
+    errors.push('Confirme o destino sinalizado (⚠) ou ajuste país/coordenadas manualmente.');
   }
   if (trip.dates?.start && trip.dates?.end && trip.dates.start > trip.dates.end) {
     errors.push('Data de início deve ser anterior à data de fim.');
@@ -180,6 +197,108 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
   const destList = el('div', { class: 'tev-suggest-list', hidden: 'true' });
   const destWrap = el('div', { class: 'tev-suggest' }, [destInput, destList]);
   const destMeta = el('div', { class: 'tev-status-line' });
+
+  // ── B1: entrada MANUAL de país/coords + proveniência ────────────────────
+  // Espelha a UX do Período: inputs em row-2, botão secundário pequeno e uma
+  // linha de proveniência (✍ manual / 🗺 Nominatim). Edição manual marca
+  // geo_source='manual' e NÃO é sobrescrita por geocoding depois.
+  const countryInput = el('input', { type: 'text', placeholder: 'País (ex: Brasil)', value: draft.country || '' });
+  const ccInput = el('input', {
+    type: 'text', placeholder: 'ISO 2 (ex: BR)', maxlength: '2',
+    value: draft.country_code || '', style: 'text-transform: uppercase;',
+  });
+  const latInput = el('input', { type: 'number', step: 'any', placeholder: 'lat (-90..90)', value: draft.lat != null ? String(draft.lat) : '' });
+  const lonInput = el('input', { type: 'number', step: 'any', placeholder: 'lon (-180..180)', value: draft.lon != null ? String(draft.lon) : '' });
+
+  const geoProvenance = el('div', { class: 'tev-status-line' });
+  const inferGeoBtn = el('button', { type: 'button', class: 'tev-btn tev-btn-secondary', style: 'padding: 4px 10px; font-size: 12px;' }, '🗺 Inferir do mapa');
+  const revertGeoBtn = el('button', { type: 'button', class: 'tev-btn tev-btn-secondary', style: 'padding: 4px 10px; font-size: 12px;' }, '↩ Voltar ao valor inferido');
+  const confirmGeoBtn = el('button', { type: 'button', class: 'tev-btn tev-btn-secondary', style: 'padding: 4px 10px; font-size: 12px;', hidden: 'true' }, '✓ Confirmar destino');
+
+  let lastInferredGeo = null; // snapshot do último pick Nominatim (para "voltar")
+
+  function refreshGeoProvenance() {
+    const map = { manual: '✍ manual', nominatim: '🗺 Nominatim/OSM' };
+    if (draft._geoNeedsConfirm) {
+      geoProvenance.textContent = draft._geoConfirmLabel || '⚠ confirmar destino';
+      confirmGeoBtn.hidden = false;
+    } else {
+      geoProvenance.textContent = map[draft.geo_source] || '';
+      confirmGeoBtn.hidden = true;
+    }
+    revertGeoBtn.disabled = !lastInferredGeo;
+  }
+
+  function setManualGeo() {
+    draft.geo_source = 'manual';
+    draft._geoNeedsConfirm = false;
+    refreshGeoProvenance();
+  }
+
+  function syncGeoInputs() {
+    countryInput.value = draft.country || '';
+    ccInput.value = draft.country_code || '';
+    latInput.value = draft.lat != null ? String(draft.lat) : '';
+    lonInput.value = draft.lon != null ? String(draft.lon) : '';
+  }
+
+  function onCoordInput() {
+    const lat = parseFloat(latInput.value);
+    const lon = parseFloat(lonInput.value);
+    const errs = [];
+    if (latInput.value !== '' && !isValidLat(lat)) errs.push('lat -90..90');
+    if (lonInput.value !== '' && !isValidLon(lon)) errs.push('lon -180..180');
+    if (errs.length) {
+      geoProvenance.textContent = `⚠ coordenada inválida: ${errs.join(' · ')}`;
+      return;
+    }
+    if (latInput.value !== '') draft.lat = lat;
+    if (lonInput.value !== '') draft.lon = lon;
+    setManualGeo();
+    renderIdMeta();
+  }
+
+  countryInput.addEventListener('input', () => {
+    draft.country = countryInput.value.trim();
+    setManualGeo();
+    renderIdMeta();
+  });
+  ccInput.addEventListener('input', () => {
+    const cc = ccInput.value.trim().toUpperCase();
+    draft.country_code = cc;
+    draft.flag = flagFromCountryCode(cc);
+    setManualGeo();
+    renderIdMeta();
+  });
+  latInput.addEventListener('input', onCoordInput);
+  lonInput.addEventListener('input', onCoordInput);
+
+  inferGeoBtn.addEventListener('click', () => {
+    destInput.focus();
+    if (destInput.value.trim().length >= 2) destInput.dispatchEvent(new Event('input'));
+  });
+  revertGeoBtn.addEventListener('click', () => {
+    if (!lastInferredGeo) return;
+    Object.assign(draft, {
+      country: lastInferredGeo.country,
+      country_code: lastInferredGeo.country_code,
+      flag: lastInferredGeo.flag,
+      lat: lastInferredGeo.lat,
+      lon: lastInferredGeo.lon,
+      geo_source: 'nominatim',
+      _geoNeedsConfirm: lastInferredGeo.needsConfirm,
+      _geoConfirmLabel: lastInferredGeo.confirmLabel,
+    });
+    destInput.value = lastInferredGeo.display || '';
+    syncGeoInputs();
+    refreshGeoProvenance();
+    renderIdMeta();
+  });
+  confirmGeoBtn.addEventListener('click', () => {
+    draft._geoNeedsConfirm = false;
+    draft.geo_source = draft.geo_source || 'nominatim';
+    refreshGeoProvenance();
+  });
 
   const startInput = el('input', { type: 'date', value: draft.dates?.start || '' });
   const endInput = el('input', { type: 'date', value: draft.dates?.end || '' });
@@ -313,13 +432,26 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
   function pickSuggestion(idx) {
     const s = suggestions[idx];
     if (!s) return;
+    // B2: avalia confiança ANTES de aceitar. Baixa relevância / ambiguidade /
+    // fora da região preferida (viés BR) → não auto-atribui, exige confirmação.
+    const trust = assessGeoTrust(suggestions, { pickedIndex: idx });
     draft.country = s.country || '';
     draft.country_code = s.country_code || '';
     draft.flag = flagFromCountryCode(s.country_code);
     draft.lat = s.lat;
     draft.lon = s.lon;
+    draft.geo_source = 'nominatim';
+    draft._geoNeedsConfirm = trust.confirm;
+    draft._geoConfirmLabel = trust.label;
+    lastInferredGeo = {
+      country: draft.country, country_code: draft.country_code, flag: draft.flag,
+      lat: draft.lat, lon: draft.lon, display: s.display,
+      needsConfirm: trust.confirm, confirmLabel: trust.label,
+    };
     destInput.value = s.display;
     destMeta.textContent = `País: ${draft.country || '—'}  ${draft.flag}   coords: ${s.lat.toFixed(3)}, ${s.lon.toFixed(3)}`;
+    syncGeoInputs();
+    refreshGeoProvenance();
     destList.hidden = true;
     suggestions = [];
     activeSuggestionIndex = -1;
@@ -366,7 +498,7 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
                 );
               },
             },
-            `${flagFromCountryCode(r.country_code)} ${r.display}`
+            `${(r.country_code || '').toUpperCase() !== PREFERRED_CC ? '⚠ ' : ''}${flagFromCountryCode(r.country_code)} ${r.display}`
           );
           destList.appendChild(node);
         });
@@ -416,7 +548,16 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
   if (mode !== 'create' && draft.lat != null && draft.lon != null) {
     const flag = draft.flag || flagFromCountryCode(draft.country_code || '');
     destMeta.textContent = `País: ${draft.country || '—'}  ${flag}   coords: ${draft.lat?.toFixed?.(3)}, ${draft.lon?.toFixed?.(3)}`;
+    // Semeia o "voltar ao valor inferido" quando o registro já veio do Nominatim.
+    if (draft.geo_source === 'nominatim') {
+      lastInferredGeo = {
+        country: draft.country, country_code: draft.country_code, flag: draft.flag,
+        lat: draft.lat, lon: draft.lon, display: destInput.value || draft.country || '',
+        needsConfirm: false, confirmLabel: '',
+      };
+    }
   }
+  refreshGeoProvenance();
   renderIdMeta();
 
   const overlay = el('div', { class: 'tev-overlay' });
@@ -448,6 +589,20 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
       el('label', {}, 'Destino (cidade ou país)'),
       destWrap,
       destMeta,
+    ]),
+    el('div', { class: 'tev-row row-2' }, [
+      el('div', { class: 'tev-row' }, [el('label', {}, 'País'), countryInput]),
+      el('div', { class: 'tev-row' }, [el('label', {}, 'Código ISO'), ccInput]),
+    ]),
+    el('div', { class: 'tev-row row-2' }, [
+      el('div', { class: 'tev-row' }, [el('label', {}, 'Latitude'), latInput]),
+      el('div', { class: 'tev-row' }, [el('label', {}, 'Longitude'), lonInput]),
+    ]),
+    el('div', { class: 'tev-row', style: 'flex-direction: row; align-items: center; gap: 8px; flex-wrap: wrap;' }, [
+      inferGeoBtn,
+      revertGeoBtn,
+      confirmGeoBtn,
+      geoProvenance,
     ]),
     el('div', { class: 'tev-row row-2' }, [
       el('div', { class: 'tev-row' }, [el('label', {}, 'Início'), startInput]),
@@ -535,6 +690,9 @@ export function openTripEditor({ mode = 'create', trip, onSave, onDelete } = {})
       return;
     }
     showErrors([]);
+    // Campos de UI internos não vão para o trips.json.
+    delete final._geoNeedsConfirm;
+    delete final._geoConfirmLabel;
     saveBtn.disabled = true;
     saveBtn.textContent = 'Salvando…';
     try {
