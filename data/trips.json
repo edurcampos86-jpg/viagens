@@ -2996,7 +2996,39 @@
       "_audit_notes": "Correção 2026-06-05: registro foi criado erroneamente pela ingestão do Google Photos (commit 8dd0fd3), que resolveu o nome 'San Island' para o San Island Resort nas Maldivas. Trata-se de festa real em Praia do Forte/BA. Corrigidos destino, país, flag, continente e coords (de docs/drafts-from-places-audit.json); limpos campos fabricados sem fonte real (voo GRU→DXB→MLE, highlights de Maldivas/overwater/resort, km, type=luxury). Datas mantidas como placeholder a confirmar. ID e nome 'San Island' preservados (sem quebrar refs).",
       "created_at": "2026-10-01T00:00:00Z",
       "updated_at": "2026-06-05T00:00:00Z",
-      "_schema": 2
+      "_schema": 2,
+      "heroGallery": [
+        {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Praia_do_Forte._Foto_Carmem_Correia_%2810854200714%29.jpg/1920px-Praia_do_Forte._Foto_Carmem_Correia_%2810854200714%29.jpg",
+          "source": "Wikimedia Commons",
+          "attribution": "Foto: Carmem Correia / Turismo Bahia · CC BY-SA 2.0",
+          "alt": "Orla de Praia do Forte com o mar ao fundo, Bahia"
+        },
+        {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Praia_do_Forte._Foto_Tatiana_Azeviche_Setur_%288578319192%29.jpg/1920px-Praia_do_Forte._Foto_Tatiana_Azeviche_Setur_%288578319192%29.jpg",
+          "source": "Wikimedia Commons",
+          "attribution": "Foto: Tatiana Azeviche / Setur–Turismo Bahia · CC BY-SA 2.0",
+          "alt": "Vista da praia em Praia do Forte, Bahia"
+        },
+        {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Praia_do_Forte_-_Bahia.JPG/1920px-Praia_do_Forte_-_Bahia.JPG",
+          "source": "Wikimedia Commons",
+          "attribution": "Foto: Carol Liguori · CC BY-SA 3.0",
+          "alt": "Praia do Forte vista da orla, Bahia"
+        },
+        {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Praia_do_Forte_Bahia.jpg/1920px-Praia_do_Forte_Bahia.jpg",
+          "source": "Wikimedia Commons",
+          "attribution": "Foto: Nicia Riccio · CC BY-SA 3.0",
+          "alt": "Praia do Forte com coqueiros e mar, Bahia"
+        },
+        {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Projeto_Tamar_-_Praia_do_Forte%2C_Bahia_%287291055402%29.jpg/1920px-Projeto_Tamar_-_Praia_do_Forte%2C_Bahia_%287291055402%29.jpg",
+          "source": "Wikimedia Commons",
+          "attribution": "Foto: Ben Tavener · CC BY 2.0",
+          "alt": "Tartaruga no Projeto Tamar em Praia do Forte, Bahia"
+        }
+      ]
     },
     {
       "id": "japao-2027",
