@@ -34,6 +34,11 @@
     "lat": { "type": "number", "minimum": -90,  "maximum": 90 },
     "lon": { "type": "number", "minimum": -180, "maximum": 180 },
     "col": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+    "geo_source": {
+      "type": "string",
+      "enum": ["manual", "nominatim"],
+      "description": "Proveniência de país/coords (Frente B / B1). 'manual'=digitado à mão (não sobrescrito por geocoding automático) · 'nominatim'=resolvido por autocomplete Nominatim/OSM. Ausente em registros legacy = proveniência desconhecida. Espelha dates.computed_from. Campo ADITIVO e opcional — backward-compatible."
+    },
     "pax": { "type": "string" },
     "air": { "type": "string" },
     "nts": { "type": "integer", "minimum": 0 },

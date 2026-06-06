@@ -154,6 +154,69 @@ test('geo.tripIdFrom: name + ISO date', () => {
   assert.equal(geo.tripIdFrom('Foo', null), 'foo');
 });
 
+// ── geo.js — coordenadas manuais (B1) ────────────────────────────────
+test('geo.isValidLat/isValidLon: ranges', () => {
+  assert.equal(geo.isValidLat(-12.5775), true);
+  assert.equal(geo.isValidLat(90), true);
+  assert.equal(geo.isValidLat(91), false);
+  assert.equal(geo.isValidLat('-12'), false); // string não conta
+  assert.equal(geo.isValidLon(-38.0064), true);
+  assert.equal(geo.isValidLon(-181), false);
+  assert.equal(geo.isValidLon(NaN), false);
+});
+
+// ── geo.js — viés de região + trava de confiança (B2) ────────────────
+test('geo.rankByRegion: prefere BR mantendo importonce como desempate', () => {
+  const ranked = geo.rankByRegion([
+    { display: 'San Island Resort, Maldivas', country_code: 'MV', importance: 0.6 },
+    { display: 'Praia do Forte, BA', country_code: 'BR', importance: 0.4 },
+  ]);
+  assert.equal(ranked[0].country_code, 'BR'); // BR sobe apesar de importonce menor
+});
+
+test('geo.assessGeoTrust: BR de alta relevância → confiável', () => {
+  const t = geo.assessGeoTrust([
+    { country_code: 'BR', importance: 0.7 },
+  ]);
+  assert.equal(t.trusted, true);
+  assert.equal(t.confirm, false);
+});
+
+test('geo.assessGeoTrust: fora da região (San Island → Maldivas) → confirmar', () => {
+  const t = geo.assessGeoTrust([
+    { country_code: 'MV', importance: 0.7 },
+  ]);
+  assert.equal(t.trusted, false);
+  assert.equal(t.confirm, true);
+  assert.ok(t.reasons.includes('fora-da-região'));
+});
+
+test('geo.assessGeoTrust: baixa relevância → confirmar', () => {
+  const t = geo.assessGeoTrust([{ country_code: 'BR', importance: 0.1 }]);
+  assert.equal(t.confirm, true);
+  assert.ok(t.reasons.includes('baixa-relevância'));
+});
+
+test('geo.assessGeoTrust: lista vazia → confirmar', () => {
+  const t = geo.assessGeoTrust([]);
+  assert.equal(t.confirm, true);
+});
+
+// ── schema.js — proveniência de geo (B1) + range ─────────────────────
+test('schema.getGeoSource: manual/nominatim/legacy', () => {
+  assert.equal(schema.getGeoSource({ geo_source: 'manual' }).source, 'manual');
+  assert.equal(schema.getGeoSource({ geo_source: 'nominatim' }).known, true);
+  assert.equal(schema.getGeoSource({}).source, 'unknown');
+  assert.equal(schema.getGeoSource({}).known, false);
+});
+
+test('schema.validateTrip: rejeita lat/lon fora do range e geo_source inválido', () => {
+  assert.equal(schema.validateTrip({ id: 'x', name: 'X', lat: 95 }).valid, false);
+  assert.equal(schema.validateTrip({ id: 'x', name: 'X', lon: -200 }).valid, false);
+  assert.equal(schema.validateTrip({ id: 'x', name: 'X', geo_source: 'gmail' }).valid, false);
+  assert.equal(schema.validateTrip({ id: 'x', name: 'X', lat: -12.5, lon: -38, geo_source: 'manual' }).valid, true);
+});
+
 // ── decision-matrix.js (computeScores) ────────────────────────────────
 const dm = await import(`${ROOT}/src/components/decision-matrix.js`);
 
