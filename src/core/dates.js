@@ -62,6 +62,22 @@ export function deriveDatesFromBookings(bookings) {
   };
 }
 
+// ADR-003 (opção B): startDate/endDate top-level é a forma CANÔNICA de datas.
+// Deriva os espelhos legacy (year/month/nts) a partir de start/end. Campos não
+// deriváveis voltam null (o chamador decide preservar o valor anterior).
+export function deriveLegacyDateFields(start, end) {
+  const out = { startDate: start || null, endDate: end || null, year: null, month: null, nts: null };
+  if (start && /^\d{4}-\d{2}-\d{2}$/.test(start)) {
+    out.year = Number(start.slice(0, 4));
+    out.month = Number(start.slice(5, 7));
+  }
+  if (start && end) {
+    const d = daysBetween(start, end);
+    if (d != null) out.nts = d;
+  }
+  return out;
+}
+
 // Atualização in-place do objeto trip (não muda referência).
 export function applyInferredDates(trip) {
   const inferred = deriveDatesFromBookings(trip?.bookings);
