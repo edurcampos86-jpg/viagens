@@ -67,6 +67,17 @@ export async function putTripsFile({
   if (!sha) throw new Error('putTripsFile: SHA obrigatório (faça GET antes)');
   if (!message) throw new Error('putTripsFile: commit message obrigatória');
   const text = typeof content === 'string' ? content : JSON.stringify(content, null, 2) + '\n';
+  // Blindagem anti-corrupção (incidente 2026-06: preview de UI prefixado ao JSON
+  // travou o boot). Nunca commitar payload que não seja JSON válido com {config, trips[]}.
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (e) {
+    throw new Error(`putTripsFile: conteúdo não é JSON válido, commit abortado — ${e.message}`);
+  }
+  if (!parsed || typeof parsed !== 'object' || !parsed.config || !Array.isArray(parsed.trips)) {
+    throw new Error('putTripsFile: estrutura inválida (faltam config/trips[]), commit abortado');
+  }
   const url = `${API}/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`;
   const res = await fetch(url, {
     method: 'PUT',
