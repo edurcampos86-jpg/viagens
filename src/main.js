@@ -19,6 +19,7 @@ import * as syncQueue from './pwa/sync-queue.js';
 import * as push from './pwa/push.js';
 import * as backend from './core/backend.js';
 import { openInbox } from './components/inbox.js';
+import { openStatementImport } from './components/statement-import.js';
 import * as dates from './core/dates.js';
 import { renderHeatmap, computeYearData } from './components/heatmap.js';
 import {
@@ -73,6 +74,7 @@ v2['chronicler'] = (trip) => chronicler.openChroniclerModal(trip, {
 });
 v2.backend = backend;
 v2.openInbox = openInbox;
+v2.openStatementImport = (opts) => openStatementImport({ onSave: saveTrip, ...opts });
 v2.dates = dates;
 v2.renderHeatmap = renderHeatmap;
 v2.computeYearData = computeYearData;
@@ -454,6 +456,14 @@ const FAB_BADGES = [
     tooltip: 'Bandeja de reservas extraídas (Curador). Aprove para aplicar à viagem.',
     color: '#7c3aed',
     onClick: () => openInbox(),
+  },
+  {
+    id: 'v2-statement-badge',
+    emoji: '🧾',
+    label: 'Importar extrato',
+    tooltip: 'Importar extrato bancário (OFX/CSV), reconciliar com bookings e registrar custos reais.',
+    color: '#0e7490',
+    onClick: () => openStatementImport({ onSave: saveTrip }),
   },
   {
     id: 'v2-heatmap-badge',
