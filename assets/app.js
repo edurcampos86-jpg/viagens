@@ -1475,8 +1475,7 @@ function populateCost(node, trip) {
   `;
   const c = trip.cost || {};
   if (!c.total) {
-    panel.querySelector('[data-cost-bars]').innerHTML =
-      '<p style="color:var(--text3);font-size:.8rem">Sem dados de custo registrados.</p>';
+    populateCostFromBookings(panel, trip);
     return;
   }
   panel.querySelector('[data-cost-total]').textContent = formatMoney(c.total, c.currency);
@@ -1494,6 +1493,41 @@ function populateCost(node, trip) {
   panel.querySelector('[data-cost-bars]').innerHTML = bars;
   panel.querySelector('[data-cost-curr]').textContent = c.currency || 'BRL';
   panel.querySelector('[data-cost-day]').textContent = formatMoney(Math.round(c.total / (trip.nts || 1)), c.currency);
+}
+
+// Fallback do importador de extrato: sem trip.cost, exibe a soma de
+// bookings[*].valor (por moeda) e/ou budget.actual — só leitura, nada grava.
+function populateCostFromBookings(panel, trip) {
+  const byCurrency = {};
+  let viaExtrato = false;
+  ['flights', 'stays', 'experiences'].forEach(k => (trip.bookings?.[k] || []).forEach(b => {
+    if (typeof b?.valor !== 'number' || b.valor <= 0) return;
+    const cur = b.moeda || 'BRL';
+    byCurrency[cur] = (byCurrency[cur] || 0) + b.valor;
+    if (b.source === 'extrato') viaExtrato = true;
+  }));
+  const actual = trip.budget?.actual || {};
+  const actualTotal = Object.values(actual).reduce((s, v) => s + (typeof v === 'number' ? v : 0), 0);
+  const currencies = Object.keys(byCurrency).sort((a, b) => (a === 'BRL' ? -1 : b === 'BRL' ? 1 : a.localeCompare(b)));
+  if (!currencies.length && !actualTotal) {
+    panel.querySelector('[data-cost-bars]').innerHTML =
+      '<p style="color:var(--text3);font-size:.8rem">Sem dados de custo registrados.</p>';
+    return;
+  }
+  const mainCur = currencies[0] || trip.budget?.currency || 'BRL';
+  const total = currencies.length ? byCurrency[mainCur] : actualTotal;
+  panel.querySelector('[data-cost-total]').textContent = formatMoney(total, mainCur);
+  panel.querySelector('[data-cost-curr]').textContent = viaExtrato ? `${mainCur} · via extrato` : mainCur;
+  const lines = currencies.slice(1).map(cur =>
+    `<div class="cost-bar"><span class="cost-bar-lbl">💳 ${escapeHtml(cur)}</span><div class="cost-bar-track"></div><span class="cost-bar-v">${formatMoney(byCurrency[cur], cur)}</span></div>`);
+  if (actualTotal) {
+    lines.push(`<div class="cost-bar"><span class="cost-bar-lbl">📒 realizado</span><div class="cost-bar-track"></div><span class="cost-bar-v">${formatMoney(actualTotal, trip.budget?.currency || 'BRL')}</span></div>`);
+  }
+  lines.push(`<p class="cost-note">Derivado de bookings (valor/moeda)${viaExtrato ? ' importados do extrato' : ''} — sem trip.cost registrado.</p>`);
+  panel.querySelector('[data-cost-bars]').innerHTML = lines.join('');
+  if (currencies.length && trip.nts) {
+    panel.querySelector('[data-cost-day]').textContent = formatMoney(Math.round(total / trip.nts), mainCur);
+  }
 }
 
 function populateGallery(node, trip) {
