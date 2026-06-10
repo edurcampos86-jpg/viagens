@@ -62,8 +62,14 @@ function fmt(n) {
 // ── Cálculo ─────────────────────────────────────────────────────────────
 
 export function computeActualFromBookings(bookings) {
-  const sum = (arr, k = 'price_brl') =>
-    (arr || []).reduce((acc, x) => acc + (typeof x?.[k] === 'number' ? x[k] : 0), 0);
+  // Fase 3 (schema, bookings[*].valor): `valor` em BRL (moeda ausente =
+  // BRL) tem precedência sobre `price_brl`. `valor` em outra moeda NÃO
+  // entra na soma (que é BRL) — cai para price_brl quando houver.
+  const amount = (x) => {
+    if (typeof x?.valor === 'number' && (x.moeda || 'BRL') === 'BRL') return x.valor;
+    return typeof x?.price_brl === 'number' ? x.price_brl : 0;
+  };
+  const sum = (arr) => (arr || []).reduce((acc, x) => acc + amount(x), 0);
   return {
     flights: sum(bookings?.flights),
     stays: sum(bookings?.stays),
