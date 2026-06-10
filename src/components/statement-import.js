@@ -491,6 +491,8 @@ export function openStatementImport({ onSave } = {}) {
         arr.push({
           titulo: t.description,
           data: t.date,
+          // obrigatório no schema ($defs/booking); extrato = gasto efetivado
+          status: 'confirmado',
           valor: Math.abs(t.amount),
           moeda: t.currency || 'BRL',
           source: 'extrato',
