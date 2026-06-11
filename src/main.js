@@ -20,6 +20,7 @@ import * as push from './pwa/push.js';
 import * as backend from './core/backend.js';
 import { openInbox } from './components/inbox.js';
 import { openStatementImport } from './components/statement-import.js';
+import { openPhotosPicker } from './components/photos-picker.js';
 import * as dates from './core/dates.js';
 import { renderHeatmap, computeYearData } from './components/heatmap.js';
 import {
@@ -55,7 +56,7 @@ v2['concierge'] = (trip) => concierge.openConciergeModal(trip, {
   },
 });
 v2['price-hunter'] = (_trip) => priceHunter.openPriceHunterModal();
-v2['customs'] = (trip) => customs.run({ trip }).then((r) => openCustomsForTrip(trip));
+v2['customs'] = (trip) => customs.run({ trip }).then(() => openCustomsForTrip(trip));
 v2['chronicler'] = (trip) => chronicler.openChroniclerModal(trip, {
   onSave: async (next) => {
     if (settings.isUnlocked()) {
@@ -75,6 +76,7 @@ v2['chronicler'] = (trip) => chronicler.openChroniclerModal(trip, {
 v2.backend = backend;
 v2.openInbox = openInbox;
 v2.openStatementImport = (opts) => openStatementImport({ onSave: saveTrip, ...opts });
+v2.openPhotosPicker = (opts) => openPhotosPicker({ onSave: saveTrip, ...opts });
 v2.dates = dates;
 v2.renderHeatmap = renderHeatmap;
 v2.computeYearData = computeYearData;
@@ -464,6 +466,14 @@ const FAB_BADGES = [
     tooltip: 'Importar extrato bancário (OFX/CSV), reconciliar com bookings e registrar custos reais.',
     color: '#0e7490',
     onClick: () => openStatementImport({ onSave: saveTrip }),
+  },
+  {
+    id: 'v2-photos-badge',
+    emoji: '📸',
+    label: 'Fotos do Google',
+    tooltip: 'Importar fotos/vídeos do Google Photos (Picker) para o álbum da viagem. Você escolhe lá; aqui só entra a sua seleção.',
+    color: '#b45309',
+    onClick: () => openPhotosPicker({ onSave: saveTrip }),
   },
   {
     id: 'v2-heatmap-badge',

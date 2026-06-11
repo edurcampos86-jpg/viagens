@@ -24,7 +24,7 @@ if (!self.workbox) {
   // Bump VERSION em cada deploy que muda assets/* ou index.html — Workbox
   // entao expira a entrada precacheada antiga e baixa a nova. Faz o papel
   // do cache-busting via query string sem precisar de build.
-  const VERSION = 'viagens-v3-pwa-14';
+  const VERSION = 'viagens-v3-pwa-15';
 
   // Precache do app shell completo (HTML + CSS + JS criticos com revision).
   // URLs relativas ao scope do SW (que é /viagens/ no GitHub Pages, ou / no
@@ -101,11 +101,15 @@ if (!self.workbox) {
     })
   );
 
-  // CDN externos (Leaflet, fonts): StaleWhileRevalidate
+  // CDN externos (Leaflet, fonts): StaleWhileRevalidate.
+  // photospicker.googleapis.com fica FORA: os GETs de polling da sessão do
+  // Google Photos Picker precisam bater na rede sempre — uma resposta stale
+  // congelaria o "mediaItemsSet" e o importador nunca veria a seleção.
   routing.registerRoute(
     ({ url }) =>
       url.hostname.includes('unpkg.com') ||
-      url.hostname.includes('googleapis.com') ||
+      (url.hostname.includes('googleapis.com') &&
+        url.hostname !== 'photospicker.googleapis.com') ||
       url.hostname.includes('gstatic.com'),
     new strategies.StaleWhileRevalidate({
       cacheName: 'viagens-cdn-v2',

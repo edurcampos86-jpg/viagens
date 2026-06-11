@@ -369,7 +369,15 @@
                 "description": "Apenas para type=video: duração em segundos."
               },
               "width":  { "type": "integer", "minimum": 1 },
-              "height": { "type": "integer", "minimum": 1 }
+              "height": { "type": "integer", "minimum": 1 },
+              "origin": {
+                "type": "string",
+                "description": "Proveniência do item. 'ajustado' = entrou/foi revisado manualmente via importador (ex.: Google Photos Picker). Mesmo vocabulário do importador de extrato."
+              },
+              "source_id": {
+                "type": "string",
+                "description": "Id do item na origem (ex.: mediaItem id do Google Photos). Usado para dedup em re-imports."
+              }
             },
             "additionalProperties": false
           }
