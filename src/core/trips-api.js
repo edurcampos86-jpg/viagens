@@ -96,6 +96,65 @@ export async function putTripsFile({
   return res.json();
 }
 
+// ── Mídia binária (fotos/vídeos do álbum) ───────────────────────────────
+// Mesmo padrão de SHA anti-409 do trips.json, SEM o parse-gate acima: o
+// gate protege exclusivamente data/trips.json; aqui o payload é binário
+// opaco (base64) em media/**. Nunca usar para data/*.json.
+
+export async function getFileSha({
+  token,
+  owner = DEFAULT_REPO.owner,
+  repo = DEFAULT_REPO.name,
+  path,
+  branch = DEFAULT_BRANCH,
+} = {}) {
+  if (!token) throw new Error('getFileSha: token obrigatório');
+  if (!path) throw new Error('getFileSha: path obrigatório');
+  const url = `${API}/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${branch}`;
+  const res = await fetch(url, { headers: authHeaders(token) });
+  if (res.status === 404) return null; // arquivo novo
+  if (!res.ok) throw new Error(`GET ${path}: ${res.status} ${await res.text()}`);
+  const meta = await res.json();
+  return meta.sha || null;
+}
+
+export async function putBinaryFile({
+  token,
+  owner = DEFAULT_REPO.owner,
+  repo = DEFAULT_REPO.name,
+  path,
+  branch = DEFAULT_BRANCH,
+  base64,
+  message,
+} = {}) {
+  if (!token) throw new Error('putBinaryFile: token obrigatório');
+  if (!path) throw new Error('putBinaryFile: path obrigatório');
+  if (path.startsWith('data/')) {
+    throw new Error('putBinaryFile: use putTripsFile para data/* (parse-gate obrigatório)');
+  }
+  if (!base64) throw new Error('putBinaryFile: base64 obrigatório');
+  if (!message) throw new Error('putBinaryFile: commit message obrigatória');
+  const url = `${API}/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`;
+  const attempt = async (sha) => {
+    const body = { message, content: base64, branch };
+    if (sha) body.sha = sha;
+    return fetch(url, {
+      method: 'PUT',
+      headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  };
+  let sha = await getFileSha({ token, owner, repo, path, branch });
+  let res = await attempt(sha);
+  if (res.status === 409 || res.status === 422) {
+    // corrida: alguém comitou o mesmo path — re-pega o SHA e tenta 1x
+    sha = await getFileSha({ token, owner, repo, path, branch });
+    res = await attempt(sha);
+  }
+  if (!res.ok) throw new Error(`PUT ${path}: ${res.status} ${await res.text()}`);
+  return res.json();
+}
+
 export function commitMessageFor(trip, action = 'add') {
   const verb = { add: 'add', update: 'update', archive: 'archive', delete: 'delete' }[action] || action;
   return `feat(trip): ${verb} ${trip.id || trip.name || 'unknown'}`;
