@@ -3669,6 +3669,14 @@ body.plan-page-open { background: var(--surface2); }
   object-fit: contain;
   border-radius: 6px;
 }
+/* video_link: poster clicável que abre o vídeo na origem (Google Photos).
+   Ancestral posicionado do .album-play (inset:0) — sem ele o badge cobriria
+   o dialog inteiro. */
+.lb-video-link {
+  position: relative;
+  display: block;
+}
+.lb-video-link .album-play { border-radius: 6px; }
 .lb-caption {
   color: #f8fafc;
   text-align: center;
