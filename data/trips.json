@@ -2204,8 +2204,8 @@
       "year": 2026,
       "month": 1,
       "label": "Jan 2026",
-      "lat": 13.0,
-      "lon": 101.0,
+      "lat": 13,
+      "lon": 101,
       "col": "#06b6d4",
       "pax": "Jodson Oliveira",
       "air": "LATAM + AirAsia",
@@ -2294,8 +2294,8 @@
       "year": 2026,
       "month": 3,
       "label": "Mar 2026",
-      "lat": -29.0,
-      "lon": 25.0,
+      "lat": -29,
+      "lon": 25,
       "col": "#f97316",
       "pax": "Equipe Onix / Yamaha",
       "air": "Emirates / TAP",
@@ -2774,7 +2774,9 @@
       ],
       "memory": "",
       "logistics": {
-        "hotels": ["Casa do Ricardo (Frei Caneca)"],
+        "hotels": [
+          "Casa do Ricardo (Frei Caneca)"
+        ],
         "restaurants": [],
         "tips": "Voos LATAM confirmados (UJWZTO). Hospedagem resolvida: Casa do Ricardo (Frei Caneca)."
       },
@@ -2838,8 +2840,136 @@
       },
       "checklist": [],
       "created_at": "2026-06-01T00:00:00Z",
-      "updated_at": "2026-06-03T20:02:32Z",
-      "_schema": 2
+      "updated_at": "2026-06-12T22:30:21.400Z",
+      "_schema": 2,
+      "media": {
+        "gallery": [
+          {
+            "type": "video_link",
+            "src": "media/sp-junho-2026/gp-r0rlyu61bxrw-poster.webp",
+            "origin": "ajustado",
+            "source_id": "AC71ddYf5k9fRO_G9pAp7JswHI23aJfHaDTBB13HzE0F45PyQ17Qrj8-r9Mz3eguWLX4zVSf-pgIYCz5u-OR6tR0rLyU61BXRw",
+            "href": "https://photos.google.com/lr/photo/AC71ddYf5k9fRO_G9pAp7JswHI23aJfHaDTBB13HzE0F45PyQ17Qrj8-r9Mz3eguWLX4zVSf-pgIYCz5u-OR6tR0rLyU61BXRw",
+            "thumb": "media/sp-junho-2026/gp-r0rlyu61bxrw-poster.webp",
+            "poster": "media/sp-junho-2026/gp-r0rlyu61bxrw-poster.webp",
+            "date": "2026-06-06",
+            "width": 450,
+            "height": 800
+          },
+          {
+            "type": "video_link",
+            "src": "media/sp-junho-2026/gp-mc4du6ukhsea-poster.webp",
+            "origin": "ajustado",
+            "source_id": "AC71ddbYaC3c8dwFIbgacnhUHqK_l1zkkmSxrXaw0pBYxFhhJUPZ7z_5XukTKHwzy18E8WPj6J9Y2hTp2ByMLtmC4Du6UKhseA",
+            "href": "https://photos.google.com/lr/photo/AC71ddbYaC3c8dwFIbgacnhUHqK_l1zkkmSxrXaw0pBYxFhhJUPZ7z_5XukTKHwzy18E8WPj6J9Y2hTp2ByMLtmC4Du6UKhseA",
+            "thumb": "media/sp-junho-2026/gp-mc4du6ukhsea-poster.webp",
+            "poster": "media/sp-junho-2026/gp-mc4du6ukhsea-poster.webp",
+            "date": "2026-06-07",
+            "width": 450,
+            "height": 800
+          },
+          {
+            "type": "video_link",
+            "src": "media/sp-junho-2026/gp-ofkjt0j8ojqg-poster.webp",
+            "origin": "ajustado",
+            "source_id": "AC71ddZMZG3WCYKw8MJL4TV6KDIqs0rgsKYlbHMQcv_fk4aBSfnH4wFxWsAg1sfbVMEY-bgw-bJRVdDnsv7YQaofkJT0J8oJQg",
+            "href": "https://photos.google.com/lr/photo/AC71ddZMZG3WCYKw8MJL4TV6KDIqs0rgsKYlbHMQcv_fk4aBSfnH4wFxWsAg1sfbVMEY-bgw-bJRVdDnsv7YQaofkJT0J8oJQg",
+            "thumb": "media/sp-junho-2026/gp-ofkjt0j8ojqg-poster.webp",
+            "poster": "media/sp-junho-2026/gp-ofkjt0j8ojqg-poster.webp",
+            "date": "2026-06-07",
+            "width": 450,
+            "height": 800
+          },
+          {
+            "type": "video_link",
+            "src": "media/sp-junho-2026/gp-tmeldytrxkca-poster.webp",
+            "origin": "ajustado",
+            "source_id": "AC71ddbc4Lph5gv_s5o4ydezNS6V1eGLDHdtD-Gyfo6MT0jZNAoALPBUlCzMO1O44vXt2ywNz4dbqBALrSee4-tMelDytrxKCA",
+            "href": "https://photos.google.com/lr/photo/AC71ddbc4Lph5gv_s5o4ydezNS6V1eGLDHdtD-Gyfo6MT0jZNAoALPBUlCzMO1O44vXt2ywNz4dbqBALrSee4-tMelDytrxKCA",
+            "thumb": "media/sp-junho-2026/gp-tmeldytrxkca-poster.webp",
+            "poster": "media/sp-junho-2026/gp-tmeldytrxkca-poster.webp",
+            "date": "2026-06-07",
+            "width": 450,
+            "height": 800
+          },
+          {
+            "type": "video_link",
+            "src": "media/sp-junho-2026/gp-moakyuve7rvq-poster.webp",
+            "origin": "ajustado",
+            "source_id": "AC71ddaaOZyYn53Ut21qZ9BnCDm-UTJGtSqJGtUNnbm4h96ERe7khqrucRWaF4BFPtWcWHzNRoGsRRjLokrifmMOAKyuvE7rVQ",
+            "href": "https://photos.google.com/lr/photo/AC71ddaaOZyYn53Ut21qZ9BnCDm-UTJGtSqJGtUNnbm4h96ERe7khqrucRWaF4BFPtWcWHzNRoGsRRjLokrifmMOAKyuvE7rVQ",
+            "thumb": "media/sp-junho-2026/gp-moakyuve7rvq-poster.webp",
+            "poster": "media/sp-junho-2026/gp-moakyuve7rvq-poster.webp",
+            "date": "2026-06-07",
+            "width": 450,
+            "height": 800
+          },
+          {
+            "type": "video_link",
+            "src": "media/sp-junho-2026/gp-pulfr8qd-jfq-poster.webp",
+            "origin": "ajustado",
+            "source_id": "AC71ddad6iRyT6yafcLL6rw1aqXyTFBpFGoPXX_xBvcUAAZro1l3bn_DrGIi_qioQFnsPKu2z7wzAI5Aorb7fKpULFR8QD-JfQ",
+            "href": "https://photos.google.com/lr/photo/AC71ddad6iRyT6yafcLL6rw1aqXyTFBpFGoPXX_xBvcUAAZro1l3bn_DrGIi_qioQFnsPKu2z7wzAI5Aorb7fKpULFR8QD-JfQ",
+            "thumb": "media/sp-junho-2026/gp-pulfr8qd-jfq-poster.webp",
+            "poster": "media/sp-junho-2026/gp-pulfr8qd-jfq-poster.webp",
+            "date": "2026-06-07",
+            "width": 450,
+            "height": 800
+          },
+          {
+            "type": "video_link",
+            "src": "media/sp-junho-2026/gp-kbrxtunwssnw-poster.webp",
+            "origin": "ajustado",
+            "source_id": "AC71ddYPvtSSmmJ3qvdapzuzvbYpOuEZ7y5sRI2C_7c9kbpODGxZllApmWESFLqRVL22D_nAnX68qVN9FfJGFhkBrXTUnWsSNw",
+            "href": "https://photos.google.com/lr/photo/AC71ddYPvtSSmmJ3qvdapzuzvbYpOuEZ7y5sRI2C_7c9kbpODGxZllApmWESFLqRVL22D_nAnX68qVN9FfJGFhkBrXTUnWsSNw",
+            "thumb": "media/sp-junho-2026/gp-kbrxtunwssnw-poster.webp",
+            "poster": "media/sp-junho-2026/gp-kbrxtunwssnw-poster.webp",
+            "date": "2026-06-07",
+            "width": 450,
+            "height": 800
+          },
+          {
+            "type": "video_link",
+            "src": "media/sp-junho-2026/gp-mcqegmriieag-poster.webp",
+            "origin": "ajustado",
+            "source_id": "AC71ddabvkOMMrcosPByMm5COVQzl7t4xk8IanYxYcIpdx537iHWDKID_KbQXKRcCcflen-r8RjdlhbdaicsyPmcQeGMRIIEag",
+            "href": "https://photos.google.com/lr/photo/AC71ddabvkOMMrcosPByMm5COVQzl7t4xk8IanYxYcIpdx537iHWDKID_KbQXKRcCcflen-r8RjdlhbdaicsyPmcQeGMRIIEag",
+            "thumb": "media/sp-junho-2026/gp-mcqegmriieag-poster.webp",
+            "poster": "media/sp-junho-2026/gp-mcqegmriieag-poster.webp",
+            "date": "2026-06-07",
+            "width": 450,
+            "height": 800
+          },
+          {
+            "type": "video_link",
+            "src": "media/sp-junho-2026/gp-hlvpphh34uig-poster.webp",
+            "origin": "ajustado",
+            "source_id": "AC71ddavwB4KFJrmy9ObOTupRHBEmWZyAup6F_SX4zFR0w_ZJIrZx06yuF7rJ1sscS7-eE5sF7Y-AJ3y9gwW2SHLvpPhH34UIg",
+            "href": "https://photos.google.com/lr/photo/AC71ddavwB4KFJrmy9ObOTupRHBEmWZyAup6F_SX4zFR0w_ZJIrZx06yuF7rJ1sscS7-eE5sF7Y-AJ3y9gwW2SHLvpPhH34UIg",
+            "thumb": "media/sp-junho-2026/gp-hlvpphh34uig-poster.webp",
+            "poster": "media/sp-junho-2026/gp-hlvpphh34uig-poster.webp",
+            "date": "2026-06-07",
+            "width": 450,
+            "height": 800
+          },
+          {
+            "type": "video_link",
+            "src": "media/sp-junho-2026/gp-_xlfvf9qhjla-poster.webp",
+            "origin": "ajustado",
+            "source_id": "AC71ddZezGHPLB6kmjaOcpy-qcsaCJJFvQ_LAwSK7-VSSJE9uBbtpwb_WIwhI9PG-fTbtwgSoyh0Kab0Igb0B3_xLFVF9qHjlA",
+            "href": "https://photos.google.com/lr/photo/AC71ddZezGHPLB6kmjaOcpy-qcsaCJJFvQ_LAwSK7-VSSJE9uBbtpwb_WIwhI9PG-fTbtwgSoyh0Kab0Igb0B3_xLFVF9qHjlA",
+            "thumb": "media/sp-junho-2026/gp-_xlfvf9qhjla-poster.webp",
+            "poster": "media/sp-junho-2026/gp-_xlfvf9qhjla-poster.webp",
+            "date": "2026-06-07",
+            "width": 450,
+            "height": 800
+          }
+        ],
+        "stats": {
+          "photos": 0,
+          "videos": 10
+        }
+      }
     },
     {
       "id": "europa-tomorrowland-2026",
