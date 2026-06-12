@@ -13,7 +13,7 @@
 export const MAX_GALLERY_ITEMS = 30;
 export const IMAGE_MAX_DIM = 1600;
 export const THUMB_MAX_DIM = 320;
-export const VIDEO_MAX_BYTES = 25 * 1024 * 1024; // acima disso, pulamos o vídeo
+export const VIDEO_POSTER_DIM = 800; // poster do vídeo: thumbnail =w800-h800 do baseUrl
 
 // "5s" / "5.0s" / "1800s" (protobuf Duration) → ms. Tolerante: qualquer
 // coisa não-parseável cai no fallback.
@@ -44,13 +44,23 @@ export function posterFilePath(tripId, sourceId) {
   return `media/${tripId}/gp-${sanitizeIdTail(sourceId)}-poster.webp`;
 }
 
-// baseUrls do Picker exigem Authorization e parâmetro de renderização:
-//   imagens: =w{W}-h{H} (limita o maior lado); vídeos: =dv (bytes do vídeo).
+// baseUrls do Picker exigem Authorization e parâmetro de renderização
+// =w{W}-h{H} (limita o maior lado). Para VIDEO, =w-h retorna o THUMBNAIL do
+// vídeo — é só isso que baixamos: bytes de vídeo (=dv) nunca são buscados
+// (falhavam com "Load failed" e estourariam a Contents API; decisão: vídeo
+// não entra no repo, só poster + link externo).
 export function imageDownloadUrl(baseUrl, maxDim = IMAGE_MAX_DIM) {
   return `${baseUrl}=w${maxDim}-h${maxDim}`;
 }
-export function videoDownloadUrl(baseUrl) {
-  return `${baseUrl}=dv`;
+export function videoPosterDownloadUrl(baseUrl, maxDim = VIDEO_POSTER_DIM) {
+  return `${baseUrl}=w${maxDim}-h${maxDim}`;
+}
+
+// Link externo do item no Google Photos. O Picker API não devolve productUrl;
+// esta é a URL canônica que o productUrl da Library API usa (photos.google.com
+// /lr/photo/<id>). Abre o item na conta logada do dono.
+export function photosProductUrl(id) {
+  return `https://photos.google.com/lr/photo/${encodeURIComponent(String(id || ''))}`;
 }
 
 // mediaItem cru do Picker → forma interna estável (achatada). Não lança:
@@ -81,15 +91,19 @@ export function isoToDate(iso) {
 // Item no shape de media.gallery[] do schema (additionalProperties:false —
 // só os campos permitidos). origin/source_id são os campos aditivos da
 // proveniência (decisão "A" do ciclo 7).
+// Vídeos do picker viram 'video_link': src/thumb/poster apontam para o
+// poster local e href para o vídeo no Google Photos (bytes ficam fora do repo).
 export function galleryItemFromPicker(norm, files = {}) {
+  const isVideo = norm.type === 'video';
   const item = {
-    type: norm.type,
+    type: isVideo ? 'video_link' : norm.type,
     src: files.src,
     origin: 'ajustado',
     source_id: norm.id,
   };
+  if (isVideo) item.href = files.href || photosProductUrl(norm.id);
   if (files.thumb) item.thumb = files.thumb;
-  if (norm.type === 'video' && files.poster) item.poster = files.poster;
+  if (isVideo && files.poster) item.poster = files.poster;
   const date = isoToDate(norm.createTime);
   if (date) item.date = date;
   if (files.width) item.width = files.width;
@@ -128,9 +142,10 @@ export function mergeGallery(existing = [], incoming = [], max = MAX_GALLERY_ITE
 
 // Stats consistentes com o renderer do álbum (assets/app.js calcula o
 // fallback do mesmo jeito; gravamos para poupar o cliente).
+// 'video_link' conta como vídeo — para o usuário é um vídeo do álbum.
 export function galleryStats(gallery = []) {
   return {
     photos: gallery.filter((m) => m.type === 'image').length,
-    videos: gallery.filter((m) => m.type === 'video').length,
+    videos: gallery.filter((m) => m.type === 'video' || m.type === 'video_link').length,
   };
 }

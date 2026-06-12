@@ -4683,7 +4683,7 @@ function openAlbum(trip) {
   const cover = trip.media.cover || trip.media.gallery[0]?.src;
   const stats = trip.media.stats || {
     photos: trip.media.gallery.filter(m => m.type === 'image').length,
-    videos: trip.media.gallery.filter(m => m.type === 'video').length,
+    videos: trip.media.gallery.filter(m => m.type === 'video' || m.type === 'video_link').length,
   };
 
   body.innerHTML = `
@@ -4706,10 +4706,16 @@ function openAlbum(trip) {
       </div>` : ''}
   `;
 
-  // Wire grid clicks
+  // Wire grid clicks. video_link abre o vídeo na origem (Google Photos) em
+  // nova aba — não há bytes locais para o lightbox reproduzir.
   body.querySelectorAll('[data-album-idx]').forEach(btn => {
     btn.addEventListener('click', () => {
       const idx = parseInt(btn.dataset.albumIdx, 10);
+      const m = trip.media.gallery[idx];
+      if (m?.type === 'video_link' && m.href) {
+        window.open(m.href, '_blank', 'noopener');
+        return;
+      }
       openLightbox(trip, idx);
     });
   });
@@ -4749,7 +4755,7 @@ function openAlbum(trip) {
 
 function renderAlbumItem(m, i, trip) {
   const src = m.thumb || m.src;
-  const isVideo = m.type === 'video';
+  const isVideo = m.type === 'video' || m.type === 'video_link';
   const ariaLbl = m.caption
     ? escapeAttr(`${isVideo ? 'Vídeo' : 'Foto'} ${i + 1} — ${m.caption}`)
     : `${isVideo ? 'Vídeo' : 'Foto'} ${i + 1} de ${trip.media.gallery.length}`;
@@ -4823,7 +4829,16 @@ function renderLightbox() {
   const text = document.getElementById('lbText');
   counter.textContent = `${AlbumState.idx + 1} / ${total}`;
   text.textContent = m.caption || '';
-  if (m.type === 'video') {
+  if (m.type === 'video_link') {
+    // Vídeo não está no repo: poster local + link para a origem (nova aba).
+    const poster = m.poster || m.thumb || m.src;
+    mediaBox.innerHTML = `
+      <a href="${escapeAttr(m.href || '#')}" target="_blank" rel="noopener"
+         class="lb-video-link" title="Assistir no Google Photos">
+        <img src="${escapeAttr(poster)}" alt="${escapeAttr(m.caption || 'Vídeo')}" decoding="async"/>
+        <span class="album-play" aria-hidden="true">▶</span>
+      </a>`;
+  } else if (m.type === 'video') {
     mediaBox.innerHTML = `
       <video controls preload="metadata" ${m.poster ? `poster="${escapeAttr(m.poster)}"` : ''}>
         <source src="${escapeAttr(m.src)}"/>
