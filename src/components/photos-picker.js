@@ -9,9 +9,11 @@
 // media/<tripId>/ via putBinaryFile (Contents API, anti-409) e referencia
 // em media.gallery com origin:'ajustado' + source_id (dedup em re-imports).
 //
-// Vídeos: bytes originais até 25MB (sem transcode client-side); poster
-// gerado do 1º frame vira thumb (o grid do álbum usa thumb||src num <img> —
-// vídeo sem thumb renderizaria quebrado). Falhou o poster → pula com aviso.
+// Vídeos: NUNCA entram no repo (bytes via =dv falhavam com "Load failed" e
+// estouram a Contents API). Baixamos só o THUMBNAIL do vídeo (baseUrl
+// =w800-h800 funciona para VIDEO), commitamos como poster .webp e gravamos
+// type:'video_link' com href para o item no Google Photos — o álbum mostra
+// o poster com badge ▶ e o clique abre o vídeo lá, em nova aba.
 //
 // O Client ID é público por design (OAuth implicit p/ SPA — a segurança vem
 // do consent + origens autorizadas no Google Cloud, projeto monitor-viagens).
@@ -20,13 +22,12 @@ import {
   MAX_GALLERY_ITEMS,
   IMAGE_MAX_DIM,
   THUMB_MAX_DIM,
-  VIDEO_MAX_BYTES,
   durationToMs,
   mediaFilePath,
   thumbFilePath,
   posterFilePath,
   imageDownloadUrl,
-  videoDownloadUrl,
+  videoPosterDownloadUrl,
   normalizePickerItem,
   galleryItemFromPicker,
   mergeGallery,
@@ -215,42 +216,6 @@ async function compressImage(blob, maxDim, quality = 0.82) {
   }
 }
 
-// 1º frame do vídeo → webp (vira poster e thumb do grid).
-function videoPoster(blob, maxDim = THUMB_MAX_DIM * 2) {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(blob);
-    const video = document.createElement('video');
-    video.muted = true;
-    video.playsInline = true;
-    video.preload = 'auto';
-    const fail = (msg) => {
-      URL.revokeObjectURL(url);
-      reject(new Error(msg));
-    };
-    video.onerror = () => fail('vídeo não decodificável neste navegador');
-    video.onloadeddata = () => {
-      video.currentTime = Math.min(0.1, (video.duration || 1) / 2);
-    };
-    video.onseeked = async () => {
-      try {
-        const canvas = document.createElement('canvas');
-        const scale = Math.min(1, maxDim / Math.max(video.videoWidth, video.videoHeight));
-        canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
-        canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
-        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-        const out = await new Promise((res2, rej2) => {
-          canvas.toBlob((b) => (b ? res2(b) : rej2(new Error('poster: toBlob null'))), 'image/webp', 0.8);
-        });
-        URL.revokeObjectURL(url);
-        resolve({ blob: out, duration: video.duration || undefined });
-      } catch (e) {
-        fail(e.message);
-      }
-    };
-    video.src = url;
-  });
-}
-
 // FileReader (chunk-safe) — evita estourar a pilha com String.fromCharCode.
 function blobToBase64(blob) {
   return new Promise((resolve, reject) => {
@@ -273,9 +238,6 @@ async function loadAllTrips() {
   const data = await res.json();
   return data.trips || [];
 }
-
-const extFromMime = (mime) =>
-  ({ 'video/mp4': 'mp4', 'video/quicktime': 'mov', 'video/webm': 'webm' })[mime] || 'mp4';
 
 // ── Componente ───────────────────────────────────────────────────────────
 export function openPhotosPicker({ onSave, defaultTripId = 'sp-junho-2026' } = {}) {
@@ -493,7 +455,9 @@ export function openPhotosPicker({ onSave, defaultTripId = 'sp-junho-2026' } = {
       try {
         const blob = await fetchMediaBlob(
           token,
-          it.type === 'video' ? `${it.baseUrl}=w${THUMB_MAX_DIM}-h${THUMB_MAX_DIM}` : imageDownloadUrl(it.baseUrl, THUMB_MAX_DIM),
+          it.type === 'video'
+            ? videoPosterDownloadUrl(it.baseUrl, THUMB_MAX_DIM)
+            : imageDownloadUrl(it.baseUrl, THUMB_MAX_DIM),
         );
         it.previewUrl = URL.createObjectURL(blob);
       } catch {
@@ -553,27 +517,21 @@ export function openPhotosPicker({ onSave, defaultTripId = 'sp-junho-2026' } = {
               }),
             );
           } else {
-            const raw = await fetchMediaBlob(token, videoDownloadUrl(it.baseUrl));
-            if (raw.size > VIDEO_MAX_BYTES) {
-              skipped.push(`${it.filename || it.id} (vídeo ${(raw.size / 1048576).toFixed(1)}MB > 25MB)`);
-              continue;
-            }
-            const poster = await videoPoster(raw); // sem poster o grid quebra — falhou, pula
-            const srcPath = mediaFilePath(state.tripId, it.id, extFromMime(it.mimeType));
+            // Vídeo: só o poster entra no repo (thumbnail =w-h do baseUrl,
+            // que funciona para VIDEO); o item vira video_link com href para
+            // o vídeo no Google Photos. Bytes de vídeo nunca são baixados.
+            const raw = await fetchMediaBlob(token, videoPosterDownloadUrl(it.baseUrl));
+            const poster = await compressImage(raw, IMAGE_MAX_DIM); // já vem ≤800px; só converte p/ webp
             const poPath = posterFilePath(state.tripId, it.id);
             await putBinaryFile({
-              token: ghToken, path: srcPath, base64: await blobToBase64(raw),
-              message: `feat(media): vídeo do Google Photos em ${state.tripId} (picker)`,
-            });
-            await putBinaryFile({
               token: ghToken, path: poPath, base64: await blobToBase64(poster.blob),
-              message: `feat(media): poster de vídeo em ${state.tripId} (picker)`,
+              message: `feat(media): poster de vídeo do Google Photos em ${state.tripId} (picker)`,
             });
             galleryItems.push(
               galleryItemFromPicker(it, {
-                src: srcPath, thumb: poPath, poster: poPath,
-                width: it.width || undefined, height: it.height || undefined,
-                duration: poster.duration, caption: it.caption,
+                src: poPath, thumb: poPath, poster: poPath,
+                width: poster.width || undefined, height: poster.height || undefined,
+                caption: it.caption,
               }),
             );
           }

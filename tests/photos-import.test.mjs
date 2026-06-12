@@ -29,7 +29,8 @@ const {
   thumbFilePath,
   posterFilePath,
   imageDownloadUrl,
-  videoDownloadUrl,
+  videoPosterDownloadUrl,
+  photosProductUrl,
   normalizePickerItem,
   isoToDate,
   galleryItemFromPicker,
@@ -64,9 +65,13 @@ test('paths: mesmo source_id ⇒ mesmo arquivo (re-import não duplica)', () => 
 });
 
 // ── URLs de download (baseUrl exige parâmetro de renderização) ───────────
-test('imageDownloadUrl/videoDownloadUrl', () => {
+test('imageDownloadUrl/videoPosterDownloadUrl: sempre =w-h, nunca =dv', () => {
   assert.equal(imageDownloadUrl('https://x/y', 1600), 'https://x/y=w1600-h1600');
-  assert.equal(videoDownloadUrl('https://x/y'), 'https://x/y=dv');
+  assert.equal(videoPosterDownloadUrl('https://x/y'), 'https://x/y=w800-h800');
+  assert.equal(videoPosterDownloadUrl('https://x/y', 320), 'https://x/y=w320-h320');
+});
+test('photosProductUrl: link externo canônico do item', () => {
+  assert.equal(photosProductUrl('AbC-_123'), 'https://photos.google.com/lr/photo/AbC-_123');
 });
 
 // ── normalização do mediaItem ────────────────────────────────────────────
@@ -118,14 +123,22 @@ test('galleryItemFromPicker: caption respeita maxLength 280 do schema', () => {
   const item = galleryItemFromPicker({ id: 'a', type: 'image' }, { src: 's', caption: 'x'.repeat(400) });
   assert.equal(item.caption.length, 280);
 });
-test('galleryItemFromPicker: vídeo leva poster; campos ausentes ficam fora', () => {
+test('galleryItemFromPicker: vídeo vira video_link (poster local + href externo)', () => {
   const item = galleryItemFromPicker({ id: 'v1', type: 'video', createTime: null }, {
-    src: 'media/t/gp-v1.mp4', poster: 'media/t/gp-v1-poster.webp', duration: 12.5,
+    src: 'media/t/gp-v1-poster.webp', poster: 'media/t/gp-v1-poster.webp',
   });
+  assert.equal(item.type, 'video_link', 'bytes de vídeo nunca entram no repo');
+  assert.equal(item.src, 'media/t/gp-v1-poster.webp');
   assert.equal(item.poster, 'media/t/gp-v1-poster.webp');
-  assert.equal(item.duration, 12.5);
+  assert.equal(item.href, photosProductUrl('v1'), 'href default = link do item no Google Photos');
   assert.ok(!('date' in item), 'sem createTime não inventa date');
   assert.ok(!('width' in item));
+});
+test('galleryItemFromPicker: href explícito tem precedência', () => {
+  const item = galleryItemFromPicker({ id: 'v2', type: 'video' }, {
+    src: 'p.webp', href: 'https://photos.google.com/lr/photo/custom',
+  });
+  assert.equal(item.href, 'https://photos.google.com/lr/photo/custom');
 });
 test('isoToDate: só aceita ISO com T', () => {
   assert.equal(isoToDate('2026-06-07T01:02:03Z'), '2026-06-07');
@@ -164,10 +177,15 @@ test('mergeGallery: teto de 30 vai para overflow (nada silencioso)', () => {
 });
 
 // ── stats coerentes com o renderer do álbum ──────────────────────────────
-test('galleryStats: conta image/video como o app.js', () => {
+test('galleryStats: conta image/video/video_link como o app.js', () => {
   assert.deepEqual(
-    galleryStats([mk('a'), { type: 'video', src: 'v.mp4' }, mk('b')]),
-    { photos: 2, videos: 1 },
+    galleryStats([
+      mk('a'),
+      { type: 'video', src: 'v.mp4' }, // legado: vídeo local continua contando
+      { type: 'video_link', src: 'p.webp', href: 'https://photos.google.com/lr/photo/x' },
+      mk('b'),
+    ]),
+    { photos: 2, videos: 2 },
   );
 });
 
