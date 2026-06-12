@@ -330,12 +330,18 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["image", "video"]
+                "enum": ["image", "video", "video_link"],
+                "description": "'video_link' = vídeo que NÃO está no repo: 'src' é o poster local e 'href' aponta para o vídeo na origem (ex.: Google Photos). Decisão do fix do picker: vídeos nunca entram no repo."
               },
               "src": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Path/URL da mídia em tamanho cheio."
+                "description": "Path/URL da mídia em tamanho cheio. Para type=video_link, é o poster local."
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Apenas para type=video_link: URL externa do vídeo (ex.: productUrl do Google Photos). Abre em nova aba; o player local não é usado."
               },
               "thumb": {
                 "type": "string",
