@@ -11,11 +11,16 @@ import { applyChecklistOrder, moveItem, isItemOverdue } from '../src/core/checkl
 import { renderEventos } from '../src/components/eventos.js';
 import { loadEventos } from '../src/core/eventos-data.js';
 import { getHeroGallery } from '../src/core/schema.js';
+import { getRecentMemories } from '../src/core/recent-memories.js';
+import { mountMemoryHero } from '../src/components/memory-hero.js';
+import { isEnabled } from '../src/core/flags.js';
 
 // Exposto pra console + handlers que vivem em outros módulos.
 // `overlay` é um module namespace selado (import * as) — copiamos para um
 // objeto liso para poder anexar os helpers de debug abaixo sem TypeError.
 window.viagensOverlay = { ...overlay };
+// Frente B: exposto para inspeção/smoke no console (injetar fixture de memórias).
+window.viagensHero = { mountMemoryHero, getRecentMemories, isEnabled };
 // H1.5: APIs de inspeção by-trip-id — sem ter que passar trip/overlay
 // como argumento. Útil pra debug do Eduardo no console.
 window.viagensOverlay.inspectEdits = (tripId) => {
@@ -2679,8 +2684,57 @@ function renderDashboard() {
   // Próximas viagens (kanban compacto)
   renderDashKanban(trips);
 
-  // Última memória
+  // Última memória — herói cinematográfico (Frente B) com fallback ao card legado.
+  renderLastMemory(trips, done);
+}
+
+// Frente B: substitui o placeholder estático da "Última memória" pelo herói
+// cinematográfico (.mh-) quando há memórias duráveis e a flag está on. Cai
+// automaticamente no card legado em 3 casos: flag off, sem memórias, ou o
+// mount lançar — a home legada continua 100% intacta como fallback.
+let lastHeroHandle = null;
+function teardownLastHero() {
+  try { lastHeroHandle?.destroy?.(); } catch { /* noop */ }
+  lastHeroHandle = null;
+}
+
+function renderLastMemory(trips, done) {
   const lastSec = $('#dashLastSection');
+  const heroEl = $('#dashLastHero');
+  const legacyEl = $('#dashLast');
+
+  let memories = [];
+  try {
+    if (isEnabled('heroMemoria')) memories = getRecentMemories(trips, 6);
+  } catch (e) {
+    console.warn('[heroMemoria] seletor falhou; fallback:', e);
+    memories = [];
+  }
+
+  if (memories.length && heroEl) {
+    try {
+      teardownLastHero();
+      lastHeroHandle = mountMemoryHero(heroEl, {
+        memories,
+        onSeeAlbum: (tripId) => window.viagensV2?.openMemoryMode?.({ defaultTripId: tripId }),
+      });
+      lastSec.hidden = false;
+      heroEl.hidden = false;
+      if (legacyEl) legacyEl.hidden = true;
+      return;
+    } catch (e) {
+      console.warn('[heroMemoria] mount falhou; fallback ao card legado:', e);
+      teardownLastHero();
+      if (heroEl) heroEl.hidden = true;
+      // segue para o card legado abaixo
+    }
+  } else {
+    teardownLastHero();
+    if (heroEl) heroEl.hidden = true;
+  }
+
+  // ── Fallback legado: card estático da viagem realizada mais recente ──
+  if (legacyEl) legacyEl.hidden = false;
   if (done.length) {
     lastSec.hidden = false;
     const t = done[0];

@@ -1034,6 +1034,56 @@ await asyncTest('eventos-data.loadEventos: id inválido → [] sem fetch', async
   assert.equal(called, false, 'não deve chamar fetch para id vazio');
 });
 
+// ── recent-memories.js (Frente B) ────────────────────────────────────
+const recent = await import(`${ROOT}/src/core/recent-memories.js`);
+
+test('getRecentMemories: filtra só memory_*, ordena por data desc e limita a N', () => {
+  const trips = [
+    { id: 'a', name: 'A', media: { gallery: [
+      { type: 'memory_photo', src: 'x', date: '2020-01-01', caption: 'old' },
+      { type: 'image', src: 'y', date: '2025-01-01' },        // ignorado (não-memória)
+      { type: 'video_link', poster: 'p', date: '2025-02-01' }, // ignorado (href morto)
+      { type: 'memory_video', src: 'z', poster: 'pz', date: '2024-06-01', caption: 'mid' },
+    ] } },
+    { id: 'b', name: 'B', media: { gallery: [
+      { type: 'memory_photo', src: 'w', date: '2026-03-01', caption: 'new' },
+    ] } },
+  ];
+  const out = recent.getRecentMemories(trips, 2);
+  assert.equal(out.length, 2);
+  assert.equal(out[0].caption, 'new'); // 2026 primeiro
+  assert.equal(out[0].tripId, 'b');
+  assert.equal(out[1].caption, 'mid'); // 2024 segundo
+});
+
+test('getRecentMemories: sem memórias duráveis → [] (sinaliza fallback)', () => {
+  const trips = [
+    { id: 'a', media: { gallery: [{ type: 'image', src: 'y' }, { type: 'video', src: 'v' }] } },
+    { id: 'b' },                       // sem media
+    { id: 'c', media: { gallery: [] } },
+  ];
+  assert.deepEqual(recent.getRecentMemories(trips, 6), []);
+});
+
+test('getRecentMemories: item sem date cai na data da viagem (getDates)', () => {
+  const trips = [
+    { id: 'a', name: 'A', startDate: '2023-05-10', media: { gallery: [
+      { type: 'memory_photo', src: 'x', caption: 'no-date' },
+    ] } },
+    { id: 'b', name: 'B', media: { gallery: [
+      { type: 'memory_photo', src: 'y', date: '2022-01-01', caption: 'has-date' },
+    ] } },
+  ];
+  const out = recent.getRecentMemories(trips, 6);
+  assert.equal(out[0].caption, 'no-date'); // 2023 (da viagem) > 2022
+  assert.equal(out[0].date, '2023-05-10');
+});
+
+test('getRecentMemories: entrada inválida → [] (nunca lança)', () => {
+  assert.deepEqual(recent.getRecentMemories(null, 6), []);
+  assert.deepEqual(recent.getRecentMemories(undefined), []);
+});
+
 // ── Sumário ───────────────────────────────────────────────────────────
 console.log(`\n${passed} passed, ${failed} failed.`);
 if (failed > 0) process.exit(1);
