@@ -1,15 +1,25 @@
-// Gerencia ciclo de vida do PAT cifrado em localStorage + sessão em memória.
+// Ciclo de vida do PAT do GitHub — esquema "lembrar neste aparelho".
+//
+// O PAT continua cifrado em repouso (AES-256-GCM), mas com uma chave de
+// aparelho não-extraível guardada no IndexedDB (ver ./device-key.js) — SEM
+// senha-mestra. No load, init() auto-decifra e mantém o token em memória.
 //
 // Fluxo:
-//   1. Primeira vez: setupPAT(token, password) → guarda token cifrado.
-//   2. Cada sessão: unlock(password) → decifra e mantém em memória até reload.
-//   3. getToken() → token em memória ou null.
-//   4. lock() / clear() → limpa.
+//   1. boot:           init()         → auto-decifra o token (se configurado).
+//   2. primeira vez:   setupPAT(token) → cifra e guarda; já fica desbloqueado.
+//   3. uso:            getToken()      → token em memória ou null.
+//   4. esquecer:       clear()         → apaga ciphertext + chave do aparelho.
+//
+// Assinaturas getToken()/isUnlocked()/isConfigured() preservadas: o trips-api
+// e os componentes seguem chamando settings.getToken() sem mudança.
 
-import { encrypt, decrypt } from './crypto.js';
+import { encryptToken, decryptToken, deleteDeviceKey } from './device-key.js';
 
-const STORAGE_KEY = 'viagens.v2.pat';
-const META_KEY = 'viagens.v2.pat.meta';
+const STORAGE_KEY = 'viagens.v3.pat'; // ciphertext (base64) do esquema novo
+const META_KEY = 'viagens.v3.pat.meta';
+
+// Chaves do esquema ANTIGO (cifrado por senha-mestra) — só para limpeza.
+const LEGACY_KEYS = ['viagens.v2.pat', 'viagens.v2.pat.meta'];
 
 let inMemoryToken = null;
 
@@ -33,39 +43,52 @@ export function getMeta() {
   }
 }
 
-export async function setupPAT(token, password) {
+// Chamado no boot. Auto-decifra o PAT com a chave do aparelho.
+// Falha de decifra (chave do aparelho perdida / blob corrompido) ou presença
+// apenas do blob ANTIGO por senha → trata como ausente: zera o blob quebrado
+// e pede reconfigurar. Nunca lança (boot não pode quebrar).
+export async function init() {
+  const blob = localStorage.getItem(STORAGE_KEY);
+  if (!blob) {
+    inMemoryToken = null;
+    return false;
+  }
+  try {
+    inMemoryToken = await decryptToken(blob);
+    return true;
+  } catch {
+    // ciphertext órfão (sem a chave do aparelho) — limpa para pedir reconfigurar.
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(META_KEY);
+    inMemoryToken = null;
+    return false;
+  }
+}
+
+// Cola o token → cifra com a chave do aparelho → guarda. Sem senha.
+export async function setupPAT(token) {
   if (!token || typeof token !== 'string') throw new Error('PAT inválido');
-  if (!password || password.length < 8)
-    throw new Error('Senha mestra precisa ter ao menos 8 caracteres');
-  const blob = await encrypt(token, password);
+  const blob = await encryptToken(token.trim());
   localStorage.setItem(STORAGE_KEY, blob);
   localStorage.setItem(
     META_KEY,
-    JSON.stringify({ created_at: new Date().toISOString(), version: 1 })
+    JSON.stringify({ created_at: new Date().toISOString(), version: 3 }),
   );
-  inMemoryToken = token;
+  inMemoryToken = token.trim();
 }
 
-export async function unlock(password) {
-  const blob = localStorage.getItem(STORAGE_KEY);
-  if (!blob) throw new Error('PAT não configurado — use setupPAT primeiro');
-  const token = await decrypt(blob, password);
-  if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
-    // Heurística leve — se o decrypt deu certo mas o resultado não parece PAT,
-    // ainda confiamos no resultado (o usuário pode estar usando um token fine-grained
-    // antigo). Só logamos um aviso.
-    console.warn('[settings] token decifrado não começa com ghp_/github_pat_');
-  }
-  inMemoryToken = token;
-  return true;
-}
-
+// Só zera a sessão em memória (mantém o ciphertext). Útil para "travar" sem
+// esquecer. Próximo init() re-decifra.
 export function lock() {
   inMemoryToken = null;
 }
 
-export function clear() {
+// "Esquecer PAT deste aparelho": apaga ciphertext (novo + antigo) e rotaciona
+// a chave do aparelho (deleteDeviceKey), invalidando qualquer blob remanescente.
+export async function clear() {
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(META_KEY);
+  for (const k of LEGACY_KEYS) localStorage.removeItem(k);
   inMemoryToken = null;
+  await deleteDeviceKey();
 }

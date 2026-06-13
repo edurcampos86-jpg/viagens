@@ -227,7 +227,7 @@ async function deleteTrip(id) {
 v2.saveTrip = saveTrip;
 v2.deleteTrip = deleteTrip;
 
-// ── UI: modal mínimo para configurar/desbloquear PAT. ───────────────────
+// ── UI: modal para configurar/esquecer o PAT (lembrado neste aparelho). ──
 function openPATModal() {
   const overlay = document.createElement('div');
   overlay.style.cssText = `position:fixed;inset:0;background:rgba(15,23,42,.55);
@@ -239,31 +239,26 @@ function openPATModal() {
   const configured = settings.isConfigured();
   modal.innerHTML = `
     <h2 style="margin:0 0 8px;font-size:16px;font-weight:700;">
-      ${configured ? 'Desbloquear PAT' : 'Configurar GitHub PAT'}
+      ${configured ? 'PAT lembrado neste aparelho' : 'Configurar GitHub PAT'}
     </h2>
     <p style="margin:0 0 12px;color:#64748b;font-size:13px;">
       ${configured
-        ? 'Digite sua senha mestra para desbloquear o PAT já configurado.'
-        : 'Cole um PAT com escopo <code>contents:write</code> no repo viagens. O token é cifrado com AES-256 (PBKDF2 200k iter) e fica só no seu navegador.'}
+        ? 'O token está cifrado e é decifrado automaticamente neste aparelho — <strong>sem senha</strong>. Para trocar, esqueça e configure de novo.'
+        : 'Cole um PAT com escopo <code>contents:write</code> no repo viagens. É cifrado com AES-256-GCM por uma chave que fica só neste aparelho e decifra sozinho no load — <strong>sem senha mestra</strong>.'}
     </p>
     ${configured ? '' : `
-    <label style="display:block;margin-bottom:8px;">
+    <label style="display:block;margin-bottom:12px;">
       <span style="display:block;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">PAT</span>
       <input id="pat-input" type="password" autocomplete="off" placeholder="ghp_… ou github_pat_…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;"/>
     </label>
     `}
-    <label style="display:block;margin-bottom:12px;">
-      <span style="display:block;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Senha mestra</span>
-      <input id="pwd-input" type="password" autocomplete="off" placeholder="8+ caracteres" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;"/>
-    </label>
     <div id="pat-err" style="color:#991b1b;background:#fef2f2;border:1px solid #fecaca;padding:6px 10px;border-radius:6px;font-size:13px;margin-bottom:8px;display:none;"></div>
     <div style="display:flex;gap:8px;justify-content:space-between;">
-      <button id="pat-cancel" type="button" style="font:inherit;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer;">Cancelar</button>
+      <button id="pat-cancel" type="button" style="font:inherit;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer;">Fechar</button>
       <div style="display:flex;gap:8px;">
-        ${configured ? '<button id="pat-clear" type="button" style="font:inherit;padding:8px 12px;border:1px solid #fecaca;color:#b91c1c;background:#fff;border-radius:6px;cursor:pointer;">Limpar configuração</button>' : ''}
-        <button id="pat-submit" type="button" style="font:inherit;padding:8px 14px;border:0;border-radius:6px;background:#0f172a;color:#fff;cursor:pointer;">
-          ${configured ? 'Desbloquear' : 'Salvar'}
-        </button>
+        ${configured
+          ? '<button id="pat-clear" type="button" style="font:inherit;padding:8px 12px;border:1px solid #fecaca;color:#b91c1c;background:#fff;border-radius:6px;cursor:pointer;">Esquecer PAT deste aparelho</button>'
+          : '<button id="pat-submit" type="button" style="font:inherit;padding:8px 14px;border:0;border-radius:6px;background:#0f172a;color:#fff;cursor:pointer;">Salvar</button>'}
       </div>
     </div>
   `;
@@ -281,22 +276,21 @@ function openPATModal() {
     errBox.style.display = 'block';
   };
 
-  modal.querySelector('#pat-clear')?.addEventListener('click', () => {
-    if (!confirm('Apagar PAT cifrado deste navegador? Você precisará configurar novamente.')) return;
-    settings.clear();
+  modal.querySelector('#pat-clear')?.addEventListener('click', async () => {
+    if (!confirm('Esquecer o PAT deste aparelho? Você precisará colar o token de novo.')) return;
+    await settings.clear();
     close();
     updateBadge();
   });
 
-  modal.querySelector('#pat-submit').addEventListener('click', async () => {
-    const password = modal.querySelector('#pwd-input').value;
+  modal.querySelector('#pat-submit')?.addEventListener('click', async () => {
+    const token = modal.querySelector('#pat-input').value.trim();
+    if (!token) return showErr('Cole um PAT primeiro.');
+    if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
+      console.warn('[settings] token colado não começa com ghp_/github_pat_');
+    }
     try {
-      if (configured) {
-        await settings.unlock(password);
-      } else {
-        const token = modal.querySelector('#pat-input').value.trim();
-        await settings.setupPAT(token, password);
-      }
+      await settings.setupPAT(token);
       close();
       updateBadge();
     } catch (e) {
@@ -581,12 +575,12 @@ function updateBadge() {
     badge.title = 'Token desbloqueado. Cada salvar gera commit automático no GitHub.';
     badge.style.background = '#16a34a';
   } else if (settings.isConfigured()) {
-    badge.textContent = '🔒 PAT configurado';
-    badge.title = 'PAT cifrado no localStorage. Clique p/ desbloquear com a senha mestra.';
+    badge.textContent = '🔄 PAT';
+    badge.title = 'PAT cifrado neste aparelho — decifrando automaticamente (sem senha).';
     badge.style.background = '#ca8a04';
   } else {
     badge.textContent = '⚙ Configurar PAT';
-    badge.title = 'Configurar GitHub PAT para commitar viagens automaticamente. Cifrado AES-256.';
+    badge.title = 'Configurar GitHub PAT para commitar viagens automaticamente. Cifrado AES-256-GCM, lembrado neste aparelho.';
     badge.style.background = '#475569';
   }
 }
@@ -775,7 +769,7 @@ function openHelpModal() {
         <h3 style="margin:0 0 6px;font-size:14px;">🚀 Por onde começar</h3>
         <ol style="margin:0;padding-left:18px;font-size:13px;line-height:1.6;">
           <li><strong>Quer só ver as viagens?</strong> Você já está aí — mapa, timeline e cards funcionam sem login.</li>
-          <li><strong>Quer adicionar/editar viagem?</strong> Clique <code>⚙ Configurar PAT</code> → cole um GitHub PAT com escopo <code>contents:write</code> + senha mestra. Depois clique <code>+ Nova viagem</code>.</li>
+          <li><strong>Quer adicionar/editar viagem?</strong> Clique <code>⚙ Configurar PAT</code> → cole um GitHub PAT com escopo <code>contents:write</code> (sem senha — fica lembrado neste aparelho). Depois clique <code>+ Nova viagem</code>.</li>
           <li><strong>Quer Gmail + agentes Claude?</strong> Configure também o <code>🛠 Backend & Gmail</code> (precisa do projeto Supabase deployado — ver <code>docs/DEPLOY.md</code>).</li>
         </ol>
       </section>
@@ -810,7 +804,7 @@ function openHelpModal() {
       <section>
         <h3 style="margin:0 0 6px;font-size:14px;">🛡 Princípios de privacidade</h3>
         <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.5;">
-          <li><strong>PAT do GitHub:</strong> cifrado AES-256-GCM com chave derivada da senha mestra via PBKDF2 200k iterações. Senha mestra NUNCA é guardada.</li>
+          <li><strong>PAT do GitHub:</strong> cifrado AES-256-GCM por uma chave aleatória não-extraível guardada no IndexedDB deste aparelho (decifra sozinho no load, sem senha). O token nunca fica em texto puro; "Esquecer PAT" apaga chave + ciphertext.</li>
           <li><strong>Gmail OAuth:</strong> escopo exclusivamente <code>gmail.readonly</code> (validado em 3 camadas). Token nunca trafega para o frontend; só o evento estruturado.</li>
           <li><strong>Anthropic API:</strong> header <code>anthropic-no-training: true</code> em 100% das chamadas. Dados não entram em corpus de treino.</li>
           <li><strong>trips.json é a única fonte da verdade:</strong> backend só propõe — toda escrita vira commit auditável no GitHub.</li>
@@ -848,6 +842,9 @@ v2.openHelpModal = openHelpModal;
 
 function bootstrapV2() {
   injectFloatingButton();
+  // Lembrar neste aparelho: auto-decifra o PAT no load (sem senha) e atualiza o
+  // selo quando o token fica disponível. Falha de decifra → trata como ausente.
+  settings.init().then(() => updateBadge()).catch((e) => console.warn('[v2] settings.init falhou:', e));
   // Frente D — botão fixo "💡 Ideias" (borda direita, distinto do FAB stack).
   mountIdeasButton({ onRequireAuth: openPATModal });
   // Radar · Etapa B — selos de prontidão nos cards futuros (aditivo, só leitura).
