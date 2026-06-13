@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "bk-pat-configurado",
+      "title": "PAT do GitHub configurado",
+      "description": "Token cifrado AES-256 no navegador habilitou escrita via Contents API (commits automáticos em trips.json).",
+      "type": "implementacao",
+      "area": "infra",
+      "status": "feito",
+      "priority": 0,
+      "created": "2026-05-20T12:00:00.000Z",
+      "origin": "seed"
+    },
+    {
+      "id": "bk-diagnostico-google-icloud",
+      "title": "Diagnóstico Google/iCloud (sem auto-sync)",
+      "description": "Investigação concluiu que não há sincronização automática viável entre Google Photos e iCloud; ingestão será explícita pelo Picker.",
+      "type": "implementacao",
+      "area": "integracao",
+      "status": "feito",
+      "priority": 0,
+      "created": "2026-05-21T12:00:00.000Z",
+      "origin": "seed"
+    },
+    {
+      "id": "bk-direcao-visual-aprovada",
+      "title": "Direção visual aprovada",
+      "description": "Paleta/tipografia 'Vida & Carreira' (tokens --vc-*) validada nos mockups do Sprint 3A.",
+      "type": "implementacao",
+      "area": "design",
+      "status": "feito",
+      "priority": 0,
+      "created": "2026-05-28T12:00:00.000Z",
+      "origin": "seed"
+    },
+    {
+      "id": "bk-orquestra-plano-vetado",
+      "title": "Orquestra multi-agente (plano vetado)",
+      "description": "Proposta de orquestração multi-agente avaliada e vetada para este escopo; mantido o fluxo recon→plan→execute→smoke.",
+      "type": "ideia",
+      "area": "processo",
+      "status": "feito",
+      "priority": 0,
+      "created": "2026-05-30T12:00:00.000Z",
+      "origin": "seed"
+    },
+    {
+      "id": "bk-cloudinary-setup",
+      "title": "Cloudinary configurado",
+      "description": "CDN de mídia provisionado como destino futuro da ingestão de fotos/vídeos do iPhone.",
+      "type": "implementacao",
+      "area": "media",
+      "status": "feito",
+      "priority": 0,
+      "created": "2026-06-02T12:00:00.000Z",
+      "origin": "seed"
+    },
+    {
+      "id": "bk-memoria-fase1-schema",
+      "title": "Memória durável — Fase 1 (schema)",
+      "description": "Schema aditivo memory_video/memory_photo (PR #88): caption achatado, video→src.",
+      "type": "implementacao",
+      "area": "memoria",
+      "status": "feito",
+      "priority": 0,
+      "created": "2026-06-06T12:00:00.000Z",
+      "origin": "seed"
+    },
+    {
+      "id": "bk-memoria-fase2-view",
+      "title": "Memória durável — Fase 2 (view/palco)",
+      "description": "View render-only memory-mode.js (PR #89): palco .mm-, FAB+seletor, virtualização.",
+      "type": "implementacao",
+      "area": "memoria",
+      "status": "feito",
+      "priority": 0,
+      "created": "2026-06-11T12:00:00.000Z",
+      "origin": "seed"
+    },
+    {
+      "id": "bk-ingestao-iphone-cdn",
+      "title": "Ingestão iPhone→CDN",
+      "description": "Pipeline para levar fotos/vídeos do iPhone ao Cloudinary e referenciá-los no álbum sem inchar o repo.",
+      "type": "implementacao",
+      "area": "media",
+      "status": "priorizada",
+      "priority": 1,
+      "created": "2026-06-12T12:00:00.000Z",
+      "origin": "seed"
+    },
+    {
+      "id": "bk-integracao-da-memoria",
+      "title": "Integração da memória",
+      "description": "Conectar o álbum durável (Fase 1/2) ao fluxo de ingestão e ao Modo Memória de ponta a ponta.",
+      "type": "implementacao",
+      "area": "memoria",
+      "status": "priorizada",
+      "priority": 2,
+      "created": "2026-06-12T12:30:00.000Z",
+      "origin": "seed"
+    },
+    {
+      "id": "bk-admin-auditores-semanais",
+      "title": "Admin + auditores semanais",
+      "description": "Área administrativa (semente desta view) com auditores semanais de schema/integridade do trips.json e backlog.json.",
+      "type": "ideia",
+      "area": "admin",
+      "status": "nova",
+      "priority": null,
+      "created": "2026-06-13T09:00:00.000Z",
+      "origin": "seed"
+    },
+    {
+      "id": "bk-bug-album-sp-so-video",
+      "title": "Bug: álbum SP só-vídeo não carrega",
+      "description": "Álbum de SP com apenas itens video_link não renderiza no Modo Memória; investigar caminho do poster.",
+      "type": "correcao",
+      "area": "memoria",
+      "status": "nova",
+      "priority": null,
+      "created": "2026-06-13T09:30:00.000Z",
+      "origin": "seed"
+    }
+  ]
+}

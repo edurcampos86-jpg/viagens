@@ -1,0 +1,451 @@
+// Backlog / Ideias — captura rápida + view de roadmap (semente da área Admin).
+//
+// Dois pontos de entrada:
+//   • Botão fixo "💡 Ideias" na borda DIREITA (meio da tela), visualmente
+//     distinto do #v2-fab-stack (canto inferior-direito). Abre a captura.
+//   • View de roadmap: histórico "feito" (só leitura) + itens ativos
+//     priorizáveis (reordena por prioridade).
+//
+// Escrita via PAT, espelhando o caminho do trips-api porém com gate próprio:
+// usa src/core/backlog-api.js (parse-gate dedicado de data/backlog.json).
+// Sem PAT desbloqueado → pede configurar (onRequireAuth); nunca trava. Fila
+// offline é trabalho FUTURO (não aqui). Leitura pública via fetch do JSON.
+
+import * as settings from '../core/settings.js';
+import {
+  getBacklogFile,
+  putBacklogFile,
+  upsertBacklogItem,
+  BACKLOG_TYPES,
+} from '../core/backlog-api.js';
+
+const AREAS = ['infra', 'design', 'media', 'memoria', 'admin', 'integracao', 'processo'];
+const TYPE_LABEL = { ideia: '💡 ideia', correcao: '🐞 correção', implementacao: '🛠 implementação' };
+const STATUS_LABEL = { nova: 'nova', priorizada: 'priorizada', fazendo: 'fazendo', feito: 'feito' };
+
+let cssInjected = false;
+const CSS = `
+.bk-fab { position: fixed; right: 10px; top: 50%; transform: translateY(-50%);
+  z-index: 9100; font: 700 13px var(--vc-font-ui); color: var(--vc-paper);
+  background: var(--vc-relacoes); border: 0; border-radius: 999px;
+  padding: 11px 15px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+  box-shadow: 0 8px 20px -4px color-mix(in srgb, var(--vc-relacoes) 60%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--vc-paper) 70%, transparent); }
+.bk-fab:hover { filter: brightness(1.05); }
+.bk-overlay { position: fixed; inset: 0; z-index: 9999; padding: 16px;
+  background: color-mix(in srgb, var(--vc-ink) 55%, transparent);
+  display: flex; align-items: center; justify-content: center; }
+.bk-modal { background: var(--vc-paper); color: var(--vc-ink);
+  width: min(720px, 100%); max-height: 92vh; overflow: auto;
+  border-radius: 12px; font: 14px var(--vc-font-ui);
+  box-shadow: 0 25px 50px -12px color-mix(in srgb, var(--vc-ink) 40%, transparent); }
+.bk-modal.bk-wide { width: min(880px, 100%); }
+.bk-header { display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; border-bottom: 1px solid var(--vc-paper-3);
+  position: sticky; top: 0; background: var(--vc-paper); z-index: 1; }
+.bk-header strong { font-size: 16px; }
+.bk-close { background: transparent; border: 0; font-size: 22px; cursor: pointer;
+  color: var(--vc-ink-soft); }
+.bk-body { padding: 16px 20px; display: grid; gap: 14px; }
+.bk-field { display: grid; gap: 4px; font-size: 12px; color: var(--vc-ink-soft); }
+.bk-field > span { font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.bk-field input, .bk-field textarea, .bk-field select { font: inherit; color: var(--vc-ink);
+  background: var(--vc-paper); border: 1px solid var(--vc-ink-faint);
+  border-radius: 6px; padding: 8px 10px; }
+.bk-field textarea { min-height: 64px; resize: vertical; }
+.bk-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.bk-row > .bk-field { flex: 1 1 160px; }
+.bk-status { border-radius: 8px; padding: 8px 12px; font-size: 13px;
+  background: var(--vc-paper-2); border: 1px solid var(--vc-paper-3); }
+.bk-status.bk-ok { color: var(--vc-material); }
+.bk-status.bk-err { color: var(--vc-saude); }
+.bk-actions { display: flex; justify-content: flex-end; gap: 8px; align-items: center;
+  flex-wrap: wrap; }
+.bk-cta { font: inherit; font-weight: 700; padding: 10px 18px; border: 0;
+  border-radius: 8px; cursor: pointer; background: var(--vc-relacoes);
+  color: var(--vc-paper); }
+.bk-cta[disabled] { opacity: .5; cursor: not-allowed; }
+.bk-secondary { font: inherit; padding: 9px 14px; border: 1px solid var(--vc-ink-faint);
+  border-radius: 8px; cursor: pointer; background: var(--vc-paper); color: var(--vc-ink); }
+.bk-section-title { font-size: 13px; font-weight: 700; color: var(--vc-ink-soft);
+  text-transform: uppercase; letter-spacing: .04em; margin: 4px 0 0; }
+.bk-list { display: grid; gap: 8px; }
+.bk-item { border: 1px solid var(--vc-paper-3); border-radius: 10px;
+  background: var(--vc-paper-2); padding: 10px 12px; display: grid; gap: 6px; }
+.bk-item.bk-done { opacity: .72; }
+.bk-item-top { display: flex; align-items: center; gap: 8px; }
+.bk-item-title { font-weight: 700; flex: 1; }
+.bk-item-desc { font-size: 13px; color: var(--vc-ink-soft); }
+.bk-tags { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.bk-badge { display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 999px; background: var(--vc-paper-3);
+  color: var(--vc-ink-soft); }
+.bk-badge.bk-b-feito { background: var(--vc-material); color: var(--vc-paper); }
+.bk-badge.bk-b-priorizada { background: var(--vc-relacoes); color: var(--vc-paper); }
+.bk-badge.bk-b-fazendo { background: var(--vc-trabalho); color: var(--vc-paper); }
+.bk-rank { display: flex; gap: 4px; }
+.bk-rank button { font: 700 12px var(--vc-font-ui); width: 26px; height: 26px;
+  border: 1px solid var(--vc-ink-faint); border-radius: 6px; cursor: pointer;
+  background: var(--vc-paper); color: var(--vc-ink); }
+.bk-rank button[disabled] { opacity: .35; cursor: not-allowed; }
+.bk-item-statussel { font: inherit; font-size: 12px; color: var(--vc-ink);
+  background: var(--vc-paper); border: 1px solid var(--vc-ink-faint);
+  border-radius: 6px; padding: 4px 6px; }
+.bk-note { font-size: 12px; color: var(--vc-ink-soft); }
+.bk-empty { font-size: 13px; color: var(--vc-ink-soft); font-style: italic; }
+`;
+
+function ensureCss() {
+  if (cssInjected) return;
+  const s = document.createElement('style');
+  s.id = 'bk-css';
+  s.textContent = CSS;
+  document.head.appendChild(s);
+  cssInjected = true;
+}
+
+function esc(s) {
+  return String(s ?? '').replace(
+    /[&<>"']/g,
+    (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch],
+  );
+}
+
+function slugify(s) {
+  return String(s || '')
+    .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+    .slice(0, 40) || 'ideia';
+}
+
+function newId(title) {
+  const rand = (crypto.randomUUID?.() || String(Math.random()).slice(2)).replace(/-/g, '').slice(0, 4);
+  return `bk-${slugify(title)}-${rand}`;
+}
+
+// Leitura: com PAT desbloqueado lê via API (estado fresco + sha p/ escrita);
+// sem PAT, lê o backlog.json público. Mesmo padrão do statement-import/picker.
+async function loadBacklog() {
+  if (settings.isUnlocked()) {
+    const { content, sha } = await getBacklogFile({ token: settings.getToken() });
+    return { content, sha };
+  }
+  const res = await fetch('data/backlog.json', { cache: 'no-cache' });
+  if (!res.ok) throw new Error('Falha lendo backlog.json');
+  return { content: await res.json(), sha: null };
+}
+
+function buildOverlay({ wide = false, titleHtml = '' } = {}) {
+  const overlay = document.createElement('div');
+  overlay.className = 'bk-overlay';
+  const modal = document.createElement('div');
+  modal.className = `bk-modal${wide ? ' bk-wide' : ''}`;
+  modal.innerHTML = `
+    <div class="bk-header">
+      <strong>${titleHtml}</strong>
+      <button type="button" class="bk-close" aria-label="Fechar">×</button>
+    </div>
+    <div class="bk-body"></div>
+  `;
+  overlay.appendChild(modal);
+  const close = () => overlay.remove();
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  modal.querySelector('.bk-close').addEventListener('click', close);
+  document.body.appendChild(overlay);
+  return { overlay, modal, body: modal.querySelector('.bk-body'), close };
+}
+
+// ── Captura rápida ─────────────────────────────────────────────────────
+export function openBacklogCapture({ onRequireAuth } = {}) {
+  ensureCss();
+  const { body, close } = buildOverlay({ titleHtml: '💡 Capturar ideia' });
+
+  body.innerHTML = `
+    <div class="bk-status" hidden></div>
+    <label class="bk-field">
+      <span>Título</span>
+      <input id="bk-title" type="text" maxlength="120" placeholder="ex: alertar quando o passaporte vence" autofocus />
+    </label>
+    <label class="bk-field">
+      <span>Descrição</span>
+      <textarea id="bk-desc" maxlength="800" placeholder="contexto, o porquê, links…"></textarea>
+    </label>
+    <div class="bk-row">
+      <label class="bk-field">
+        <span>Tipo</span>
+        <select id="bk-type">
+          ${BACKLOG_TYPES.map((t) => `<option value="${t}">${esc(TYPE_LABEL[t] || t)}</option>`).join('')}
+        </select>
+      </label>
+      <label class="bk-field">
+        <span>Área</span>
+        <input id="bk-area" type="text" list="bk-areas" placeholder="ex: media" />
+        <datalist id="bk-areas">${AREAS.map((a) => `<option value="${a}"></option>`).join('')}</datalist>
+      </label>
+      <label class="bk-field">
+        <span>Prioridade</span>
+        <input id="bk-priority" type="number" min="1" step="1" placeholder="(sem)" />
+      </label>
+    </div>
+    <div class="bk-actions">
+      <button type="button" id="bk-goto-view" class="bk-secondary">📋 Ver roadmap</button>
+      <button type="button" id="bk-save" class="bk-cta">Salvar ideia</button>
+    </div>
+  `;
+
+  const statusBox = body.querySelector('.bk-status');
+  const setStatus = (msg, kind) => {
+    statusBox.hidden = false;
+    statusBox.innerHTML = msg;
+    statusBox.className = `bk-status${kind === 'ok' ? ' bk-ok' : kind === 'err' ? ' bk-err' : ''}`;
+  };
+
+  body.querySelector('#bk-goto-view').addEventListener('click', () => {
+    close();
+    openBacklogView({ onRequireAuth });
+  });
+
+  body.querySelector('#bk-save').addEventListener('click', async () => {
+    const title = body.querySelector('#bk-title').value.trim();
+    if (!title) return setStatus('Título é obrigatório.', 'err');
+
+    const priRaw = body.querySelector('#bk-priority').value.trim();
+    const priority = priRaw ? Number(priRaw) : null;
+    const item = {
+      id: newId(title),
+      title,
+      description: body.querySelector('#bk-desc').value.trim(),
+      type: body.querySelector('#bk-type').value,
+      area: body.querySelector('#bk-area').value.trim() || 'geral',
+      status: priority != null ? 'priorizada' : 'nova',
+      priority: priority != null && Number.isFinite(priority) ? priority : null,
+      created: new Date().toISOString(),
+      origin: 'ui',
+    };
+
+    if (!settings.isUnlocked()) {
+      setStatus(
+        'PAT bloqueado — desbloqueie para gravar a ideia. ' +
+        '<button type="button" id="bk-cfg" class="bk-secondary" style="margin-left:8px">⚙ Configurar PAT</button>',
+        'err',
+      );
+      body.querySelector('#bk-cfg')?.addEventListener('click', () => {
+        if (typeof onRequireAuth === 'function') onRequireAuth();
+        else window.viagensV2?.openPATModal?.();
+      });
+      return;
+    }
+
+    const btn = body.querySelector('#bk-save');
+    btn.disabled = true;
+    setStatus('Gravando ideia…');
+    try {
+      await upsertBacklogItem({
+        token: settings.getToken(),
+        item,
+        message: `feat(backlog): captura "${item.title}" (${item.type})`,
+      });
+      setStatus(`Ideia "${esc(item.title)}" gravada no backlog.json ✔`, 'ok');
+      body.querySelector('#bk-title').value = '';
+      body.querySelector('#bk-desc').value = '';
+      body.querySelector('#bk-priority').value = '';
+    } catch (e) {
+      setStatus(`Falha ao gravar: ${esc(e.message)}`, 'err');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
+// ── View de roadmap ──────────────────────────────────────────────────────
+function rankActive(items) {
+  // ativos = tudo que não está "feito"; ordena por prioridade (nulls por
+  // último) e, em empate, por data de criação.
+  return items
+    .filter((i) => i.status !== 'feito')
+    .sort((a, b) => {
+      const pa = a.priority == null ? Infinity : a.priority;
+      const pb = b.priority == null ? Infinity : b.priority;
+      if (pa !== pb) return pa - pb;
+      return String(a.created || '').localeCompare(String(b.created || ''));
+    });
+}
+
+export function openBacklogView({ onRequireAuth } = {}) {
+  ensureCss();
+  const { body, close } = buildOverlay({ wide: true, titleHtml: '🗺 Backlog / Roadmap' });
+
+  const state = { content: { version: 1, items: [] }, sha: null, busy: false };
+
+  const statusBox = document.createElement('div');
+  statusBox.className = 'bk-status';
+  statusBox.hidden = true;
+  const setStatus = (msg, kind) => {
+    statusBox.hidden = false;
+    statusBox.innerHTML = msg;
+    statusBox.className = `bk-status${kind === 'ok' ? ' bk-ok' : kind === 'err' ? ' bk-err' : ''}`;
+  };
+
+  function itemHtml(it, opts) {
+    const { rankable, idx, total } = opts;
+    const statusBadge = it.status !== 'nova'
+      ? `<span class="bk-badge bk-b-${esc(it.status)}">${esc(STATUS_LABEL[it.status] || it.status)}</span>`
+      : '';
+    return `<div class="bk-item ${it.status === 'feito' ? 'bk-done' : ''}" data-id="${esc(it.id)}">
+      <div class="bk-item-top">
+        ${rankable ? `<span class="bk-rank">
+          <button type="button" data-up="${esc(it.id)}" ${idx === 0 ? 'disabled' : ''} aria-label="Subir">▲</button>
+          <button type="button" data-down="${esc(it.id)}" ${idx === total - 1 ? 'disabled' : ''} aria-label="Descer">▼</button>
+        </span>` : ''}
+        <span class="bk-item-title">${it.status !== 'feito' && it.priority != null ? `${esc(String(it.priority))}. ` : ''}${esc(it.title)}</span>
+        ${rankable
+          ? `<select class="bk-item-statussel" data-status="${esc(it.id)}">
+              ${['nova', 'priorizada', 'fazendo', 'feito'].map((s) =>
+                `<option value="${s}" ${it.status === s ? 'selected' : ''}>${esc(STATUS_LABEL[s])}</option>`).join('')}
+            </select>`
+          : statusBadge}
+      </div>
+      ${it.description ? `<div class="bk-item-desc">${esc(it.description)}</div>` : ''}
+      <div class="bk-tags">
+        <span class="bk-badge">${esc(TYPE_LABEL[it.type] || it.type)}</span>
+        <span class="bk-badge">${esc(it.area || 'geral')}</span>
+      </div>
+    </div>`;
+  }
+
+  function render() {
+    const items = Array.isArray(state.content.items) ? state.content.items : [];
+    const active = rankActive(items);
+    const done = items.filter((i) => i.status === 'feito');
+    const unlocked = settings.isUnlocked();
+
+    body.innerHTML = '';
+    body.appendChild(statusBox);
+
+    const wrap = document.createElement('div');
+    wrap.style.display = 'grid';
+    wrap.style.gap = '14px';
+    wrap.innerHTML = `
+      <div class="bk-actions" style="justify-content:space-between">
+        <span class="bk-note">${active.length} ativo(s) · ${done.length} concluído(s)
+          ${unlocked ? '' : '· <strong>somente leitura</strong> (PAT bloqueado)'}</span>
+        <button type="button" id="bk-new" class="bk-cta">💡 Nova ideia</button>
+      </div>
+      <div>
+        <p class="bk-section-title">🗺 Roadmap — ativos (priorizáveis)</p>
+        <div class="bk-list" id="bk-active">
+          ${active.length
+            ? active.map((it, i) => itemHtml(it, { rankable: unlocked, idx: i, total: active.length })).join('')
+            : '<div class="bk-empty">Nenhum item ativo. Capture uma ideia ✨</div>'}
+        </div>
+      </div>
+      <div>
+        <p class="bk-section-title">✅ Histórico — feito</p>
+        <div class="bk-list" id="bk-done">
+          ${done.length
+            ? done.map((it) => itemHtml(it, { rankable: false })).join('')
+            : '<div class="bk-empty">Sem itens concluídos.</div>'}
+        </div>
+      </div>
+      ${unlocked ? '' : `<div class="bk-note">Desbloqueie o PAT (badge ⚙) para priorizar e mudar status.
+        <button type="button" id="bk-cfg2" class="bk-secondary" style="margin-left:8px">⚙ Configurar PAT</button></div>`}
+    `;
+    body.appendChild(wrap);
+
+    wrap.querySelector('#bk-new').addEventListener('click', () => {
+      close();
+      openBacklogCapture({ onRequireAuth });
+    });
+    wrap.querySelector('#bk-cfg2')?.addEventListener('click', () => {
+      if (typeof onRequireAuth === 'function') onRequireAuth();
+      else window.viagensV2?.openPATModal?.();
+    });
+    wrap.querySelectorAll('[data-up]').forEach((el) =>
+      el.addEventListener('click', () => move(el.getAttribute('data-up'), -1)));
+    wrap.querySelectorAll('[data-down]').forEach((el) =>
+      el.addEventListener('click', () => move(el.getAttribute('data-down'), +1)));
+    wrap.querySelectorAll('[data-status]').forEach((el) =>
+      el.addEventListener('change', () => changeStatus(el.getAttribute('data-status'), el.value)));
+  }
+
+  // Reordena os ativos e reescreve prioridades sequenciais 1..n; depois persiste.
+  async function move(id, delta) {
+    if (state.busy) return;
+    const items = state.content.items;
+    const active = rankActive(items);
+    const pos = active.findIndex((i) => i.id === id);
+    const target = pos + delta;
+    if (pos < 0 || target < 0 || target >= active.length) return;
+    [active[pos], active[target]] = [active[target], active[pos]];
+    // reatribui prioridade sequencial aos ativos; "feito" fica intocado.
+    active.forEach((it, i) => {
+      const ref = items.find((x) => x.id === it.id);
+      ref.priority = i + 1;
+      if (ref.status === 'nova') ref.status = 'priorizada';
+    });
+    await persist(`feat(backlog): reordena prioridades`);
+  }
+
+  async function changeStatus(id, status) {
+    if (state.busy) return;
+    const ref = state.content.items.find((x) => x.id === id);
+    if (!ref || ref.status === status) return;
+    ref.status = status;
+    if (status === 'feito') ref.priority = 0;
+    await persist(`feat(backlog): ${id} → ${status}`);
+  }
+
+  async function persist(message) {
+    if (!settings.isUnlocked()) {
+      setStatus('PAT bloqueado — desbloqueie para priorizar.', 'err');
+      return;
+    }
+    state.busy = true;
+    setStatus('Salvando…');
+    try {
+      await putBacklogFile({
+        token: settings.getToken(),
+        content: { ...state.content, version: state.content.version || 1 },
+        sha: state.sha,
+        message,
+      });
+      // recarrega para pegar o novo sha (evita 409 no próximo write).
+      const fresh = await getBacklogFile({ token: settings.getToken() });
+      state.content = fresh.content;
+      state.sha = fresh.sha;
+      setStatus('Salvo ✔', 'ok');
+      render();
+    } catch (e) {
+      setStatus(`Falha ao salvar: ${esc(e.message)}`, 'err');
+    } finally {
+      state.busy = false;
+    }
+  }
+
+  (async () => {
+    body.innerHTML = '<div class="bk-note">Carregando backlog…</div>';
+    try {
+      const { content, sha } = await loadBacklog();
+      state.content = content && Array.isArray(content.items) ? content : { version: 1, items: [] };
+      state.sha = sha;
+      render();
+    } catch (e) {
+      body.innerHTML = `<div class="bk-status bk-err">Erro: ${esc(e.message)}</div>`;
+    }
+  })();
+}
+
+// ── Botão fixo "💡 Ideias" (borda direita, distinto do FAB stack) ────────
+export function mountIdeasButton({ onRequireAuth } = {}) {
+  ensureCss();
+  if (document.getElementById('bk-ideias-fab')) return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.id = 'bk-ideias-fab';
+  btn.className = 'bk-fab';
+  btn.title = 'Capturar uma ideia / correção / implementação e ver o roadmap.';
+  btn.setAttribute('aria-label', 'Capturar ideia e ver roadmap');
+  btn.innerHTML = '💡 Ideias';
+  btn.addEventListener('click', () => openBacklogCapture({ onRequireAuth }));
+  document.body.appendChild(btn);
+}

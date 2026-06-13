@@ -22,6 +22,7 @@ import { openInbox } from './components/inbox.js';
 import { openStatementImport } from './components/statement-import.js';
 import { openPhotosPicker } from './components/photos-picker.js';
 import { openMemoryMode } from './components/memory-mode.js';
+import { mountIdeasButton, openBacklogCapture, openBacklogView } from './components/backlog.js';
 import * as dates from './core/dates.js';
 import { renderHeatmap, computeYearData } from './components/heatmap.js';
 import {
@@ -79,6 +80,8 @@ v2.openInbox = openInbox;
 v2.openStatementImport = (opts) => openStatementImport({ onSave: saveTrip, ...opts });
 v2.openPhotosPicker = (opts) => openPhotosPicker({ onSave: saveTrip, ...opts });
 v2.openMemoryMode = (opts) => openMemoryMode(opts);
+v2.openBacklog = (opts) => openBacklogView({ onRequireAuth: openPATModal, ...opts });
+v2.openBacklogCapture = (opts) => openBacklogCapture({ onRequireAuth: openPATModal, ...opts });
 v2.dates = dates;
 v2.renderHeatmap = renderHeatmap;
 v2.computeYearData = computeYearData;
@@ -835,6 +838,8 @@ v2.openHelpModal = openHelpModal;
 
 function bootstrapV2() {
   injectFloatingButton();
+  // Frente D — botão fixo "💡 Ideias" (borda direita, distinto do FAB stack).
+  mountIdeasButton({ onRequireAuth: openPATModal });
   // Radar · Etapa B — selos de prontidão nos cards futuros (aditivo, só leitura).
   try {
     initReadinessBadges();
