@@ -2840,7 +2840,7 @@
       },
       "checklist": [],
       "created_at": "2026-06-01T00:00:00Z",
-      "updated_at": "2026-06-12T22:30:21.400Z",
+      "updated_at": "2026-06-13T20:37:16.868Z",
       "_schema": 2,
       "media": {
         "gallery": [
@@ -2963,12 +2963,28 @@
             "date": "2026-06-07",
             "width": 450,
             "height": 800
+          },
+          {
+            "type": "memory_photo",
+            "src": "https://res.cloudinary.com/ddskumzp3/image/upload/f_auto,q_auto/jkcyexy5pl32jrwl9lur",
+            "poster": "media/sp-junho-2026/gp-pl32jrwl9lur-poster.webp",
+            "thumb": "media/sp-junho-2026/gp-pl32jrwl9lur-poster.webp",
+            "provider": "cloudinary",
+            "origin": "ajustado",
+            "source_id": "jkcyexy5pl32jrwl9lur",
+            "aspect": "135:286",
+            "accent": "#5d7090",
+            "width": 1080,
+            "height": 2288,
+            "caption": "Voando",
+            "date": "2019-12-04"
           }
         ],
         "stats": {
-          "photos": 0,
+          "photos": 1,
           "videos": 10
-        }
+        },
+        "cover": "media/sp-junho-2026/gp-pl32jrwl9lur-poster.webp"
       }
     },
     {
