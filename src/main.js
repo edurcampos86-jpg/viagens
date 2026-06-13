@@ -23,6 +23,7 @@ import { openStatementImport } from './components/statement-import.js';
 import { openPhotosPicker } from './components/photos-picker.js';
 import { openMemoryMode } from './components/memory-mode.js';
 import { mountIdeasButton, openBacklogCapture, openBacklogView } from './components/backlog.js';
+import { openCloudinaryPicker } from './components/cloudinary-picker.js';
 import * as dates from './core/dates.js';
 import { renderHeatmap, computeYearData } from './components/heatmap.js';
 import {
@@ -79,6 +80,7 @@ v2.backend = backend;
 v2.openInbox = openInbox;
 v2.openStatementImport = (opts) => openStatementImport({ onSave: saveTrip, ...opts });
 v2.openPhotosPicker = (opts) => openPhotosPicker({ onSave: saveTrip, ...opts });
+v2.openCloudinaryPicker = (opts) => openCloudinaryPicker({ onSave: saveTrip, onRequireAuth: openPATModal, ...opts });
 v2.openMemoryMode = (opts) => openMemoryMode(opts);
 v2.openBacklog = (opts) => openBacklogView({ onRequireAuth: openPATModal, ...opts });
 v2.openBacklogCapture = (opts) => openBacklogCapture({ onRequireAuth: openPATModal, ...opts });
@@ -479,6 +481,14 @@ const FAB_BADGES = [
     tooltip: 'Importar fotos/vídeos do Google Photos (Picker) para o álbum da viagem. Você escolhe lá; aqui só entra a sua seleção.',
     color: '#b45309',
     onClick: () => openPhotosPicker({ onSave: saveTrip }),
+  },
+  {
+    id: 'v2-cloudinary-badge',
+    emoji: '📱',
+    label: 'iPhone → CDN',
+    tooltip: 'Subir fotos/vídeos do iPhone (Camera Roll) para o Cloudinary (CDN) e gravar como memórias. O vídeo fica no CDN; só um poster leve entra no repo.',
+    color: '#0284c7',
+    onClick: () => openCloudinaryPicker({ onSave: saveTrip, onRequireAuth: openPATModal }),
   },
   {
     id: 'v2-memory-badge',
