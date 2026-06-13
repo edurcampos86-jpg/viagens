@@ -1,0 +1,54 @@
+{
+  "config": {
+    "owner": "fixture",
+    "title": "Fixture — Modo Memória durável (Fase 1)",
+    "tagline": "NÃO é produção. Valida memory_video + memory_photo + video_link legado contra trip.schema.json."
+  },
+  "atualizado_em": "2026-06-12",
+  "fonte": "fixture de teste do schema (PR Fase 1 Modo Memória durável)",
+  "trips": [
+    {
+      "id": "fixture-memoria-duravel",
+      "status": "done",
+      "name": "Fixture Memória Durável",
+      "media": {
+        "cover": "media/fixture-memoria/cover.webp",
+        "gallery": [
+          {
+            "type": "memory_video",
+            "poster": "media/fixture-memoria/mv-01-poster.webp",
+            "src": "https://cdn.example.com/memoria/mv-01.mp4",
+            "aspect": "16:9",
+            "caption": "Pôr do sol no deck",
+            "place": "Ilhabela, SP",
+            "date": "2026-05-20",
+            "accent": "#e2725b",
+            "provider": "cloudinary",
+            "origin": "ajustado"
+          },
+          {
+            "type": "memory_photo",
+            "poster": "media/fixture-memoria/mp-01-poster.webp",
+            "src": "https://cdn.example.com/memoria/mp-01.webp",
+            "aspect": "4:5",
+            "caption": "Café da manhã na pousada",
+            "place": "Paraty, RJ",
+            "date": "2026-05-21",
+            "accent": "#3b7a57",
+            "provider": "bunny",
+            "origin": "ajustado"
+          },
+          {
+            "type": "video_link",
+            "src": "media/fixture-memoria/vl-01-poster.webp",
+            "href": "https://photos.google.com/share/abc123",
+            "caption": "Vídeo legado do Google Photos",
+            "date": "2021-07-15",
+            "origin": "ajustado"
+          }
+        ],
+        "stats": { "photos": 1, "videos": 2 }
+      }
+    }
+  ]
+}

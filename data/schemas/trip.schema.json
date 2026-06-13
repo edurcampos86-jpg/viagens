@@ -330,13 +330,13 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["image", "video", "video_link"],
-                "description": "'video_link' = vídeo que NÃO está no repo: 'src' é o poster local e 'href' aponta para o vídeo na origem (ex.: Google Photos). Decisão do fix do picker: vídeos nunca entram no repo."
+                "enum": ["image", "video", "video_link", "memory_video", "memory_photo"],
+                "description": "'video_link' = vídeo que NÃO está no repo: 'src' é o poster local e 'href' aponta para o vídeo na origem (ex.: Google Photos). Decisão do fix do picker: vídeos nunca entram no repo. 'memory_video'/'memory_photo' (Fase 1 — Modo Memória durável) = item curado para o modo memória: 'poster' é o placeholder LOCAL e 'src' é a URL do CDN (vídeo ou foto em tamanho cheio); legenda estruturada do design achatada em 'caption' (título) + 'place' + 'date'; estilo em 'aspect'/'accent'; proveniência em 'provider'/'origin'. Tipos ADITIVOS: itens antigos (image/video/video_link) seguem 100% válidos."
               },
               "src": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Path/URL da mídia em tamanho cheio. Para type=video_link, é o poster local."
+                "description": "Path/URL da mídia em tamanho cheio. Para type=video_link, é o poster local. Para type=memory_video/memory_photo, é a URL do CDN (vídeo ou foto em tamanho cheio)."
               },
               "href": {
                 "type": "string",
@@ -349,11 +349,12 @@
               },
               "poster": {
                 "type": "string",
-                "description": "Apenas para type=video: poster do frame inicial."
+                "description": "Para type=video: poster do frame inicial. Para type=memory_video/memory_photo: placeholder LOCAL (caminho relativo ao root do site) exibido antes de carregar a mídia do CDN em 'src'."
               },
               "caption": {
                 "type": "string",
-                "maxLength": 280
+                "maxLength": 280,
+                "description": "Legenda em texto. Para type=memory_video/memory_photo: é o título da legenda estruturada do design (caption.title), achatado para campo plano seguindo a convenção do gallery; complementado por 'place' e 'date'."
               },
               "caption_auto": {
                 "type": "boolean",
@@ -383,6 +384,23 @@
               "source_id": {
                 "type": "string",
                 "description": "Id do item na origem (ex.: mediaItem id do Google Photos). Usado para dedup em re-imports."
+              },
+              "aspect": {
+                "type": "string",
+                "description": "Proporção do item para o layout do modo memória (ex.: '16:9', '9:16', '4:5', '1:1'). Campo ADITIVO para type=memory_video/memory_photo; opcional."
+              },
+              "accent": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$",
+                "description": "Cor de destaque (hex #rrggbb) do card no modo memória. Mesma convenção de 'col'. Campo ADITIVO para type=memory_video/memory_photo; opcional."
+              },
+              "provider": {
+                "type": "string",
+                "description": "CDN/serviço que hospeda a mídia em 'src' (ex.: 'cloudinary', 'bunny', 'mux', 'youtube'). Campo ADITIVO para type=memory_video/memory_photo; opcional."
+              },
+              "place": {
+                "type": "string",
+                "description": "Local/lugar da legenda estruturada do design (caption.place), achatado para campo plano seguindo a convenção do gallery. Campo ADITIVO para type=memory_video/memory_photo; opcional."
               }
             },
             "additionalProperties": false
