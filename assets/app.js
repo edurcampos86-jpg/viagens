@@ -4682,8 +4682,8 @@ function openAlbum(trip) {
   const body = document.getElementById('albumBody');
   const cover = trip.media.cover || trip.media.gallery[0]?.src;
   const stats = trip.media.stats || {
-    photos: trip.media.gallery.filter(m => m.type === 'image').length,
-    videos: trip.media.gallery.filter(m => m.type === 'video' || m.type === 'video_link').length,
+    photos: trip.media.gallery.filter(m => m.type === 'image' || m.type === 'memory_photo').length,
+    videos: trip.media.gallery.filter(m => m.type === 'video' || m.type === 'video_link' || m.type === 'memory_video').length,
   };
 
   body.innerHTML = `

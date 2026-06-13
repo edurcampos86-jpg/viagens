@@ -142,10 +142,13 @@ export function mergeGallery(existing = [], incoming = [], max = MAX_GALLERY_ITE
 
 // Stats consistentes com o renderer do álbum (assets/app.js calcula o
 // fallback do mesmo jeito; gravamos para poupar o cliente).
-// 'video_link' conta como vídeo — para o usuário é um vídeo do álbum.
+// 'video_link' e 'memory_video' contam como vídeo; 'memory_photo' como foto
+// — para o usuário são itens de vídeo/foto do álbum (Fase 1 Modo Memória durável).
 export function galleryStats(gallery = []) {
   return {
-    photos: gallery.filter((m) => m.type === 'image').length,
-    videos: gallery.filter((m) => m.type === 'video' || m.type === 'video_link').length,
+    photos: gallery.filter((m) => m.type === 'image' || m.type === 'memory_photo').length,
+    videos: gallery.filter(
+      (m) => m.type === 'video' || m.type === 'video_link' || m.type === 'memory_video',
+    ).length,
   };
 }
