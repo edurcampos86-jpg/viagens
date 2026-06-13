@@ -21,13 +21,17 @@
 
 import { getTripsFile } from '../core/trips-api.js';
 import * as settings from '../core/settings.js';
+import {
+  DEFAULT_ACCENT,
+  isVideoItem,
+  isPosterOnly,
+  posterOf,
+  accentOf,
+  dwellOf,
+} from '../core/memory-items.js';
 
 // Tipos da gallery que o palco sabe renderizar (contrato plano da Fase 1).
 const RENDERABLE = new Set(['memory_video', 'memory_photo', 'video_link', 'image', 'video']);
-const HEX6 = /^#[0-9a-fA-F]{6}$/;
-const DEFAULT_ACCENT = '#6d63ff'; // twilight quando o item não traz accent
-const STILL_DWELL_MS = 7000;
-const VIDEO_DWELL_MS = 9000;
 
 let cssInjected = false;
 const CSS = `
@@ -180,17 +184,8 @@ async function loadAllTrips() {
 }
 
 // ── Helpers de item ────────────────────────────────────────────────────────
-const isVideoItem = (it) => it.type === 'memory_video' || it.type === 'video';
-const isPosterOnly = (it) => it.type === 'video_link'; // href morto → não navega
-const posterOf = (it) => it.poster || it.thumb || it.src || '';
-const accentOf = (it) => (HEX6.test(it.accent || '') ? it.accent : DEFAULT_ACCENT);
-const dwellOf = (it) => {
-  if (isVideoItem(it)) {
-    const d = Number(it.duration);
-    return Number.isFinite(d) && d > 0 ? Math.max(4000, Math.min(d * 1000, 20000)) : VIDEO_DWELL_MS;
-  }
-  return STILL_DWELL_MS;
-};
+// isVideoItem/isPosterOnly/posterOf/accentOf/dwellOf vêm de
+// ../core/memory-items.js (compartilhados com o Herói da home, memory-hero.js).
 
 function renderableItems(trip) {
   const gallery = trip?.media?.gallery || [];
