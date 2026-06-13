@@ -9,6 +9,7 @@
 
 import { openTripEditor } from './components/trip-editor.js';
 import * as settings from './core/settings.js';
+import { testPat } from './core/pat-test.js';
 import * as anthropicKey from './core/anthropic-key.js';
 import { upsertTrip, deleteTripById, commitMessageFor } from './core/trips-api.js';
 import * as customs from './agents/customs.js';
@@ -253,9 +254,11 @@ function openPATModal() {
     </label>
     `}
     <div id="pat-err" style="color:#991b1b;background:#fef2f2;border:1px solid #fecaca;padding:6px 10px;border-radius:6px;font-size:13px;margin-bottom:8px;display:none;"></div>
-    <div style="display:flex;gap:8px;justify-content:space-between;">
+    <div id="pat-test-result" style="border:1px solid #cbd5e1;padding:8px 10px;border-radius:6px;font-size:13px;margin-bottom:8px;display:none;"></div>
+    <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;">
       <button id="pat-cancel" type="button" style="font:inherit;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer;">Fechar</button>
       <div style="display:flex;gap:8px;">
+        <button id="pat-test" type="button" style="font:inherit;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer;">🔍 Testar PAT</button>
         ${configured
           ? '<button id="pat-clear" type="button" style="font:inherit;padding:8px 12px;border:1px solid #fecaca;color:#b91c1c;background:#fff;border-radius:6px;cursor:pointer;">Esquecer PAT deste aparelho</button>'
           : '<button id="pat-submit" type="button" style="font:inherit;padding:8px 14px;border:0;border-radius:6px;background:#0f172a;color:#fff;cursor:pointer;">Salvar</button>'}
@@ -276,6 +279,40 @@ function openPATModal() {
     errBox.style.display = 'block';
   };
 
+  // ── Testar PAT (read-only): GET ao repo, interpreta 401 / sem-escopo / OK ──
+  const resultBox = modal.querySelector('#pat-test-result');
+  const PALETTE = {
+    ok: { icon: '✅', fg: '#166534', bg: '#f0fdf4', bd: '#bbf7d0' },
+    warn: { icon: '⚠️', fg: '#92400e', bg: '#fffbeb', bd: '#fde68a' },
+    error: { icon: '❌', fg: '#991b1b', bg: '#fef2f2', bd: '#fecaca' },
+    neterror: { icon: '❌', fg: '#991b1b', bg: '#fef2f2', bd: '#fecaca' },
+  };
+  const showTestResult = ({ level, message }) => {
+    const p = PALETTE[level] || { icon: 'ℹ️', fg: '#1e293b', bg: '#f1f5f9', bd: '#cbd5e1' };
+    resultBox.textContent = `${p.icon} ${message}`;
+    resultBox.style.color = p.fg;
+    resultBox.style.background = p.bg;
+    resultBox.style.borderColor = p.bd;
+    resultBox.style.display = 'block';
+  };
+  const runTest = async (token) => {
+    if (!token) return showErr('Cole ou configure um PAT primeiro.');
+    const btn = modal.querySelector('#pat-test');
+    const prev = btn?.textContent;
+    if (btn) { btn.disabled = true; btn.textContent = 'Testando…'; }
+    try {
+      showTestResult(await testPat(token));
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = prev; }
+    }
+  };
+
+  modal.querySelector('#pat-test').addEventListener('click', () => {
+    // reusa o token guardado; se ainda não salvou, testa o valor colado.
+    const token = settings.getToken() || (modal.querySelector('#pat-input')?.value.trim() || '');
+    runTest(token);
+  });
+
   modal.querySelector('#pat-clear')?.addEventListener('click', async () => {
     if (!confirm('Esquecer o PAT deste aparelho? Você precisará colar o token de novo.')) return;
     await settings.clear();
@@ -291,8 +328,9 @@ function openPATModal() {
     }
     try {
       await settings.setupPAT(token);
-      close();
       updateBadge();
+      // roda o teste automático logo após Salvar (mantém o modal aberto p/ ver o resultado).
+      await runTest(token);
     } catch (e) {
       showErr(e.message);
     }
