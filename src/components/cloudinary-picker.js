@@ -1,17 +1,20 @@
 // Ingestão iPhone→Cloudinary — sobe fotos/vídeos do Camera Roll para o CDN e
-// grava itens memory_video/memory_photo (src=CDN, poster local leve).
+// EXPORTA os itens memory_video/memory_photo prontos para commit no desktop.
 //
-// Fluxo: <input type=file accept="image/*,video/*" multiple> (Camera Roll) →
-// upload UNSIGNED direto pro Cloudinary (transcodifica HEIC/HEVC) → baixa o
-// POSTER (.webp gerado pelo Cloudinary) → ALL-OR-NOTHING por item: só depois
-// que (1) o upload ao CDN E (2) o commit do poster local via PAT dão certo é
-// que o item entra no metadado de trips.json (putTripsFile + parse-gate, via
-// onSave). Falha em qualquer etapa → item pulado, SEM metadado órfão.
+// SEM PAT (decisão 2026-06-13): o navegador NÃO escreve mais no GitHub. O PAT
+// por aparelho era redundante para quem trabalha com o Claude no desktop (e
+// frágil no iOS, que evicta o storage). Novo fluxo:
+//   <input type=file multiple> (Camera Roll) → upload UNSIGNED pro Cloudinary
+//   (transcodifica HEIC/HEVC) → monta os itens da gallery → MOSTRA um JSON
+//   copiável. O Claude no desktop regenera o poster .webp do public_id e
+//   commita o metadado no trips.json (putTripsFile + parse-gate). Nada de PAT,
+//   nada de poster commitado pelo telefone.
 //
 // Bytes de VÍDEO nunca entram no repo: o vídeo cheio vive no Cloudinary; o repo
-// guarda só o poster .webp (≤640px). Vídeo > 100MB é avisado e pulado.
+// guarda só o poster .webp (≤640px, regenerável do public_id). Vídeo > 100MB é
+// avisado e pulado.
 
-import { getTripsFile, putBinaryFile } from '../core/trips-api.js';
+import { getTripsFile } from '../core/trips-api.js';
 import * as settings from '../core/settings.js';
 import {
   CLOUDINARY,
@@ -24,7 +27,7 @@ import {
   galleryItemFromCdn,
   posterFilePath,
 } from '../core/cloudinary-import.js';
-import { mergeGallery, galleryStats, isoToDate } from '../core/photos-import.js';
+import { isoToDate } from '../core/photos-import.js';
 
 let cssInjected = false;
 const CSS = `
@@ -99,16 +102,6 @@ function fmtBytes(n) {
   return mb >= 1 ? `${mb.toFixed(1)} MB` : `${Math.round(n / 1024)} KB`;
 }
 
-// FileReader chunk-safe → base64 (sem estourar a pilha).
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onerror = () => reject(new Error('falha lendo blob'));
-    r.onload = () => resolve(String(r.result).split(',', 2)[1]);
-    r.readAsDataURL(blob);
-  });
-}
-
 // Cor dominante (média amostrada) do poster → '#rrggbb'. Cosmético: falha → null.
 async function dominantColor(blob) {
   try {
@@ -154,7 +147,7 @@ async function loadAllTrips() {
   return data.trips || [];
 }
 
-export function openCloudinaryPicker({ onSave, onRequireAuth, defaultTripId = 'sp-junho-2026' } = {}) {
+export function openCloudinaryPicker({ defaultTripId = 'sp-junho-2026' } = {}) {
   ensureCss();
 
   const state = { trips: [], tripId: null, items: [], applying: false, closed: false };
@@ -234,7 +227,6 @@ export function openCloudinaryPicker({ onSave, onRequireAuth, defaultTripId = 's
     const existing = trip?.media?.gallery?.length || 0;
     const room = Math.max(0, MAX_GALLERY_ITEMS - existing);
     const included = state.items.filter((i) => i.included && !i.tooBig);
-    const unlocked = settings.isUnlocked();
 
     main.innerHTML = `
       <div class="cdn-row">
@@ -257,15 +249,11 @@ export function openCloudinaryPicker({ onSave, onRequireAuth, defaultTripId = 's
       ${state.items.length ? `<div class="cdn-grid">${state.items.map((it, i) => cardHtml(it, i)).join('')}</div>` : ''}
       <div class="cdn-actions">
         <span class="cdn-note">
-          ${included.length} para subir → Cloudinary + poster em media/${esc(state.tripId || '?')}/
-          ${!unlocked ? '<br/><strong>PAT bloqueado</strong> — configure para commitar o poster + metadado.' : ''}
+          ${included.length} para subir → Cloudinary. O poster + metadado o Claude commita no desktop — <strong>sem PAT</strong>.
         </span>
-        ${!unlocked
-          ? `<button type="button" id="cdn-cfg" class="cdn-secondary">⚙ Configurar PAT</button>`
-          : ''}
         <button type="button" id="cdn-apply" class="cdn-cta"
-          ${state.applying || !included.length || !unlocked || !trip ? 'disabled' : ''}>
-          ${state.applying ? 'Enviando…' : 'Subir e aplicar'}
+          ${state.applying || !included.length || !trip ? 'disabled' : ''}>
+          ${state.applying ? 'Enviando…' : 'Subir ao Cloudinary'}
         </button>
       </div>
     `;
@@ -274,10 +262,6 @@ export function openCloudinaryPicker({ onSave, onRequireAuth, defaultTripId = 's
       state.tripId = e.target.value; render();
     });
     main.querySelector('#cdn-files')?.addEventListener('change', (e) => onFilesPicked(e.target.files));
-    main.querySelector('#cdn-cfg')?.addEventListener('click', () => {
-      if (typeof onRequireAuth === 'function') onRequireAuth();
-      else window.viagensV2?.openPATModal?.();
-    });
     main.querySelector('#cdn-apply')?.addEventListener('click', applyToTrip);
     main.querySelectorAll('[data-inc]').forEach((el) =>
       el.addEventListener('change', () => {
@@ -292,17 +276,8 @@ export function openCloudinaryPicker({ onSave, onRequireAuth, defaultTripId = 's
   async function applyToTrip() {
     const trip = currentTrip();
     if (!trip || state.applying) return;
-    if (typeof onSave !== 'function') {
-      setStatus('Sem handler de persistência (onSave) — abra pelo botão do site.', 'err');
-      return;
-    }
-    if (!settings.isUnlocked()) {
-      setStatus('PAT bloqueado — configure para commitar.', 'err');
-      return;
-    }
     state.applying = true;
     render();
-    const ghToken = settings.getToken();
     const chosen = state.items.filter((i) => i.included && !i.tooBig);
     const galleryItems = [];
     const skipped = [];
@@ -313,32 +288,27 @@ export function openCloudinaryPicker({ onSave, onRequireAuth, defaultTripId = 's
     try {
       for (const it of chosen) {
         const label = it.file.name || `item ${done + 1}`;
-        progress(`${label}…`);
+        progress(`subindo ${label}…`);
         try {
           const resourceType = it.type;
-          // 1) upload ao CDN
+          // 1) upload UNSIGNED ao CDN (sem PAT)
           const up = await uploadToCloudinary(it.file, resourceType);
           if (!up?.public_id) throw new Error('resposta do Cloudinary sem public_id');
-          // 2) baixa o poster gerado pelo CDN
-          const posterUrl = cloudinaryPosterUrl(up.public_id, resourceType);
-          const posterRes = await fetch(posterUrl);
-          if (!posterRes.ok) throw new Error(`poster ${posterRes.status}`);
-          const posterBlob = await posterRes.blob();
-          const accent = await dominantColor(posterBlob);
-          // 3) commita o poster local via PAT — SÓ após CDN+poster ok
-          const posterPath = posterFilePath(state.tripId, up.public_id);
-          await putBinaryFile({
-            token: ghToken,
-            path: posterPath,
-            base64: await blobToBase64(posterBlob),
-            message: `feat(media): poster Cloudinary (${resourceType}) em ${state.tripId}`,
-          });
-          // 4) só ENTÃO monta o metadado (sem órfão: chegou aqui = CDN+poster ok)
+          // 2) busca o poster do CDN SÓ para extrair a cor de acento (cosmético).
+          //    O poster NÃO é commitado aqui: o Claude o regenera do public_id
+          //    no desktop e grava no repo. Falha aqui não impede o item.
+          let accent = null;
+          try {
+            const pr = await fetch(cloudinaryPosterUrl(up.public_id, resourceType));
+            if (pr.ok) accent = await dominantColor(await pr.blob());
+          } catch { /* acento é opcional */ }
+          // 3) monta o item da gallery (poster = caminho LOCAL determinístico,
+          //    regenerável do public_id; o desktop baixa e commita).
           galleryItems.push(galleryItemFromCdn({
             resourceType,
             publicId: up.public_id,
             src: cloudinaryDeliveryUrl(up.public_id, resourceType),
-            poster: posterPath,
+            poster: posterFilePath(state.tripId, up.public_id),
             width: Number(up.width) || undefined,
             height: Number(up.height) || undefined,
             caption: it.caption,
@@ -350,46 +320,52 @@ export function openCloudinaryPicker({ onSave, onRequireAuth, defaultTripId = 's
         }
         done++;
       }
-
-      if (!galleryItems.length) {
-        setStatus(`Nada aplicado. Pulados: ${esc(skipped.join('; ') || '—')}`, 'err');
-        return;
-      }
-
-      // Clone — nada muta o original até o onSave (padrão statement-import/picker).
-      const next = JSON.parse(JSON.stringify(trip));
-      next.media ||= {};
-      const merged = mergeGallery(next.media.gallery || [], galleryItems);
-      next.media.gallery = merged.gallery;
-      next.media.cover ||= merged.gallery.find((m) => m.type === 'image' || m.type === 'memory_photo')?.poster;
-      next.media.stats = galleryStats(merged.gallery);
-      next.updated_at = new Date().toISOString();
-
-      const result = await onSave(next);
-      const idx = state.trips.findIndex((t) => t.id === next.id);
-      if (idx !== -1) state.trips[idx] = next;
-
-      const where = result?.committed
-        ? 'commit no trips.json.'
-        : result?.queued
-          ? 'offline — metadado na sync-queue (posters já commitados).'
-          : 'atenção: trips.json não foi commitado.';
-      const warn = [
-        merged.dupes.length ? `${merged.dupes.length} já no álbum (dedup)` : '',
-        merged.overflow.length ? `${merged.overflow.length} FORA — teto ${MAX_GALLERY_ITEMS}` : '',
-        skipped.length ? `pulados: ${skipped.join('; ')}` : '',
-      ].filter(Boolean).join(' · ');
-      setStatus(
-        `${merged.added.length} mídia(s) no CDN + álbum de "${esc(next.name || next.id)}" — ${esc(where)}${warn ? `<br/>${esc(warn)}` : ''}`,
-        'ok',
-      );
-      state.items = state.items.filter((i) => !i.included || i.tooBig);
     } catch (e) {
-      setStatus(`Falha ao aplicar: ${esc(e.message)}`, 'err');
-    } finally {
       state.applying = false;
+      setStatus(`Falha no envio: ${esc(e.message)}`, 'err');
       render();
+      return;
     }
+
+    state.applying = false;
+    if (!galleryItems.length) {
+      setStatus(`Nada subiu ao CDN. Pulados: ${esc(skipped.join('; ') || '—')}`, 'err');
+      render();
+      return;
+    }
+    // sucesso: tira os enviados da fila e mostra o JSON para copiar pro desktop
+    state.items = state.items.filter((i) => !i.included || i.tooBig);
+    renderResult({ tripId: state.tripId, tripName: trip.name || state.tripId, items: galleryItems }, skipped);
+  }
+
+  // Painel de resultado: o telefone já subiu ao CDN; aqui exporta o JSON para
+  // o Claude commitar no desktop (sem PAT). Substitui o corpo do picker.
+  function renderResult(payload, skipped) {
+    const json = JSON.stringify(payload, null, 2);
+    setStatus(
+      `✅ ${payload.items.length} mídia(s) no Cloudinary.${skipped.length ? ` Pulados: ${esc(skipped.join('; '))}` : ''}`,
+      'ok',
+    );
+    main.innerHTML = `
+      <div class="cdn-note">Pronto — as mídias estão no Cloudinary. <strong>Copie o bloco abaixo e cole para o Claude no desktop</strong>: ele baixa os posters e grava no <code>trips.json</code>. Nenhum PAT necessário.</div>
+      <textarea id="cdn-result" readonly rows="12"
+        style="width:100%;font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--vc-ink);background:var(--vc-paper-2);border:1px solid var(--vc-paper-3);border-radius:8px;padding:10px;">${esc(json)}</textarea>
+      <div class="cdn-actions">
+        <button type="button" id="cdn-more" class="cdn-secondary">Enviar mais</button>
+        <button type="button" id="cdn-copy" class="cdn-cta">📋 Copiar para o Claude</button>
+      </div>
+    `;
+    const ta = main.querySelector('#cdn-result');
+    main.querySelector('#cdn-copy').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(json);
+        setStatus('Copiado! Cole na conversa com o Claude no desktop.', 'ok');
+      } catch {
+        ta.focus(); ta.select();
+        setStatus('Selecionei o texto — use Copiar do teclado e cole pro Claude.', 'ok');
+      }
+    });
+    main.querySelector('#cdn-more').addEventListener('click', render);
   }
 
   (async () => {
