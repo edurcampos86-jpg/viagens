@@ -21,6 +21,7 @@ import * as backend from './core/backend.js';
 import { openInbox } from './components/inbox.js';
 import { openStatementImport } from './components/statement-import.js';
 import { openPhotosPicker } from './components/photos-picker.js';
+import { openMemoryMode } from './components/memory-mode.js';
 import * as dates from './core/dates.js';
 import { renderHeatmap, computeYearData } from './components/heatmap.js';
 import {
@@ -77,6 +78,7 @@ v2.backend = backend;
 v2.openInbox = openInbox;
 v2.openStatementImport = (opts) => openStatementImport({ onSave: saveTrip, ...opts });
 v2.openPhotosPicker = (opts) => openPhotosPicker({ onSave: saveTrip, ...opts });
+v2.openMemoryMode = (opts) => openMemoryMode(opts);
 v2.dates = dates;
 v2.renderHeatmap = renderHeatmap;
 v2.computeYearData = computeYearData;
@@ -474,6 +476,14 @@ const FAB_BADGES = [
     tooltip: 'Importar fotos/vídeos do Google Photos (Picker) para o álbum da viagem. Você escolhe lá; aqui só entra a sua seleção.',
     color: '#b45309',
     onClick: () => openPhotosPicker({ onSave: saveTrip }),
+  },
+  {
+    id: 'v2-memory-badge',
+    emoji: '🎞',
+    label: 'Modo Memória',
+    tooltip: 'Palco cinematográfico: reviva as memórias da viagem (álbum media.gallery) com Ambilight, crossfade e anel de tempo. Só visualização.',
+    color: '#4338ca',
+    onClick: () => openMemoryMode(),
   },
   {
     id: 'v2-heatmap-badge',
