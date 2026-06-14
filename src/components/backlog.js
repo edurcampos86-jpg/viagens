@@ -158,17 +158,21 @@ function buildOverlay({ wide = false, titleHtml = '' } = {}) {
 // ── Captura rápida ─────────────────────────────────────────────────────
 export function openBacklogCapture({ onRequireAuth } = {}) {
   ensureCss();
-  const { body, close } = buildOverlay({ titleHtml: '💡 Capturar ideia' });
+  const { body, close } = buildOverlay({ titleHtml: '💡 Capturar implementação' });
 
   body.innerHTML = `
     <div class="bk-status" hidden></div>
     <label class="bk-field">
-      <span>Título</span>
-      <input id="bk-title" type="text" maxlength="120" placeholder="ex: alertar quando o passaporte vence" autofocus />
+      <span>Por quê</span>
+      <textarea id="bk-porque" maxlength="600" placeholder="que dor resolve, ou que objetivo atende? se não souber, talvez seja ruído." autofocus></textarea>
     </label>
     <label class="bk-field">
-      <span>Descrição</span>
-      <textarea id="bk-desc" maxlength="800" placeholder="contexto, o porquê, links…"></textarea>
+      <span>O quê</span>
+      <input id="bk-title" type="text" maxlength="120" placeholder="o item concreto: ex. tela de histórico" />
+    </label>
+    <label class="bk-field">
+      <span>Como</span>
+      <input id="bk-como" type="text" maxlength="200" placeholder="a abordagem (opcional)" />
     </label>
     <div class="bk-row">
       <label class="bk-field">
@@ -177,6 +181,24 @@ export function openBacklogCapture({ onRequireAuth } = {}) {
           ${BACKLOG_TYPES.map((t) => `<option value="${t}">${esc(TYPE_LABEL[t] || t)}</option>`).join('')}
         </select>
       </label>
+      <label class="bk-field">
+        <span>Impacto</span>
+        <select id="bk-impacto">
+          <option value="alto">alto</option>
+          <option value="medio" selected>médio</option>
+          <option value="baixo">baixo</option>
+        </select>
+      </label>
+      <label class="bk-field">
+        <span>Esforço</span>
+        <select id="bk-esforco">
+          <option value="alto">alto</option>
+          <option value="medio" selected>médio</option>
+          <option value="baixo">baixo</option>
+        </select>
+      </label>
+    </div>
+    <div class="bk-row">
       <label class="bk-field">
         <span>Área</span>
         <input id="bk-area" type="text" list="bk-areas" placeholder="ex: media" />
@@ -187,9 +209,13 @@ export function openBacklogCapture({ onRequireAuth } = {}) {
         <input id="bk-priority" type="number" min="1" step="1" placeholder="(sem)" />
       </label>
     </div>
+    <label class="bk-field">
+      <span>Detalhes / links</span>
+      <textarea id="bk-desc" maxlength="800" placeholder="contexto extra, links… (opcional)"></textarea>
+    </label>
     <div class="bk-actions">
       <button type="button" id="bk-goto-view" class="bk-secondary">📋 Ver roadmap</button>
-      <button type="button" id="bk-save" class="bk-cta">Salvar ideia</button>
+      <button type="button" id="bk-save" class="bk-cta">Salvar</button>
     </div>
   `;
 
@@ -206,14 +232,20 @@ export function openBacklogCapture({ onRequireAuth } = {}) {
   });
 
   body.querySelector('#bk-save').addEventListener('click', async () => {
+    const porque = body.querySelector('#bk-porque').value.trim();
+    if (!porque) return setStatus('O "Por quê" é obrigatório. Se você não consegue escrevê-lo em uma linha, provavelmente é ruído.', 'err');
     const title = body.querySelector('#bk-title').value.trim();
-    if (!title) return setStatus('Título é obrigatório.', 'err');
+    if (!title) return setStatus('O "O quê" é obrigatório.', 'err');
 
     const priRaw = body.querySelector('#bk-priority').value.trim();
     const priority = priRaw ? Number(priRaw) : null;
     const item = {
       id: newId(title),
       title,
+      porque,
+      como: body.querySelector('#bk-como').value.trim(),
+      impacto: body.querySelector('#bk-impacto').value,
+      esforco: body.querySelector('#bk-esforco').value,
       description: body.querySelector('#bk-desc').value.trim(),
       type: body.querySelector('#bk-type').value,
       area: body.querySelector('#bk-area').value.trim() || 'geral',
@@ -225,8 +257,8 @@ export function openBacklogCapture({ onRequireAuth } = {}) {
 
     if (!settings.isUnlocked()) {
       setStatus(
-        'PAT bloqueado — desbloqueie para gravar a ideia. ' +
-        '<button type="button" id="bk-cfg" class="bk-secondary" style="margin-left:8px">⚙ Configurar PAT</button>',
+        'GitHub não conectado — conecte para gravar a ideia. ' +
+        '<button type="button" id="bk-cfg" class="bk-secondary" style="margin-left:8px">⚙ Conectar GitHub</button>',
         'err',
       );
       body.querySelector('#bk-cfg')?.addEventListener('click', () => {
@@ -246,6 +278,8 @@ export function openBacklogCapture({ onRequireAuth } = {}) {
         message: `feat(backlog): captura "${item.title}" (${item.type})`,
       });
       setStatus(`Ideia "${esc(item.title)}" gravada no backlog.json ✔`, 'ok');
+      body.querySelector('#bk-porque').value = '';
+      body.querySelector('#bk-como').value = '';
       body.querySelector('#bk-title').value = '';
       body.querySelector('#bk-desc').value = '';
       body.querySelector('#bk-priority').value = '';
