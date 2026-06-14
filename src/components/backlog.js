@@ -445,7 +445,7 @@ export function mountIdeasButton({ onRequireAuth } = {}) {
   btn.className = 'bk-fab';
   btn.title = 'Capturar uma ideia / correção / implementação e ver o roadmap.';
   btn.setAttribute('aria-label', 'Capturar ideia e ver roadmap');
-  btn.innerHTML = '💡 Ideias';
+  btn.innerHTML = '💡 Implementações';
   btn.addEventListener('click', () => openBacklogCapture({ onRequireAuth }));
   document.body.appendChild(btn);
 }

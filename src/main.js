@@ -22,7 +22,7 @@ import { openInbox } from './components/inbox.js';
 import { openStatementImport } from './components/statement-import.js';
 import { openPhotosPicker } from './components/photos-picker.js';
 import { openMemoryMode } from './components/memory-mode.js';
-import { mountIdeasButton, openBacklogCapture, openBacklogView } from './components/backlog.js';
+import { openBacklogCapture, openBacklogView } from './components/backlog.js';
 import { openCloudinaryPicker } from './components/cloudinary-picker.js';
 import * as dates from './core/dates.js';
 import { renderHeatmap, computeYearData } from './components/heatmap.js';
@@ -429,10 +429,10 @@ const FAB_BADGES = [
     onClick: () => openHelpModal(),
   },
   {
-    id: 'v2-pat-badge', // texto/cor mudam dinamicamente via updateBadge()
+    id: 'v2-pat-badge', // texto/cor mudam via updateBadge(). Rótulo "GitHub" (token de publicação); NÃO confundir com o perfil PAT comportamental.
     emoji: '⚙',
-    label: 'Configurar PAT',
-    tooltip: 'Configurar GitHub PAT para commitar viagens automaticamente. Cifrado AES-256.',
+    label: 'GitHub',
+    tooltip: 'Conectar o GitHub (token) para publicar viagens automaticamente. Cifrado AES-256.',
     color: '#475569',
     onClick: () => openPATModal(),
   },
@@ -532,7 +532,18 @@ function injectFloatingButton() {
     display:flex;flex-direction:column;gap:6px;align-items:flex-end;
     max-width:280px;`;
 
-  for (const b of FAB_BADGES) {
+  // ── Coluna em 2 camadas (Fase 1) ───────────────────────────────────────
+  // "Para mim" (o que eu uso) sempre visível; "Motor" (tubulação) recolhido.
+  // Ids e handlers dos badges são preservados — updateBadge()/updateAnthropicBadge()
+  // continuam mirando v2-pat-badge / v2-anthropic-badge.
+  const byId = Object.fromEntries(FAB_BADGES.map((b) => [b.id, b]));
+  const GROUPS = {
+    mim: ['v2-memory-badge', 'v2-heatmap-badge', 'v2-decision-badge', 'v2-price-badge'],
+    motor: ['v2-pat-badge', 'v2-anthropic-badge', 'v2-be-badge', 'v2-inbox-badge',
+      'v2-statement-badge', 'v2-photos-badge', 'v2-cloudinary-badge'],
+  };
+
+  const mkBadge = (b) => {
     const node = document.createElement('button');
     node.type = 'button';
     node.id = b.id;
@@ -541,10 +552,65 @@ function injectFloatingButton() {
     node.style.cssText = `font:600 11px Inter,system-ui,sans-serif;color:#fff;
       background:${b.color};padding:5px 11px;border:0;border-radius:999px;
       cursor:pointer;box-shadow:0 4px 10px -2px rgba(15,23,42,.3);
-      display:flex;align-items:center;gap:5px;`;
+      display:flex;align-items:center;gap:5px;white-space:nowrap;`;
     node.textContent = `${b.emoji} ${b.label}`;
     node.addEventListener('click', b.onClick);
-    stack.appendChild(node);
+    return node;
+  };
+
+  const grpLabel = (txt) => {
+    const el = document.createElement('div');
+    el.textContent = txt;
+    el.style.cssText = `font:600 9px Inter,system-ui,sans-serif;letter-spacing:.08em;
+      text-transform:uppercase;color:#94a3b8;margin:6px 4px 0;align-self:flex-end;`;
+    return el;
+  };
+
+  // Camada "Para mim": Implementações no topo + ferramentas pessoais.
+  stack.appendChild(grpLabel('Para mim'));
+  const implBtn = document.createElement('button');
+  implBtn.type = 'button';
+  implBtn.id = 'v2-impl-badge';
+  implBtn.title = 'Capturar uma ideia, melhoria ou bug e ver o pipeline de implementações.';
+  implBtn.setAttribute('aria-label', 'Capturar implementação e ver pipeline');
+  implBtn.style.cssText = `font:600 11px Inter,system-ui,sans-serif;color:#fff;
+    background:#7c3aed;padding:5px 11px;border:0;border-radius:999px;cursor:pointer;
+    box-shadow:0 4px 10px -2px rgba(15,23,42,.3);display:flex;align-items:center;gap:5px;`;
+  implBtn.textContent = '💡 Implementações';
+  implBtn.addEventListener('click', () => openBacklogCapture({ onRequireAuth: openPATModal }));
+  stack.appendChild(implBtn);
+  for (const id of GROUPS.mim) if (byId[id]) stack.appendChild(mkBadge(byId[id]));
+
+  // Camada "Motor": integrações/configuração, recolhidas por padrão.
+  const motorWrap = document.createElement('div');
+  motorWrap.style.cssText = `display:none;flex-direction:column;gap:6px;align-items:flex-end;`;
+  for (const id of GROUPS.motor) if (byId[id]) motorWrap.appendChild(mkBadge(byId[id]));
+
+  const motorToggle = document.createElement('button');
+  motorToggle.type = 'button';
+  motorToggle.id = 'v2-motor-toggle';
+  motorToggle.title = 'Integrações e configuração: GitHub, Anthropic, Gmail, importações, mídia.';
+  motorToggle.setAttribute('aria-expanded', 'false');
+  motorToggle.style.cssText = `font:600 11px Inter,system-ui,sans-serif;color:#e2e8f0;
+    background:#334155;padding:5px 11px;border:0;border-radius:999px;cursor:pointer;
+    box-shadow:0 4px 10px -2px rgba(15,23,42,.3);display:flex;align-items:center;gap:5px;margin-top:8px;`;
+  const motorLabel = () => `⚙ Motor (${GROUPS.motor.length}) ${motorWrap.style.display === 'none' ? '▸' : '▾'}`;
+  motorToggle.textContent = motorLabel();
+  motorToggle.addEventListener('click', () => {
+    const open = motorWrap.style.display === 'none';
+    motorWrap.style.display = open ? 'flex' : 'none';
+    motorToggle.setAttribute('aria-expanded', String(open));
+    motorToggle.textContent = motorLabel();
+  });
+  stack.appendChild(grpLabel('Motor'));
+  stack.appendChild(motorToggle);
+  stack.appendChild(motorWrap);
+
+  // Ajuda (discreta, no rodapé da coluna).
+  if (byId['v2-help-badge']) {
+    const help = mkBadge(byId['v2-help-badge']);
+    help.style.marginTop = '8px';
+    stack.appendChild(help);
   }
 
   // CTA principal — fica embaixo, maior e destacado
@@ -571,16 +637,16 @@ function updateBadge() {
   const badge = document.getElementById('v2-pat-badge');
   if (!badge) return;
   if (settings.isUnlocked()) {
-    badge.textContent = '🔓 PAT ativo';
+    badge.textContent = '🔓 GitHub conectado';
     badge.title = 'Token desbloqueado. Cada salvar gera commit automático no GitHub.';
     badge.style.background = '#16a34a';
   } else if (settings.isConfigured()) {
-    badge.textContent = '🔄 PAT';
-    badge.title = 'PAT cifrado neste aparelho — decifrando automaticamente (sem senha).';
+    badge.textContent = '🔄 GitHub';
+    badge.title = 'Token cifrado neste aparelho, decifrando automaticamente (sem senha).';
     badge.style.background = '#ca8a04';
   } else {
-    badge.textContent = '⚙ Configurar PAT';
-    badge.title = 'Configurar GitHub PAT para commitar viagens automaticamente. Cifrado AES-256-GCM, lembrado neste aparelho.';
+    badge.textContent = '⚙ Conectar GitHub';
+    badge.title = 'Conectar o GitHub (token) para commitar viagens automaticamente. Cifrado AES-256-GCM, lembrado neste aparelho.';
     badge.style.background = '#475569';
   }
 }
@@ -769,7 +835,7 @@ function openHelpModal() {
         <h3 style="margin:0 0 6px;font-size:14px;">🚀 Por onde começar</h3>
         <ol style="margin:0;padding-left:18px;font-size:13px;line-height:1.6;">
           <li><strong>Quer só ver as viagens?</strong> Você já está aí — mapa, timeline e cards funcionam sem login.</li>
-          <li><strong>Quer adicionar/editar viagem?</strong> Clique <code>⚙ Configurar PAT</code> → cole um GitHub PAT com escopo <code>contents:write</code> (sem senha — fica lembrado neste aparelho). Depois clique <code>+ Nova viagem</code>.</li>
+          <li><strong>Quer adicionar/editar viagem?</strong> Clique <code>⚙ Conectar GitHub</code> (no Motor) e cole um GitHub PAT com escopo <code>contents:write</code> (sem senha, fica lembrado neste aparelho). Depois clique <code>+ Nova viagem</code>.</li>
           <li><strong>Quer Gmail + agentes Claude?</strong> Configure também o <code>🛠 Backend & Gmail</code> (precisa do projeto Supabase deployado — ver <code>docs/DEPLOY.md</code>).</li>
         </ol>
       </section>
@@ -791,7 +857,7 @@ function openHelpModal() {
         <h3 style="margin:0 0 6px;font-size:14px;">🗺 O que cada botão do canto faz</h3>
         <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:13px;">
           <div>❓</div><div>Este painel de ajuda.</div>
-          <div>⚙/🔒/🔓</div><div>Gerenciar PAT do GitHub (verde = ativo).</div>
+          <div>⚙/🔒/🔓</div><div>Conectar o GitHub, token de publicação (verde = conectado).</div>
           <div>🛠</div><div>Configurar Supabase + magic link + Conectar Gmail.</div>
           <div>📥</div><div>Bandeja de reservas extraídas do Gmail aguardando aprovação.</div>
           <div>📅</div><div>Heatmap anual: 365 dias coloridos por status (em casa/nacional/intl).</div>
@@ -845,8 +911,9 @@ function bootstrapV2() {
   // Lembrar neste aparelho: auto-decifra o PAT no load (sem senha) e atualiza o
   // selo quando o token fica disponível. Falha de decifra → trata como ausente.
   settings.init().then(() => updateBadge()).catch((e) => console.warn('[v2] settings.init falhou:', e));
-  // Frente D — botão fixo "💡 Ideias" (borda direita, distinto do FAB stack).
-  mountIdeasButton({ onRequireAuth: openPATModal });
+  // Frente D — "Implementações" agora vive na coluna unificada (camada "Para mim").
+  // O FAB lateral duplicado fica desativado. Reversível: reabilitar a linha abaixo.
+  // mountIdeasButton({ onRequireAuth: openPATModal });
   // Radar · Etapa B — selos de prontidão nos cards futuros (aditivo, só leitura).
   try {
     initReadinessBadges();
