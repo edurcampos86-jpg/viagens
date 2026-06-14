@@ -18,6 +18,7 @@ import {
   upsertBacklogItem,
   BACKLOG_TYPES,
 } from '../core/backlog-api.js';
+import { enqueueLocal, listLocal, removeLocal } from '../core/backlog-local.js';
 
 const AREAS = ['infra', 'design', 'media', 'memoria', 'admin', 'integracao', 'processo'];
 const TYPE_LABEL = { ideia: '💡 ideia', correcao: '🐞 correção', implementacao: '🛠 implementação' };
@@ -256,15 +257,25 @@ export function openBacklogCapture({ onRequireAuth } = {}) {
     };
 
     if (!settings.isUnlocked()) {
-      setStatus(
-        'GitHub não conectado — conecte para gravar a ideia. ' +
-        '<button type="button" id="bk-cfg" class="bk-secondary" style="margin-left:8px">⚙ Conectar GitHub</button>',
-        'err',
-      );
-      body.querySelector('#bk-cfg')?.addEventListener('click', () => {
-        if (typeof onRequireAuth === 'function') onRequireAuth();
-        else window.viagensV2?.openPATModal?.();
-      });
+      try {
+        await enqueueLocal(item);
+        setStatus(
+          'Salvo localmente neste aparelho ✔ Será publicado quando você conectar o GitHub. ' +
+          '<button type="button" id="bk-cfg" class="bk-secondary" style="margin-left:8px">⚙ Conectar GitHub</button>',
+          'ok',
+        );
+        body.querySelector('#bk-cfg')?.addEventListener('click', () => {
+          if (typeof onRequireAuth === 'function') onRequireAuth();
+          else window.viagensV2?.openPATModal?.();
+        });
+        body.querySelector('#bk-porque').value = '';
+        body.querySelector('#bk-como').value = '';
+        body.querySelector('#bk-title').value = '';
+        body.querySelector('#bk-desc').value = '';
+        body.querySelector('#bk-priority').value = '';
+      } catch (e) {
+        setStatus(`Falha ao salvar localmente: ${esc(e.message)}`, 'err');
+      }
       return;
     }
 
@@ -309,7 +320,7 @@ export function openBacklogView({ onRequireAuth } = {}) {
   ensureCss();
   const { body, close } = buildOverlay({ wide: true, titleHtml: '🗺 Backlog / Roadmap' });
 
-  const state = { content: { version: 1, items: [] }, sha: null, busy: false, sortMode: 'prioridade' };
+  const state = { content: { version: 1, items: [] }, sha: null, busy: false, sortMode: 'prioridade', localPending: [] };
 
   const statusBox = document.createElement('div');
   statusBox.className = 'bk-status';
@@ -420,6 +431,7 @@ export function openBacklogView({ onRequireAuth } = {}) {
     const active = state.sortMode === 'ganho' ? rankByGanho(items) : rankActive(items);
     const done = items.filter((i) => i.status === 'feito');
     const unlocked = settings.isUnlocked();
+    const pend = state.localPending || [];
 
     body.innerHTML = '';
     body.appendChild(statusBox);
@@ -436,6 +448,12 @@ export function openBacklogView({ onRequireAuth } = {}) {
           <button type="button" id="bk-new" class="bk-cta">💡 Nova ideia</button>
         </span>
       </div>
+      ${pend.length ? `<div class="bk-note" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span>⏳ ${pend.length} ideia(s) salva(s) só neste aparelho.</span>
+        ${unlocked
+          ? '<button type="button" id="bk-pub-local" class="bk-cta">Publicar agora</button>'
+          : '<span>Conecte o GitHub para publicar.</span>'}
+      </div>` : ''}
       <div>
         <p class="bk-section-title">🗺 Roadmap — ativos (priorizáveis)</p>
         <div class="bk-list" id="bk-active">
@@ -477,6 +495,7 @@ export function openBacklogView({ onRequireAuth } = {}) {
       state.sortMode = state.sortMode === 'ganho' ? 'prioridade' : 'ganho';
       render();
     });
+    wrap.querySelector('#bk-pub-local')?.addEventListener('click', () => publishLocal());
   }
 
   // Reordena os ativos e reescreve prioridades sequenciais 1..n; depois persiste.
@@ -533,12 +552,47 @@ export function openBacklogView({ onRequireAuth } = {}) {
     }
   }
 
+  async function publishLocal() {
+    if (state.busy) return;
+    if (!settings.isUnlocked()) {
+      setStatus('Conecte o GitHub para publicar as ideias locais.', 'err');
+      return;
+    }
+    const pend = state.localPending || [];
+    if (!pend.length) return;
+    state.busy = true;
+    setStatus(`Publicando ${pend.length} ideia(s) local(is)…`);
+    try {
+      for (const rec of pend) {
+        await upsertBacklogItem({
+          token: settings.getToken(),
+          item: rec.item,
+          message: `feat(backlog): publica ideia local "${rec.item.title}"`,
+        });
+        await removeLocal(rec.lid);
+      }
+      const fresh = await loadBacklog();
+      state.content = fresh.content && Array.isArray(fresh.content.items) ? fresh.content : { version: 1, items: [] };
+      state.sha = fresh.sha;
+      state.localPending = await listLocal().catch(() => []);
+      setStatus('Ideias locais publicadas ✔', 'ok');
+      render();
+    } catch (e) {
+      state.localPending = await listLocal().catch(() => state.localPending);
+      setStatus(`Falha ao publicar: ${esc(e.message)}`, 'err');
+      render();
+    } finally {
+      state.busy = false;
+    }
+  }
+
   (async () => {
     body.innerHTML = '<div class="bk-note">Carregando backlog…</div>';
     try {
       const { content, sha } = await loadBacklog();
       state.content = content && Array.isArray(content.items) ? content : { version: 1, items: [] };
       state.sha = sha;
+      state.localPending = await listLocal().catch(() => []);
       render();
     } catch (e) {
       body.innerHTML = `<div class="bk-status bk-err">Erro: ${esc(e.message)}</div>`;
