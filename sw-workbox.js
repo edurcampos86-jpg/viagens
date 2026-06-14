@@ -24,7 +24,7 @@ if (!self.workbox) {
   // Bump VERSION em cada deploy que muda assets/* ou index.html — Workbox
   // entao expira a entrada precacheada antiga e baixa a nova. Faz o papel
   // do cache-busting via query string sem precisar de build.
-  const VERSION = 'viagens-v3-pwa-22';
+  const VERSION = 'viagens-v3-pwa-25';
 
   // Precache do app shell completo (HTML + CSS + JS criticos com revision).
   // URLs relativas ao scope do SW (que é /viagens/ no GitHub Pages, ou / no

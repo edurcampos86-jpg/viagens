@@ -18,6 +18,7 @@ import {
   upsertBacklogItem,
   BACKLOG_TYPES,
 } from '../core/backlog-api.js';
+import { enqueueLocal, listLocal, removeLocal } from '../core/backlog-local.js';
 
 const AREAS = ['infra', 'design', 'media', 'memoria', 'admin', 'integracao', 'processo'];
 const TYPE_LABEL = { ideia: '💡 ideia', correcao: '🐞 correção', implementacao: '🛠 implementação' };
@@ -158,17 +159,21 @@ function buildOverlay({ wide = false, titleHtml = '' } = {}) {
 // ── Captura rápida ─────────────────────────────────────────────────────
 export function openBacklogCapture({ onRequireAuth } = {}) {
   ensureCss();
-  const { body, close } = buildOverlay({ titleHtml: '💡 Capturar ideia' });
+  const { body, close } = buildOverlay({ titleHtml: '💡 Capturar implementação' });
 
   body.innerHTML = `
     <div class="bk-status" hidden></div>
     <label class="bk-field">
-      <span>Título</span>
-      <input id="bk-title" type="text" maxlength="120" placeholder="ex: alertar quando o passaporte vence" autofocus />
+      <span>Por quê</span>
+      <textarea id="bk-porque" maxlength="600" placeholder="que dor resolve, ou que objetivo atende? se não souber, talvez seja ruído." autofocus></textarea>
     </label>
     <label class="bk-field">
-      <span>Descrição</span>
-      <textarea id="bk-desc" maxlength="800" placeholder="contexto, o porquê, links…"></textarea>
+      <span>O quê</span>
+      <input id="bk-title" type="text" maxlength="120" placeholder="o item concreto: ex. tela de histórico" />
+    </label>
+    <label class="bk-field">
+      <span>Como</span>
+      <input id="bk-como" type="text" maxlength="200" placeholder="a abordagem (opcional)" />
     </label>
     <div class="bk-row">
       <label class="bk-field">
@@ -177,6 +182,24 @@ export function openBacklogCapture({ onRequireAuth } = {}) {
           ${BACKLOG_TYPES.map((t) => `<option value="${t}">${esc(TYPE_LABEL[t] || t)}</option>`).join('')}
         </select>
       </label>
+      <label class="bk-field">
+        <span>Impacto</span>
+        <select id="bk-impacto">
+          <option value="alto">alto</option>
+          <option value="medio" selected>médio</option>
+          <option value="baixo">baixo</option>
+        </select>
+      </label>
+      <label class="bk-field">
+        <span>Esforço</span>
+        <select id="bk-esforco">
+          <option value="alto">alto</option>
+          <option value="medio" selected>médio</option>
+          <option value="baixo">baixo</option>
+        </select>
+      </label>
+    </div>
+    <div class="bk-row">
       <label class="bk-field">
         <span>Área</span>
         <input id="bk-area" type="text" list="bk-areas" placeholder="ex: media" />
@@ -187,9 +210,13 @@ export function openBacklogCapture({ onRequireAuth } = {}) {
         <input id="bk-priority" type="number" min="1" step="1" placeholder="(sem)" />
       </label>
     </div>
+    <label class="bk-field">
+      <span>Detalhes / links</span>
+      <textarea id="bk-desc" maxlength="800" placeholder="contexto extra, links… (opcional)"></textarea>
+    </label>
     <div class="bk-actions">
       <button type="button" id="bk-goto-view" class="bk-secondary">📋 Ver roadmap</button>
-      <button type="button" id="bk-save" class="bk-cta">Salvar ideia</button>
+      <button type="button" id="bk-save" class="bk-cta">Salvar</button>
     </div>
   `;
 
@@ -206,14 +233,20 @@ export function openBacklogCapture({ onRequireAuth } = {}) {
   });
 
   body.querySelector('#bk-save').addEventListener('click', async () => {
+    const porque = body.querySelector('#bk-porque').value.trim();
+    if (!porque) return setStatus('O "Por quê" é obrigatório. Se você não consegue escrevê-lo em uma linha, provavelmente é ruído.', 'err');
     const title = body.querySelector('#bk-title').value.trim();
-    if (!title) return setStatus('Título é obrigatório.', 'err');
+    if (!title) return setStatus('O "O quê" é obrigatório.', 'err');
 
     const priRaw = body.querySelector('#bk-priority').value.trim();
     const priority = priRaw ? Number(priRaw) : null;
     const item = {
       id: newId(title),
       title,
+      porque,
+      como: body.querySelector('#bk-como').value.trim(),
+      impacto: body.querySelector('#bk-impacto').value,
+      esforco: body.querySelector('#bk-esforco').value,
       description: body.querySelector('#bk-desc').value.trim(),
       type: body.querySelector('#bk-type').value,
       area: body.querySelector('#bk-area').value.trim() || 'geral',
@@ -224,15 +257,25 @@ export function openBacklogCapture({ onRequireAuth } = {}) {
     };
 
     if (!settings.isUnlocked()) {
-      setStatus(
-        'PAT bloqueado — desbloqueie para gravar a ideia. ' +
-        '<button type="button" id="bk-cfg" class="bk-secondary" style="margin-left:8px">⚙ Configurar PAT</button>',
-        'err',
-      );
-      body.querySelector('#bk-cfg')?.addEventListener('click', () => {
-        if (typeof onRequireAuth === 'function') onRequireAuth();
-        else window.viagensV2?.openPATModal?.();
-      });
+      try {
+        await enqueueLocal(item);
+        setStatus(
+          'Salvo localmente neste aparelho ✔ Será publicado quando você conectar o GitHub. ' +
+          '<button type="button" id="bk-cfg" class="bk-secondary" style="margin-left:8px">⚙ Conectar GitHub</button>',
+          'ok',
+        );
+        body.querySelector('#bk-cfg')?.addEventListener('click', () => {
+          if (typeof onRequireAuth === 'function') onRequireAuth();
+          else window.viagensV2?.openPATModal?.();
+        });
+        body.querySelector('#bk-porque').value = '';
+        body.querySelector('#bk-como').value = '';
+        body.querySelector('#bk-title').value = '';
+        body.querySelector('#bk-desc').value = '';
+        body.querySelector('#bk-priority').value = '';
+      } catch (e) {
+        setStatus(`Falha ao salvar localmente: ${esc(e.message)}`, 'err');
+      }
       return;
     }
 
@@ -246,6 +289,8 @@ export function openBacklogCapture({ onRequireAuth } = {}) {
         message: `feat(backlog): captura "${item.title}" (${item.type})`,
       });
       setStatus(`Ideia "${esc(item.title)}" gravada no backlog.json ✔`, 'ok');
+      body.querySelector('#bk-porque').value = '';
+      body.querySelector('#bk-como').value = '';
       body.querySelector('#bk-title').value = '';
       body.querySelector('#bk-desc').value = '';
       body.querySelector('#bk-priority').value = '';
@@ -275,7 +320,7 @@ export function openBacklogView({ onRequireAuth } = {}) {
   ensureCss();
   const { body, close } = buildOverlay({ wide: true, titleHtml: '🗺 Backlog / Roadmap' });
 
-  const state = { content: { version: 1, items: [] }, sha: null, busy: false };
+  const state = { content: { version: 1, items: [] }, sha: null, busy: false, sortMode: 'prioridade', localPending: [] };
 
   const statusBox = document.createElement('div');
   statusBox.className = 'bk-status';
@@ -305,19 +350,88 @@ export function openBacklogView({ onRequireAuth } = {}) {
             </select>`
           : statusBadge}
       </div>
+      ${it.porque ? `<div class="bk-item-desc"><strong>Por quê:</strong> ${esc(it.porque)}</div>` : ''}
       ${it.description ? `<div class="bk-item-desc">${esc(it.description)}</div>` : ''}
       <div class="bk-tags">
         <span class="bk-badge">${esc(TYPE_LABEL[it.type] || it.type)}</span>
         <span class="bk-badge">${esc(it.area || 'geral')}</span>
+        ${it.impacto ? `<span class="bk-badge">impacto ${esc(it.impacto)}</span>` : ''}
+        ${it.esforco ? `<span class="bk-badge">esforço ${esc(it.esforco)}</span>` : ''}
+        ${isQuickWin(it) ? '<span class="bk-badge bk-b-quickwin">⚡ ganho rápido</span>' : ''}
+        <button type="button" class="bk-secondary bk-gen" data-gen="${esc(it.id)}" style="margin-left:auto">✨ Gerar CREATE</button>
       </div>
     </div>`;
   }
 
+  const IMP_W = { alto: 3, medio: 2, baixo: 1 };
+  const ESF_W = { alto: 3, medio: 2, baixo: 1 };
+  const ganhoScore = (it) => (IMP_W[it.impacto] || 0) - (ESF_W[it.esforco] || 0);
+  const isQuickWin = (it) => it.impacto === 'alto' && it.esforco === 'baixo';
+  const itemById = (id) => (state.content.items || []).find((x) => x.id === id);
+
+  function rankByGanho(items) {
+    return items
+      .filter((i) => i.status !== 'feito')
+      .sort((a, b) => {
+        const ga = ganhoScore(a);
+        const gb = ganhoScore(b);
+        if (ga !== gb) return gb - ga;
+        const pa = a.priority == null ? Infinity : a.priority;
+        const pb = b.priority == null ? Infinity : b.priority;
+        if (pa !== pb) return pa - pb;
+        return String(a.created || '').localeCompare(String(b.created || ''));
+      });
+  }
+
+  function gerarCreate(it) {
+    if (!it) return;
+    const prompt = [
+      '[C] Context',
+      'Projeto Vida & Carreira (PWA pessoal do Eduardo, repo github.com/edurcampos86-jpg/viagens).',
+      '',
+      '[R] Request',
+      'Você atuará como engenheiro do projeto, me ajudando a implementar este item do backlog.',
+      '',
+      '[E] Examples',
+      'Sem exemplo de referência.',
+      '',
+      '[A] Audience',
+      'Eu (Eduardo), dono do projeto.',
+      '',
+      '[T] Task',
+      `${it.title}.`,
+      `Por quê: ${it.porque || '(não informado)'}.`,
+      `Como: ${it.como || '(a definir)'}.`,
+      `Tipo: ${TYPE_LABEL[it.type] || it.type}. Impacto: ${it.impacto || '?'}. Esforço: ${it.esforco || '?'}.`,
+      '',
+      '[E] Extra Details',
+      'Caminho seguro e reversível: branch + PR, sem merge sem revisão. Bump de service worker se mexer em src/*. Sem travessão.',
+    ].join('\n');
+
+    const sub = buildOverlay({ titleHtml: '✨ Prompt CREATE' });
+    sub.body.innerHTML = `
+      <label class="bk-field">
+        <span>Cole onde quiser executar (Claude Chat, Cowork, Code)</span>
+        <textarea id="bk-create-out" rows="14" readonly style="font-family:var(--vc-font-mono,monospace);font-size:12px"></textarea>
+      </label>
+      <div class="bk-actions">
+        <button type="button" id="bk-create-copy" class="bk-cta">📋 Copiar</button>
+      </div>`;
+    const ta = sub.body.querySelector('#bk-create-out');
+    ta.value = prompt;
+    sub.body.querySelector('#bk-create-copy').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(prompt); }
+      catch { ta.select(); document.execCommand('copy'); }
+      sub.body.querySelector('#bk-create-copy').textContent = '✔ Copiado';
+    });
+  }
+
   function render() {
     const items = Array.isArray(state.content.items) ? state.content.items : [];
-    const active = rankActive(items);
+    const active = state.sortMode === 'ganho' ? rankByGanho(items) : rankActive(items);
     const done = items.filter((i) => i.status === 'feito');
     const unlocked = settings.isUnlocked();
+    const pend = state.localPending || [];
 
     body.innerHTML = '';
     body.appendChild(statusBox);
@@ -328,9 +442,18 @@ export function openBacklogView({ onRequireAuth } = {}) {
     wrap.innerHTML = `
       <div class="bk-actions" style="justify-content:space-between">
         <span class="bk-note">${active.length} ativo(s) · ${done.length} concluído(s)
-          ${unlocked ? '' : '· <strong>somente leitura</strong> (PAT bloqueado)'}</span>
-        <button type="button" id="bk-new" class="bk-cta">💡 Nova ideia</button>
+          ${unlocked ? '' : '· <strong>somente leitura</strong> (GitHub não conectado)'}</span>
+        <span>
+          <button type="button" id="bk-sort" class="bk-secondary">↕ Ordem: ${state.sortMode === 'ganho' ? 'ganho rápido' : 'prioridade'}</button>
+          <button type="button" id="bk-new" class="bk-cta">💡 Nova ideia</button>
+        </span>
       </div>
+      ${pend.length ? `<div class="bk-note" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span>⏳ ${pend.length} ideia(s) salva(s) só neste aparelho.</span>
+        ${unlocked
+          ? '<button type="button" id="bk-pub-local" class="bk-cta">Publicar agora</button>'
+          : '<span>Conecte o GitHub para publicar.</span>'}
+      </div>` : ''}
       <div>
         <p class="bk-section-title">🗺 Roadmap — ativos (priorizáveis)</p>
         <div class="bk-list" id="bk-active">
@@ -347,8 +470,8 @@ export function openBacklogView({ onRequireAuth } = {}) {
             : '<div class="bk-empty">Sem itens concluídos.</div>'}
         </div>
       </div>
-      ${unlocked ? '' : `<div class="bk-note">Desbloqueie o PAT (badge ⚙) para priorizar e mudar status.
-        <button type="button" id="bk-cfg2" class="bk-secondary" style="margin-left:8px">⚙ Configurar PAT</button></div>`}
+      ${unlocked ? '' : `<div class="bk-note">Conecte o GitHub (badge ⚙) para priorizar e mudar status.
+        <button type="button" id="bk-cfg2" class="bk-secondary" style="margin-left:8px">⚙ Conectar GitHub</button></div>`}
     `;
     body.appendChild(wrap);
 
@@ -366,6 +489,13 @@ export function openBacklogView({ onRequireAuth } = {}) {
       el.addEventListener('click', () => move(el.getAttribute('data-down'), +1)));
     wrap.querySelectorAll('[data-status]').forEach((el) =>
       el.addEventListener('change', () => changeStatus(el.getAttribute('data-status'), el.value)));
+    wrap.querySelectorAll('[data-gen]').forEach((el) =>
+      el.addEventListener('click', () => gerarCreate(itemById(el.getAttribute('data-gen')))));
+    wrap.querySelector('#bk-sort')?.addEventListener('click', () => {
+      state.sortMode = state.sortMode === 'ganho' ? 'prioridade' : 'ganho';
+      render();
+    });
+    wrap.querySelector('#bk-pub-local')?.addEventListener('click', () => publishLocal());
   }
 
   // Reordena os ativos e reescreve prioridades sequenciais 1..n; depois persiste.
@@ -397,7 +527,7 @@ export function openBacklogView({ onRequireAuth } = {}) {
 
   async function persist(message) {
     if (!settings.isUnlocked()) {
-      setStatus('PAT bloqueado — desbloqueie para priorizar.', 'err');
+      setStatus('GitHub não conectado, conecte para priorizar.', 'err');
       return;
     }
     state.busy = true;
@@ -422,12 +552,47 @@ export function openBacklogView({ onRequireAuth } = {}) {
     }
   }
 
+  async function publishLocal() {
+    if (state.busy) return;
+    if (!settings.isUnlocked()) {
+      setStatus('Conecte o GitHub para publicar as ideias locais.', 'err');
+      return;
+    }
+    const pend = state.localPending || [];
+    if (!pend.length) return;
+    state.busy = true;
+    setStatus(`Publicando ${pend.length} ideia(s) local(is)…`);
+    try {
+      for (const rec of pend) {
+        await upsertBacklogItem({
+          token: settings.getToken(),
+          item: rec.item,
+          message: `feat(backlog): publica ideia local "${rec.item.title}"`,
+        });
+        await removeLocal(rec.lid);
+      }
+      const fresh = await loadBacklog();
+      state.content = fresh.content && Array.isArray(fresh.content.items) ? fresh.content : { version: 1, items: [] };
+      state.sha = fresh.sha;
+      state.localPending = await listLocal().catch(() => []);
+      setStatus('Ideias locais publicadas ✔', 'ok');
+      render();
+    } catch (e) {
+      state.localPending = await listLocal().catch(() => state.localPending);
+      setStatus(`Falha ao publicar: ${esc(e.message)}`, 'err');
+      render();
+    } finally {
+      state.busy = false;
+    }
+  }
+
   (async () => {
     body.innerHTML = '<div class="bk-note">Carregando backlog…</div>';
     try {
       const { content, sha } = await loadBacklog();
       state.content = content && Array.isArray(content.items) ? content : { version: 1, items: [] };
       state.sha = sha;
+      state.localPending = await listLocal().catch(() => []);
       render();
     } catch (e) {
       body.innerHTML = `<div class="bk-status bk-err">Erro: ${esc(e.message)}</div>`;
@@ -445,7 +610,7 @@ export function mountIdeasButton({ onRequireAuth } = {}) {
   btn.className = 'bk-fab';
   btn.title = 'Capturar uma ideia / correção / implementação e ver o roadmap.';
   btn.setAttribute('aria-label', 'Capturar ideia e ver roadmap');
-  btn.innerHTML = '💡 Ideias';
+  btn.innerHTML = '💡 Implementações';
   btn.addEventListener('click', () => openBacklogCapture({ onRequireAuth }));
   document.body.appendChild(btn);
 }
