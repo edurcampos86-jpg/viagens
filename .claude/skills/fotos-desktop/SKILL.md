@@ -33,6 +33,12 @@ vivia no celular.
   Nunca `git add -A` (evita o phantom do webp e ruído de ambiente).
 
 ## Procedimento
+
+> **Interpretador Python:** use o Python 3 desta máquina. No macOS é `python3`;
+> no Windows o `python3` costuma ser um stub da Microsoft Store (sai com erro) —
+> use `py -3` (ou `python`). Onde os passos abaixo escreverem `python3`, troque
+> pelo que funciona aqui. O mesmo vale para o `venv` do passo 6 (`py -3 -m venv`).
+
 1. **Salve o JSON** colado em um arquivo temporário, ex.: `/tmp/picker.json`.
 2. **Recon + branch:** working tree limpo, `git checkout main && git pull --ff-only`.
    Crie a branch: `git checkout -b feat/fotos-<tripId>-<YYYYMMDD>`.
