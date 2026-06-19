@@ -121,6 +121,21 @@
       "priority": null,
       "created": "2026-06-13T09:30:00.000Z",
       "origin": "seed"
+    },
+    {
+      "id": "bk-ajustes-no-planejamento-de-viagem-e-orca-9681",
+      "title": "Ajustes no planejamento de viagem e orçamento.",
+      "porque": "Na tela de planejamento de viagem não está puxando automaticamente informações que já temos como: passagem comprada pela TAP, ingresso do tomorrowland, Assim como não está puxando esses custos. Poderiam ser puxados pelo e-mail.",
+      "como": "Integração com gmail",
+      "impacto": "medio",
+      "esforco": "medio",
+      "description": "https://vidacarreira.com.br/#plan/europa-tomorrowland-2026",
+      "type": "ideia",
+      "area": "infra",
+      "status": "priorizada",
+      "priority": 1,
+      "created": "2026-06-19T16:04:01.255Z",
+      "origin": "ui"
     }
   ]
 }
