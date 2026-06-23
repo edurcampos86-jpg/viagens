@@ -136,6 +136,21 @@
       "priority": 1,
       "created": "2026-06-19T16:04:01.255Z",
       "origin": "ui"
+    },
+    {
+      "id": "bk-tela-com-dashboard-no-diario-3bbc",
+      "title": "Tela com dashboard no diário.",
+      "porque": "Trazer mais clareza sobre as ferramentas apresentadas nas sessões, os dias que tiveram sessões, o meu desenvolvimento.",
+      "como": "Criar uma tela que sonolide as informações.",
+      "impacto": "alto",
+      "esforco": "medio",
+      "description": "Diário",
+      "type": "implementacao",
+      "area": "infra",
+      "status": "priorizada",
+      "priority": 1,
+      "created": "2026-06-23T13:17:48.296Z",
+      "origin": "ui"
     }
   ]
 }
