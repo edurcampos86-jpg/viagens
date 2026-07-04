@@ -3139,7 +3139,7 @@
             "status": "pendente",
             "criticidade": "alta",
             "confirmada": false,
-            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais. Varredura Gmail 04/07/2026: nenhuma reserva encontrada ➜ lacuna confirmada"
           }
         ],
         "stays": [],
@@ -3184,7 +3184,16 @@
         "tips": "A pesquisar — festa em Praia do Forte (BA). Logística a confirmar."
       },
       "bookings": {
-        "flights": [],
+        "flights": [
+          {
+            "id": "sanisland-2026-fl-001",
+            "titulo": "Voos a definir (Praia do Forte/BA)",
+            "status": "pendente",
+            "criticidade": "alta",
+            "confirmada": false,
+            "notas": "Placeholder criado na F2b do PLANO-BOOKINGS-VIVOS (trip não tinha bookings). Varredura Gmail 04/07/2026: nenhuma reserva encontrada ➜ lacuna confirmada"
+          }
+        ],
         "stays": [],
         "experiences": []
       },
@@ -3279,7 +3288,7 @@
             "status": "pendente",
             "criticidade": "alta",
             "confirmada": false,
-            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais. Varredura Gmail 04/07/2026: nenhuma reserva encontrada ➜ lacuna confirmada"
           }
         ],
         "stays": [
@@ -3289,7 +3298,7 @@
             "status": "pendente",
             "criticidade": "media",
             "confirmada": false,
-            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais. Varredura Gmail 04/07/2026: nenhuma reserva encontrada ➜ lacuna confirmada"
           }
         ],
         "experiences": []
@@ -3352,7 +3361,7 @@
             "status": "pendente",
             "criticidade": "alta",
             "confirmada": false,
-            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais. Varredura Gmail 04/07/2026: nenhuma reserva encontrada ➜ lacuna confirmada"
           }
         ],
         "stays": [
@@ -3362,7 +3371,7 @@
             "status": "pendente",
             "criticidade": "media",
             "confirmada": false,
-            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+            "notas": "Migrado retroativamente de trip.hospedagem via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais. Varredura Gmail 04/07/2026: nenhuma reserva encontrada ➜ lacuna confirmada"
           }
         ],
         "experiences": []
