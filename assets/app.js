@@ -14,6 +14,11 @@ import { getHeroGallery } from '../src/core/schema.js';
 import { getRecentMemories } from '../src/core/recent-memories.js';
 import { mountMemoryHero } from '../src/components/memory-hero.js';
 import { isEnabled } from '../src/core/flags.js';
+import {
+  computePlanBudget,
+  hasCanonicalBookings,
+  buildReservationItems,
+} from '../src/core/plan-budget.js';
 
 // Exposto pra console + handlers que vivem em outros módulos.
 // `overlay` é um module namespace selado (import * as) — copiamos para um
@@ -87,7 +92,12 @@ const TRACKED_BRANCHES = [
 
 // Labels legíveis pra cada branch+field na UI. Fallback = field cru.
 const BRANCH_FIELD_LABELS = {
-  committed: { voos: '✈ Voos', hospedagem: '🏨 Hospedagem', passeios: '🎟 Passeios', comida: '🍴 Comida' },
+  // Chaves v2 (escrita atual do widget, D2) + aliases legacy (estados salvos
+  // antes da Frente 1 do PLANO-BOOKINGS-VIVOS).
+  committed: {
+    flights: '✈ Voos', stays: '🏨 Hospedagem', experiences: '🎟 Passeios', food: '🍴 Comida', other: '✚ Outros',
+    voos: '✈ Voos', hospedagem: '🏨 Hospedagem', passeios: '🎟 Passeios', comida: '🍴 Comida', outros: '✚ Outros',
+  },
 };
 
 function labelForOverlayEdit(branch, field) {
@@ -1908,19 +1918,30 @@ function openDueEditorPopover(trip, itemId, anchor, rerender) {
 function populateReservations(node, trip) {
   const panel = node.querySelector('[data-panel="reservations"]');
   if (!panel) return;
-  const log = trip.logistics || {};
-  const defaults = [
-    { type:'flight',   label: trip.air || 'Voo', status:'researching' },
-    ...(log.hotels || []).map(h => ({ type:'hotel', label:h, status:'researching' })),
-    ...(log.activities || []).map(a => ({ type:'activity', label:a, status:'researching' }))
-  ];
-  const saved = loadTripState(trip.id).reservations || trip.reservations || defaults;
   const STATUS = {
     researching: { lbl:'🔍 Pesquisando', cls:'rs-research' },
     booked:      { lbl:'📌 Reservado',   cls:'rs-booked'   },
     paid:        { lbl:'✓ Pago',         cls:'rs-paid'     }
   };
   const ICON = { flight:'✈', hotel:'🏨', activity:'🎟', transfer:'🚖' };
+
+  // Frente 1 (PLANO-BOOKINGS-VIVOS): com bookings canônicos (ADR-001), a
+  // lista vem de bookings.{flights,stays,experiences} e o localStorage
+  // guarda SÓ o override de status por booking (nada de snapshot da lista
+  // inteira, que congelava dados novos). Sem bookings, comportamento legacy.
+  const canonical = hasCanonicalBookings(trip);
+  let saved;
+  if (canonical) {
+    saved = buildReservationItems(trip, loadTripState(trip.id).reservationsById || {});
+  } else {
+    const log = trip.logistics || {};
+    const defaults = [
+      { type:'flight',   label: trip.air || 'Voo', status:'researching' },
+      ...(log.hotels || []).map(h => ({ type:'hotel', label:h, status:'researching' })),
+      ...(log.activities || []).map(a => ({ type:'activity', label:a, status:'researching' }))
+    ];
+    saved = loadTripState(trip.id).reservations || trip.reservations || defaults;
+  }
 
   panel.innerHTML = `
     <ul class="rs-list">
@@ -1929,7 +1950,7 @@ function populateReservations(node, trip) {
           <span class="rs-icon" aria-hidden="true">${ICON[r.type] || '📌'}</span>
           <span class="rs-label">${escapeHtml(r.label)}</span>
           ${r.price ? `<span class="rs-price">${formatMoney(r.price, r.currency || 'BRL')}</span>` : ''}
-          <select class="rs-status" data-idx="${i}">
+          <select class="rs-status" data-idx="${i}"${canonical ? ` data-key="${escapeHtml(r.key)}"` : ''}>
             ${Object.entries(STATUS).map(([k, v]) =>
               `<option value="${k}"${r.status === k ? ' selected' : ''}>${v.lbl}</option>`
             ).join('')}
@@ -1937,14 +1958,20 @@ function populateReservations(node, trip) {
         </li>
       `).join('')}
     </ul>
-    <p class="rs-note">Status salvo localmente neste navegador.</p>
+    <p class="rs-note">${canonical ? 'Reservas do plano de viagem (bookings) · status salvo localmente.' : 'Status salvo localmente neste navegador.'}</p>
   `;
   panel.querySelectorAll('.rs-status').forEach(sel => {
     sel.addEventListener('change', () => {
-      const idx = +sel.dataset.idx;
-      const list = (loadTripState(trip.id).reservations) || saved;
-      list[idx] = { ...list[idx], status: sel.value };
-      saveTripState(trip.id, { reservations: list });
+      if (canonical) {
+        const byId = loadTripState(trip.id).reservationsById || {};
+        byId[sel.dataset.key] = sel.value;
+        saveTripState(trip.id, { reservationsById: byId });
+      } else {
+        const idx = +sel.dataset.idx;
+        const list = (loadTripState(trip.id).reservations) || saved;
+        list[idx] = { ...list[idx], status: sel.value };
+        saveTripState(trip.id, { reservations: list });
+      }
       populateReservations(node, trip);
     });
   });
@@ -1953,21 +1980,16 @@ function populateReservations(node, trip) {
 function populateBudget(node, trip) {
   const panel = node.querySelector('[data-panel="budget"]');
   if (!panel) return;
-  // Heurística: orçamento estimado = ~R$1.000/dia se não informado
+  // Frente 1 (PLANO-BOOKINGS-VIVOS): planejado ← budget.planned.* canônico
+  // (heurística nts×R$1.000 só como fallback); comprometido ← ajuste manual
+  // local > budget.committed > soma de bookings[*].valor (D1). Chaves v2
+  // flights/stays/experiences/food com rótulos PT (D2); aliases legacy
+  // (voos/hospedagem/...) continuam aceitos na leitura.
   const nts = trip.nts || 1;
-  const totalEst = trip.budget?.total ?? trip.cost?.total ?? nts * 1000;
-  const breakdown = trip.budget?.breakdown ?? trip.cost?.breakdown ?? {
-    voos: Math.round(totalEst * 0.30),
-    hospedagem: Math.round(totalEst * 0.35),
-    passeios: Math.round(totalEst * 0.15),
-    comida: Math.round(totalEst * 0.20)
-  };
-  // Merge: trip.budget.committed (auto-detected from email sync) as base,
-  // user adjustments from localStorage on top.
-  const committed = { ...(trip.budget?.committed || {}), ...(loadTripState(trip.id).committed || {}) };
-  const totalCommitted = Object.values(committed).reduce((a,b) => a+(+b||0), 0);
-  const curr = trip.budget?.currency || trip.cost?.currency || 'BRL';
-  const labels = { voos:'✈ Voos', hospedagem:'🏨 Hospedagem', passeios:'🎟 Passeios', comida:'🍴 Comida' };
+  const pb = computePlanBudget(trip, loadTripState(trip.id).committed || {});
+  const curr = pb.currency;
+  const totalEst = pb.totalEst;
+  const estByKey = Object.fromEntries(pb.rows.map(r => [r.key, r.est]));
 
   panel.innerHTML = `
     <div class="bd-summary">
@@ -1977,27 +1999,26 @@ function populateBudget(node, trip) {
       </div>
       <div>
         <div class="bd-summary-lbl">Comprometido</div>
-        <div class="bd-summary-v" style="color:var(--accent2)">${formatMoney(totalCommitted, curr)}</div>
+        <div class="bd-summary-v" style="color:var(--accent2)">${formatMoney(pb.totalCommitted, curr)}</div>
       </div>
       <div>
         <div class="bd-summary-lbl">Restante</div>
-        <div class="bd-summary-v">${formatMoney(Math.max(0, totalEst - totalCommitted), curr)}</div>
+        <div class="bd-summary-v">${formatMoney(Math.max(0, totalEst - pb.totalCommitted), curr)}</div>
       </div>
     </div>
     <div class="bd-rows">
-      ${Object.entries(breakdown).map(([k, est]) => {
-        const com = +committed[k] || 0;
-        const pct = Math.min(100, est ? (com / est) * 100 : 0);
+      ${pb.rows.map(r => {
+        const pct = Math.min(100, r.est ? (r.committed / r.est) * 100 : 0);
         return `<div class="bd-row">
-          <span class="bd-row-lbl">${labels[k] || k}</span>
+          <span class="bd-row-lbl">${r.label}</span>
           <div class="bd-row-track"><div class="bd-row-fill" style="width:${pct}%"></div></div>
           <input type="number" class="bd-row-input" min="0" step="100"
-            data-key="${k}" value="${com}" aria-label="Valor comprometido em ${labels[k] || k}"/>
-          <span class="bd-row-est">/ ${formatMoney(est, curr)}</span>
+            data-key="${r.key}" value="${r.committed}" aria-label="Valor comprometido em ${r.label}"/>
+          <span class="bd-row-est"${r.estFromPlanned ? ' title="Planejado no plano de viagem"' : ' title="Estimativa automática"'}>/ ${formatMoney(r.est, curr)}</span>
         </div>`;
       }).join('')}
     </div>
-    <p class="cost-note">~${formatMoney(Math.round(totalEst / nts), curr)}/dia · valores em ${curr} · comprometido salvo localmente</p>
+    <p class="cost-note">~${formatMoney(Math.round(totalEst / nts), curr)}/dia · valores em ${curr}${pb.anyPlanned ? ' · planejado do plano de viagem' : ''} · comprometido salvo localmente</p>
   `;
   panel.querySelectorAll('.bd-row-input').forEach(inp => {
     inp.addEventListener('input', () => {
@@ -2006,12 +2027,14 @@ function populateBudget(node, trip) {
       saveTripState(trip.id, { committed: com2 });
       // H1.5: cada edição de orçamento conta no diff/sync — atualiza header.
       refreshEditsIndicator();
-      // Light re-render: update summary + bars without losing focus
-      const tot = Object.values(com2).reduce((a,b) => a+(+b||0), 0);
-      panel.querySelectorAll('.bd-summary-v')[1].textContent = formatMoney(tot, curr);
-      panel.querySelectorAll('.bd-summary-v')[2].textContent = formatMoney(Math.max(0, totalEst - tot), curr);
-      const est = breakdown[inp.dataset.key] || 1;
-      const pct = Math.min(100, (com2[inp.dataset.key] / est) * 100);
+      // Light re-render: update summary + bars without losing focus.
+      // Recalcula pelo módulo puro pra manter a precedência (override
+      // recém-digitado já entra via localStorage).
+      const pb2 = computePlanBudget(trip, com2);
+      panel.querySelectorAll('.bd-summary-v')[1].textContent = formatMoney(pb2.totalCommitted, curr);
+      panel.querySelectorAll('.bd-summary-v')[2].textContent = formatMoney(Math.max(0, totalEst - pb2.totalCommitted), curr);
+      const est = estByKey[inp.dataset.key] || 1;
+      const pct = Math.min(100, ((+inp.value || 0) / est) * 100);
       inp.parentElement.querySelector('.bd-row-fill').style.width = pct + '%';
     });
   });
@@ -3826,13 +3849,14 @@ function renderPlanQuickstats(trip) {
   const total = items.length;
   const pct = total ? Math.round((doneN / total) * 100) : 0;
 
-  // Budget progress
-  const nts = trip.nts || 1;
-  const totalEst = trip.budget?.total ?? trip.cost?.total ?? nts * 1000;
-  const committed = { ...(trip.budget?.committed || {}), ...(saved.committed || {}) };
-  const totC = Object.values(committed).reduce((a,b) => a+(+b||0), 0);
+  // Budget progress — mesma fonte do widget Orçamento (computePlanBudget):
+  // canônico ADR-001 com fallback legacy e precedência por categoria (um
+  // merge cru de committed legacy+v2 somaria alias e chave em dobro).
+  const pb = computePlanBudget(trip, saved.committed || {});
+  const totalEst = pb.totalEst;
+  const totC = pb.totalCommitted;
   const budgetPct = totalEst ? Math.round((totC / totalEst) * 100) : 0;
-  const curr = trip.budget?.currency || trip.cost?.currency || 'BRL';
+  const curr = pb.currency;
 
   // Next action (B3)
   const next = computeNextAction(trip);
