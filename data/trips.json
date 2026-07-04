@@ -3005,7 +3005,7 @@
       "lon": 4.3722,
       "col": "#ec4899",
       "pax": "amigos",
-      "air": "GRU→BRU",
+      "air": "SSA→BRU",
       "nts": 11,
       "km": 18000,
       "type": "festival",
@@ -3084,6 +3084,7 @@
       },
       "budget": {
         "planned": {
+          "flights": 2920,
           "voos": {
             "BRL": 2920,
             "milhas_tap": null,
