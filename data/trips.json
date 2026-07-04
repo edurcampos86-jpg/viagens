@@ -3005,7 +3005,7 @@
       "lon": 4.3722,
       "col": "#ec4899",
       "pax": "amigos",
-      "air": "GRU→BRU",
+      "air": "SSA→BRU",
       "nts": 11,
       "km": 18000,
       "type": "festival",
@@ -3024,24 +3024,79 @@
         "flights": [
           {
             "id": "europa-tomorrowland-2026-fl-001",
-            "titulo": "GRU→BRU",
-            "status": "pendente",
+            "titulo": "TP28 SSA→LIS",
+            "status": "confirmado",
+            "data": "2026-07-14",
+            "partida": "2026-07-14T23:45",
+            "chegada": "2026-07-15T12:05",
             "criticidade": "alta",
-            "confirmada": false,
-            "notas": "Migrado retroativamente de trip.air via ADR-001 Fase 3. Status=pendente até revisão manual de reservas reais."
+            "confirmada": true,
+            "origin": "extraído:gmail",
+            "pax": ["Eduardo", "Jodson"],
+            "franquia": "1 mala 23kg + mão 10kg",
+            "notas": "TAP. Ida trecho 1 — Salvador→Lisboa."
+          },
+          {
+            "id": "europa-tomorrowland-2026-fl-002",
+            "titulo": "TP644 LIS→BRU",
+            "status": "confirmado",
+            "data": "2026-07-15",
+            "partida": "2026-07-15T16:15",
+            "chegada": "2026-07-15T20:05",
+            "criticidade": "alta",
+            "confirmada": true,
+            "origin": "extraído:gmail",
+            "pax": ["Eduardo", "Jodson"],
+            "franquia": "1 mala 23kg + mão 10kg",
+            "notas": "TAP. Ida trecho 2 — Lisboa→Bruxelas."
+          },
+          {
+            "id": "europa-tomorrowland-2026-fl-003",
+            "titulo": "TP673 AMS→LIS",
+            "status": "confirmado",
+            "data": "2026-07-26",
+            "partida": "2026-07-26T19:40",
+            "chegada": "2026-07-26T21:50",
+            "criticidade": "alta",
+            "confirmada": true,
+            "origin": "extraído:gmail",
+            "pax": ["Eduardo", "Jodson"],
+            "franquia": "1 mala 23kg + mão 10kg",
+            "notas": "TAP. Volta trecho 1 — Amsterdã→Lisboa."
+          },
+          {
+            "id": "europa-tomorrowland-2026-fl-004",
+            "titulo": "TP29 LIS→SSA",
+            "status": "confirmado",
+            "data": "2026-07-27",
+            "partida": "2026-07-27T17:20",
+            "chegada": "2026-07-27T22:00",
+            "criticidade": "alta",
+            "confirmada": true,
+            "origin": "extraído:gmail",
+            "pax": ["Eduardo", "Jodson"],
+            "franquia": "1 mala 23kg + mão 10kg",
+            "notas": "TAP. Volta trecho 2 — Lisboa→Salvador."
           }
         ],
         "stays": [],
         "experiences": []
       },
       "budget": {
-        "planned": {},
+        "planned": {
+          "flights": 2920,
+          "voos": {
+            "BRL": 2920,
+            "milhas_tap": null,
+            "nota": "taxas+assentos 2 pax; milhas a preencher manualmente"
+          }
+        },
         "actual": {},
         "currency": "BRL"
       },
       "checklist": [],
       "created_at": "2026-07-01T00:00:00Z",
-      "updated_at": "2026-05-19T01:30:18Z",
+      "updated_at": "2026-07-04T00:00:00Z",
       "_schema": 2
     },
     {
