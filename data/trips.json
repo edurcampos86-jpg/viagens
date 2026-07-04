@@ -2763,7 +2763,7 @@
       "lon": -46.6333,
       "col": "#a855f7",
       "pax": "amigos",
-      "air": "SSA→CGH / GRU→SSA (LATAM · UJWZTO)",
+      "air": "SSA→CGH / GRU→SSA (LATAM)",
       "nts": 3,
       "km": 860,
       "type": "festival",
@@ -2778,7 +2778,7 @@
           "Casa do Ricardo (Frei Caneca)"
         ],
         "restaurants": [],
-        "tips": "Voos LATAM confirmados (UJWZTO). Hospedagem resolvida: Casa do Ricardo (Frei Caneca)."
+        "tips": "Voos LATAM confirmados (reserva cia aérea). Hospedagem resolvida: Casa do Ricardo (Frei Caneca)."
       },
       "hospedagem": [
         {
@@ -2801,8 +2801,8 @@
             "data": "2026-06-04",
             "criticidade": "alta",
             "confirmada": true,
-            "localizador": "UJWZTO",
-            "notas": "Confirmado via localizador UJWZTO (compra LA9579192EHHW). LATAM. Trecho de ida."
+            "localizador": null,
+            "notas": "Confirmado (reserva cia aérea). LATAM. Trecho de ida."
           },
           {
             "id": "sp-junho-2026-fl-002",
@@ -2811,8 +2811,8 @@
             "data": "2026-06-07",
             "criticidade": "alta",
             "confirmada": true,
-            "localizador": "UJWZTO",
-            "notas": "Confirmado via localizador UJWZTO (compra LA9579192EHHW). LATAM. Trecho de volta."
+            "localizador": null,
+            "notas": "Confirmado (reserva cia aérea). LATAM. Trecho de volta."
           }
         ],
         "stays": [

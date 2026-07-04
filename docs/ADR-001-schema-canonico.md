@@ -49,6 +49,8 @@ Regras a serem implementadas pelo script da Fase 3 deste plano:
 - Viagens com `status: "wishlist"` → permanecem sem bookings derivados
 - **Campos legacy NÃO são removidos** do JSON. Coexistem com `bookings` para compatibilidade com `assets/app.js` legacy. A escolha entre os dois lados é problema do leitor (V2 lê bookings; legacy lê hospedagem; tradutor `getBookings()` reconcilia).
 
+> **Privacidade (adendo 2026-07-04):** PNRs/localizadores, números de bilhete e frequent flyer **nunca entram em `trips.json`** (repo público) — `localizador` fica `null` e as notas usam referência genérica ("reserva cia aérea").
+
 ### 3. Campos novos `criticidade` e `dataLimite` em cada booking
 
 Para viabilizar a fórmula de urgência ponderada que vai dirigir o sorting do Cockpit (Sprint 2):
