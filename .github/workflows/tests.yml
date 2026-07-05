@@ -37,3 +37,4 @@ jobs:
           python scripts/test_matching.py
           python scripts/test_auditor.py
           python scripts/test_curador.py
+          python scripts/test_ingest_bookings.py
