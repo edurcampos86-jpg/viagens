@@ -3874,9 +3874,155 @@
       "created_at": "2026-05-23T04:14:47Z",
       "updated_at": "2026-05-23T04:14:47Z",
       "_schema": 2
+    },
+    {
+      "id": "maceio-2026",
+      "name": "Casamento Felipe e Bela · Maceió",
+      "titulo": "Casamento Felipe e Bela · Maceió",
+      "sub": "Maceió · AL",
+      "status": "em_planejamento",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "💍",
+      "year": 2026,
+      "month": 11,
+      "label": "Nov 2026",
+      "startDate": "2026-11-06",
+      "endDate": "2026-11-08",
+      "lat": -9.6658,
+      "lon": -35.7353,
+      "col": "#6B4FB8",
+      "pax": "2 (Eduardo + Jodson)",
+      "nts": 2,
+      "type": "event",
+      "companhia": [
+        "Jodson"
+      ],
+      "highlights": [
+        "Casamento do Felipe e da Bela",
+        "Ponta Verde"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [
+          "Hilton Garden Inn Maceió (Ponta Verde)"
+        ],
+        "restaurants": [],
+        "tips": "Hospedagem paga e não reembolsável. Falta fechar os voos SSA⇄MCZ."
+      },
+      "pendencias": [
+        "voos SSA⇄MCZ"
+      ],
+      "bookings": {
+        "flights": [],
+        "stays": [
+          {
+            "id": "maceio-2026-st-001",
+            "titulo": "Hilton Garden Inn Maceió · 2 noites",
+            "nome": "Hilton Garden Inn Maceió",
+            "status": "confirmado",
+            "confirmada": true,
+            "data": "2026-11-06",
+            "valor": 750.48,
+            "moeda": "BRL",
+            "criticidade": "media",
+            "localizador": "72078344980548",
+            "reembolsavel": false,
+            "origem_dado": "gmail-2026-08-24",
+            "cidade": "Maceió",
+            "bairro": "Ponta Verde",
+            "endereco": "Rua Gaspar Ferrari 175, Ponta Verde",
+            "tipo": "hotel",
+            "check_in": "2026-11-06",
+            "check_out": "2026-11-08",
+            "noites": 2,
+            "notas": "Reservado pela Hoteis.com (itinerário 72078344980548). Check-in 15h · check-out 12h. Valor pago: R$ 750,48. Tarifa não reembolsável."
+          }
+        ],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "tags": [
+        "casamento",
+        "praia",
+        "nordeste"
+      ],
+      "created_at": "2026-08-24T00:00:00Z",
+      "updated_at": "2026-08-24T00:00:00Z",
+      "_schema": 2
+    },
+    {
+      "id": "floripa-2026",
+      "name": "Florianópolis",
+      "sub": "Florianópolis · SC",
+      "status": "draft",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🏄",
+      "lat": -27.5954,
+      "lon": -48.548,
+      "col": "#A85A7D",
+      "type": "leisure",
+      "memory": "",
+      "logistics": {
+        "hotels": [],
+        "restaurants": [],
+        "tips": "Voos LATAM comprados em 23/08/2026. Aguardando o e-mail detalhado da LATAM para preencher datas, horários e valores."
+      },
+      "pendencias": [
+        "datas e horários dos voos (aguardando e-mail detalhado LATAM)",
+        "valores dos voos",
+        "hospedagem"
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "floripa-2026-fl-001",
+            "titulo": "LATAM · reserva FGCIPY",
+            "status": "confirmado",
+            "confirmada": true,
+            "criticidade": "alta",
+            "localizador": "FGCIPY",
+            "origem_dado": "gmail-2026-08-24",
+            "notas": "Comprado em 23/08/2026. Bilhete LA9573462LVKB. Data, horário e valor a confirmar no e-mail detalhado da LATAM."
+          },
+          {
+            "id": "floripa-2026-fl-002",
+            "titulo": "LATAM · reserva FHTODW",
+            "status": "confirmado",
+            "confirmada": true,
+            "criticidade": "alta",
+            "localizador": "FHTODW",
+            "origem_dado": "gmail-2026-08-24",
+            "notas": "Comprado em 23/08/2026. Bilhete LA9575288RDVE. Data, horário e valor a confirmar no e-mail detalhado da LATAM."
+          }
+        ],
+        "stays": [],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "tags": [
+        "rascunho",
+        "sul"
+      ],
+      "created_at": "2026-08-24T00:00:00Z",
+      "updated_at": "2026-08-24T00:00:00Z",
+      "_schema": 2
     }
   ],
-  "atualizado_em": "2026-05-23T04:14:47Z",
+  "atualizado_em": "2026-08-24",
   "fonte": "Mesclagem entre trips.json (GitHub Pages), index.html local e Google Photos Places · Fase 1b: hospedagem[] derivada de logistics.hotels[]",
   "_schema": 2
 }
