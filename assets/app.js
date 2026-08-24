@@ -7,6 +7,14 @@ import { computeTrackedEdits, applyTrackedEdits, clearTrackedBranches } from '..
 import { loadRules, injectChecklistItems } from '../src/components/checklist.js';
 import { deriveDatesFromBookings } from '../src/core/dates.js';
 import { decideNextAction } from '../src/core/next-action.js';
+import {
+  RADAR_STATUSES,
+  countdown as radarCountdown,
+  pendenciaBadges,
+  origensDado,
+  tripCosts,
+  refundSeal,
+} from '../src/core/planning-radar.js';
 import { applyChecklistOrder, moveItem, isItemOverdue } from '../src/core/checklist-order.js';
 import { renderEventos } from '../src/components/eventos.js';
 import { loadEventos } from '../src/core/eventos-data.js';
@@ -1253,6 +1261,8 @@ function statusLabel(status) {
   return ({
     done: 'Realizada',
     planned: 'Confirmada',
+    em_planejamento: 'Confirmada parcial',
+    draft: 'Rascunho',
     wishlist: 'Wishlist',
   })[status] || status;
 }
@@ -1959,6 +1969,14 @@ function populateReservations(node, trip) {
       `).join('')}
     </ul>
     <p class="rs-note">${canonical ? 'Reservas do plano de viagem (bookings) · status salvo localmente.' : 'Status salvo localmente neste navegador.'}</p>
+    ${(() => {
+      // Proveniência do dado (bookings[].origem_dado, formato fonte-AAAA-MM-DD).
+      // Discreto de propósito: rodapé do painel, com o detalhe no tooltip.
+      const origens = origensDado(trip);
+      return origens.length
+        ? `<p class="rs-origin" title="Origem dos dados destas reservas: ${escapeHtml(origens.join(' · '))}">origem: ${escapeHtml(origens.join(' · '))}</p>`
+        : '';
+    })()}
   `;
   panel.querySelectorAll('.rs-status').forEach(sel => {
     sel.addEventListener('change', () => {
@@ -2837,6 +2855,15 @@ function renderDashAlerts(trips, futuras) {
   `).join('');
 }
 
+// Data de hoje em 'YYYY-MM-DD' no fuso LOCAL (não UTC): os módulos puros do
+// radar recebem o dia já resolvido, e usar toISOString() viraria o dia cedo
+// demais para quem está a oeste de Greenwich (BRT = UTC-3).
+function todayISO() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 function daysToTrip(t) {
   const today = new Date(); today.setHours(0,0,0,0);
   const s = t.startDate
@@ -3019,7 +3046,10 @@ function fmtNumBR(n) { return new Intl.NumberFormat('pt-BR').format(n); }
 function renderPlanejamento() {
   const trips = state.trips || [];
   const wish        = trips.filter(t => t.status === 'wishlist');
-  const planned     = trips.filter(t => t.status === 'planned');
+  // RADAR_STATUSES (planning-radar.js) = planned + em_planejamento + draft.
+  // Antes o kanban só olhava 'planned' e as viagens nos outros dois status
+  // ficavam invisíveis no modo Planejamento.
+  const planned     = trips.filter(t => RADAR_STATUSES.has(t.status));
 
   // Próximas: planned + daysUntil <= 90 (e >= 0)
   // Confirmadas: planned + daysUntil > 90 (ou daysUntil null = sem data firme)
@@ -3084,10 +3114,12 @@ function planjCard(t) {
   const decisoes = (t.decisoes_pendentes || []).length;
   if (decisoes) badges.push(`<span class="planj-badge alert">⚠ ${decisoes} decis${decisoes === 1 ? 'ão' : 'ões'}</span>`);
 
-  if (t.status === 'planned' && (!t.hospedagem || t.hospedagem.length === 0))
-    badges.push('<span class="planj-badge warn">🏨 Sem hotel</span>');
-  else if (t.hospedagem && t.hospedagem.length > 0)
-    badges.push(`<span class="planj-badge ok">🏨 ${t.hospedagem.length}</span>`);
+  // Radar de planejamento: "⚠ sem voo" / "⚠ sem hotel" derivados de
+  // trip.pendencias + dos bookings confirmados (src/core/planning-radar.js).
+  // Substituem o antigo badge de hospedagem, que só olhava o legacy
+  // hospedagem[] e ignorava bookings.stays.
+  for (const b of pendenciaBadges(t))
+    badges.push(`<span class="planj-badge warn planj-badge-${b.kind}">${b.label}</span>`);
 
   const docs = (t.documentos_necessarios || []);
   const docsPend = docs.filter(d => !d.obtido).length;
@@ -3096,6 +3128,45 @@ function planjCard(t) {
   const dates = t.startDate && t.endDate
     ? `${formatIsoBR(t.startDate)} → ${formatIsoBR(t.endDate)}`
     : (t.label || '');
+
+  // Contagem regressiva do radar: violeta > 60 dias · rosa-ameixa 30–60 ·
+  // vermelho < 30. Rótulo já vem com a pendência anexada ("faltam 74 dias e
+  // sem voo"). Sem startDate (rascunho) não há contagem — cai para o badge
+  // curto legado no canto da foto.
+  const cdRadar = radarCountdown(t, todayISO());
+
+  // Selo de reembolso, um por viagem, escolhido pela reserva mais restritiva
+  // (src/core/planning-radar.js#refundSeal):
+  //   vermelho "não reembolsável"    → alguma reserva com reembolsavel:false;
+  //   verde "protegida até DD/MM"    → reembolso_nota com prazo ainda aberto;
+  //   vermelho "proteção expirada"   → esse prazo já venceu.
+  // O tooltip traz as reservas envolvidas e a nota integral de reembolso.
+  const selo = refundSeal(t, todayISO());
+  // Uma reserva multi-trecho repete a mesma nota em cada perna; o tooltip
+  // agrupa por nota e lista os títulos uma vez só.
+  const seloTitle = selo
+    ? [...selo.bookings.reduce((m, b) => {
+        const k = b.reembolso_nota || '';
+        (m.get(k) || m.set(k, []).get(k)).push(b.titulo);
+        return m;
+      }, new Map())]
+      .map(([nota, titulos]) => [titulos.join(', '), nota].filter(Boolean).join(' — '))
+      .join(' · ')
+    : '';
+  const seloReembolso = selo
+    ? `<span class="planj-seal planj-seal-${selo.tone}" title="${escapeHtml(seloTitle)}">${selo.label}</span>`
+    : '';
+
+  // Mini-resumo financeiro — mesma convenção BRL do widget de orçamento
+  // (components/budget.js#computeActualFromBookings), computado a partir de
+  // bookings[*].valor por src/core/planning-radar.js#tripCosts.
+  const custos = tripCosts(t);
+  const resumoFin = (custos.pago > 0 || custos.restante > 0)
+    ? `<div class="planj-card-money">
+         <strong>${formatMoney(custos.pago, custos.moeda)}</strong> pago
+         ${custos.restante > 0 ? ` · ~${formatMoney(custos.restante, custos.moeda)} a comprometer` : ''}
+       </div>`
+    : '';
 
   const targets = ['planned', 'wishlist'].filter(s => s !== t.status);
   const menuItems = targets.map(s => {
@@ -3117,6 +3188,9 @@ function planjCard(t) {
         <h4 class="planj-card-name">${t.name}</h4>
         ${t.sub ? `<div class="planj-card-sub">${t.sub}</div>` : ''}
         <div class="planj-card-dates">${dates}</div>
+        ${cdRadar ? `<div class="planj-card-cd planj-cd-${cdRadar.tone}">${cdRadar.label}</div>` : ''}
+        ${seloReembolso}
+        ${resumoFin}
         ${t.status !== 'wishlist' ? `
           <div class="planj-card-progress">
             <div class="planj-card-progress-bar"><div style="width:0%" data-pct="${pct}"></div></div>
