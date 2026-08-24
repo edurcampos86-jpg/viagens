@@ -7,6 +7,17 @@ import { computeTrackedEdits, applyTrackedEdits, clearTrackedBranches } from '..
 import { loadRules, injectChecklistItems } from '../src/components/checklist.js';
 import { deriveDatesFromBookings } from '../src/core/dates.js';
 import { decideNextAction } from '../src/core/next-action.js';
+import {
+  RADAR_STATUSES,
+  countdown as radarCountdown,
+  pendenciaBadges,
+  nonRefundable,
+  origensDado,
+  tripCosts,
+  effectiveStatus,
+  isPastPlan,
+  awaitsMemoryRecord,
+} from '../src/core/planning-radar.js';
 import { applyChecklistOrder, moveItem, isItemOverdue } from '../src/core/checklist-order.js';
 import { renderEventos } from '../src/components/eventos.js';
 import { loadEventos } from '../src/core/eventos-data.js';
@@ -1253,6 +1264,8 @@ function statusLabel(status) {
   return ({
     done: 'Realizada',
     planned: 'Confirmada',
+    em_planejamento: 'Confirmada parcial',
+    draft: 'Rascunho',
     wishlist: 'Wishlist',
   })[status] || status;
 }
@@ -1959,6 +1972,14 @@ function populateReservations(node, trip) {
       `).join('')}
     </ul>
     <p class="rs-note">${canonical ? 'Reservas do plano de viagem (bookings) · status salvo localmente.' : 'Status salvo localmente neste navegador.'}</p>
+    ${(() => {
+      // Proveniência do dado (bookings[].origem_dado, formato fonte-AAAA-MM-DD).
+      // Discreto de propósito: rodapé do painel, com o detalhe no tooltip.
+      const origens = origensDado(trip);
+      return origens.length
+        ? `<p class="rs-origin" title="Origem dos dados destas reservas: ${escapeHtml(origens.join(' · '))}">origem: ${escapeHtml(origens.join(' · '))}</p>`
+        : '';
+    })()}
   `;
   panel.querySelectorAll('.rs-status').forEach(sel => {
     sel.addEventListener('change', () => {
@@ -2837,6 +2858,15 @@ function renderDashAlerts(trips, futuras) {
   `).join('');
 }
 
+// Data de hoje em 'YYYY-MM-DD' no fuso LOCAL (não UTC): os módulos puros do
+// radar recebem o dia já resolvido, e usar toISOString() viraria o dia cedo
+// demais para quem está a oeste de Greenwich (BRT = UTC-3).
+function todayISO() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 function daysToTrip(t) {
   const today = new Date(); today.setHours(0,0,0,0);
   const s = t.startDate
@@ -2895,7 +2925,13 @@ let memMap, memTileLayer;
 
 function renderMemoria() {
   const trips = state.trips || [];
-  const done = trips.filter(t => t.status === 'done')
+  // FASE B · REGRA 2 — o acervo é `done` MAIS as viagens de planejamento cuja
+  // data final já passou: fechamento de posição vira histórico. Elas entram
+  // com o selo "aguardando registro de memórias" (renderMemTimeline) e só
+  // viram `done` de fato quando alguém escrever a memória — a promoção do
+  // status é humana, feita via docs/rotinas/sync-gmail.md.
+  const hoje = todayISO();
+  const done = trips.filter(t => t.status === 'done' || isPastPlan(t, hoje))
     .sort((a, b) => (b.year - a.year) || (b.month - a.month));
 
   // Meta no header
@@ -2977,6 +3013,7 @@ function renderMemTimeline(done) {
           <div class="mem-entry-meta">
             <div class="mem-entry-kicker">${t.label || ''} · ${CONTINENT_NAMES[t.continent] || ''}</div>
             <h3 class="mem-entry-name"><a href="#plan/${t.id}">${t.name}</a></h3>
+            ${awaitsMemoryRecord(t, todayISO()) ? '<div class="mem-entry-pending">aguardando registro de memórias</div>' : ''}
             <div class="mem-entry-sub">${t.sub || ''}</div>
             ${t.memory ? `<p class="mem-entry-memory">${t.memory}</p>` : ''}
             <div class="mem-entry-tags">
@@ -3019,7 +3056,16 @@ function fmtNumBR(n) { return new Intl.NumberFormat('pt-BR').format(n); }
 function renderPlanejamento() {
   const trips = state.trips || [];
   const wish        = trips.filter(t => t.status === 'wishlist');
-  const planned     = trips.filter(t => t.status === 'planned');
+  // RADAR_STATUSES (planning-radar.js) = planned + em_planejamento + draft.
+  // Antes o kanban só olhava 'planned' e as viagens nos outros dois status
+  // ficavam invisíveis no modo Planejamento.
+  //
+  // FASE B · REGRA 2 — viagem cuja data final já passou sai daqui e reaparece
+  // no acervo de memórias com o selo "aguardando registro de memórias"
+  // (renderMemoria). Fechamento de posição vira histórico. Regra de
+  // RENDERIZAÇÃO: o status no data/trips.json não é reescrito.
+  const hoje        = todayISO();
+  const planned     = trips.filter(t => RADAR_STATUSES.has(t.status) && !isPastPlan(t, hoje));
 
   // Próximas: planned + daysUntil <= 90 (e >= 0)
   // Confirmadas: planned + daysUntil > 90 (ou daysUntil null = sem data firme)
@@ -3084,10 +3130,12 @@ function planjCard(t) {
   const decisoes = (t.decisoes_pendentes || []).length;
   if (decisoes) badges.push(`<span class="planj-badge alert">⚠ ${decisoes} decis${decisoes === 1 ? 'ão' : 'ões'}</span>`);
 
-  if (t.status === 'planned' && (!t.hospedagem || t.hospedagem.length === 0))
-    badges.push('<span class="planj-badge warn">🏨 Sem hotel</span>');
-  else if (t.hospedagem && t.hospedagem.length > 0)
-    badges.push(`<span class="planj-badge ok">🏨 ${t.hospedagem.length}</span>`);
+  // Radar de planejamento: "⚠ sem voo" / "⚠ sem hotel" derivados de
+  // trip.pendencias + dos bookings confirmados (src/core/planning-radar.js).
+  // Substituem o antigo badge de hospedagem, que só olhava o legacy
+  // hospedagem[] e ignorava bookings.stays.
+  for (const b of pendenciaBadges(t))
+    badges.push(`<span class="planj-badge warn planj-badge-${b.kind}">${b.label}</span>`);
 
   const docs = (t.documentos_necessarios || []);
   const docsPend = docs.filter(d => !d.obtido).length;
@@ -3096,6 +3144,37 @@ function planjCard(t) {
   const dates = t.startDate && t.endDate
     ? `${formatIsoBR(t.startDate)} → ${formatIsoBR(t.endDate)}`
     : (t.label || '');
+
+  // Contagem regressiva do radar: violeta > 60 dias · rosa-ameixa 30–60 ·
+  // vermelho < 30. Rótulo já vem com a pendência anexada ("faltam 74 dias e
+  // sem voo"). Sem startDate (rascunho) não há contagem — cai para o badge
+  // curto legado no canto da foto.
+  const cdRadar = radarCountdown(t, todayISO());
+
+  // Selo de tarifa não reembolsável: só reservas com reembolsavel:false
+  // explícito. Ausência do campo NÃO acende o selo.
+  const semReembolso = nonRefundable(t);
+  const seloReembolso = semReembolso.length
+    ? `<span class="planj-seal-norefund" title="${escapeHtml(semReembolso.map(b => b.titulo).join(' · '))}">não reembolsável</span>`
+    : '';
+
+  // Mini-resumo financeiro — mesma convenção BRL do widget de orçamento
+  // (components/budget.js#computeActualFromBookings), computado a partir de
+  // bookings[*].valor por src/core/planning-radar.js#tripCosts.
+  const custos = tripCosts(t);
+  const resumoFin = (custos.pago > 0 || custos.restante > 0)
+    ? `<div class="planj-card-money">
+         <strong>${formatMoney(custos.pago, custos.moeda)}</strong> pago
+         ${custos.restante > 0 ? ` · ~${formatMoney(custos.restante, custos.moeda)} a comprometer` : ''}
+       </div>`
+    : '';
+
+  // FASE B · REGRA 1 — uma viagem em `em_planejamento` sem nenhuma pendência
+  // já é, na prática, confirmada (a ordem foi executada ao atingir o preço).
+  // O chip mostra "Confirmada" sem tocar no status do data/trips.json, que
+  // segue sendo a fonte da verdade editada por humanos.
+  const statusDerivado = effectiveStatus(t);
+  const statusChip = `<span class="planj-card-status planj-status-${statusDerivado}">${statusLabel(statusDerivado)}</span>`;
 
   const targets = ['planned', 'wishlist'].filter(s => s !== t.status);
   const menuItems = targets.map(s => {
@@ -3117,6 +3196,10 @@ function planjCard(t) {
         <h4 class="planj-card-name">${t.name}</h4>
         ${t.sub ? `<div class="planj-card-sub">${t.sub}</div>` : ''}
         <div class="planj-card-dates">${dates}</div>
+        ${t.status !== 'wishlist' ? statusChip : ''}
+        ${cdRadar ? `<div class="planj-card-cd planj-cd-${cdRadar.tone}">${cdRadar.label}</div>` : ''}
+        ${seloReembolso}
+        ${resumoFin}
         ${t.status !== 'wishlist' ? `
           <div class="planj-card-progress">
             <div class="planj-card-progress-bar"><div style="width:0%" data-pct="${pct}"></div></div>

@@ -37,6 +37,17 @@
   --vc-brand-1: #FF7A3D;
   --vc-brand-2: #F2901C;
 
+  /* Radar de planejamento — identidade do modo Planejamento.
+   * ink/violeta/rosa-ameixa da paleta aprovada; a contagem regressiva usa
+   * violeta > 60 dias, rosa-ameixa 30–60 e vermelho < 30. */
+  --vc-radar-ink: #2B2440;
+  --vc-radar-violeta: #6B4FB8;
+  --vc-radar-ameixa: #A85A7D;
+  --vc-radar-vermelho: #C0392B;
+  --vc-radar-violeta-soft: #EDE7F9;
+  --vc-radar-ameixa-soft: #F7E8EE;
+  --vc-radar-vermelho-soft: #FBE4E0;
+
   /* Tipografia */
   --vc-font-display: 'Fraunces', Georgia, serif;
   --vc-font-ui: 'Manrope', system-ui, sans-serif;
@@ -52,4 +63,14 @@ html[data-theme="dark"], :root[data-theme="dark"] {
   --vc-ink: #F4EBDC;
   --vc-ink-soft: #C4B7A3;
   --vc-ink-faint: #8C8070;
+
+  /* Radar no escuro: as três tonalidades clareiam para manter contraste
+   * sobre o fundo papel-escuro; os fundos "soft" viram véus translúcidos. */
+  --vc-radar-ink: #E8E2F5;
+  --vc-radar-violeta: #A78BE8;
+  --vc-radar-ameixa: #D291AE;
+  --vc-radar-vermelho: #E8776A;
+  --vc-radar-violeta-soft: rgba(167, 139, 232, 0.16);
+  --vc-radar-ameixa-soft: rgba(210, 145, 174, 0.16);
+  --vc-radar-vermelho-soft: rgba(232, 119, 106, 0.16);
 }

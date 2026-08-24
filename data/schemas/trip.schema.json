@@ -244,6 +244,21 @@
       "description": "Tags livres. Ex: 'praia', 'montanha', 'prêmio Yamaha Kando', 'aniversário'.",
       "items": { "type": "string", "minLength": 1 }
     },
+    "pendencias": {
+      "type": "array",
+      "description": "Buracos abertos do planejamento, em texto livre (ex: 'voos SSA⇄MCZ'). Alimentam os badges '⚠ sem voo' / '⚠ sem hotel' do radar. Lista vazia numa viagem em_planejamento = nada pendente. Campo ADITIVO e opcional — backward-compatible.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "custo_pago": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Override manual do total já desembolsado (BRL). Por padrão a app NÃO usa este campo: computa o valor na renderização somando bookings[*].valor dos bookings confirmados (ver src/core/planning-radar.js#tripCosts). Só preencha para corrigir um número que as reservas não conseguem expressar. Campo ADITIVO e opcional."
+    },
+    "custo_estimado_restante": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Override manual do que ainda falta comprometer (BRL). Mesma regra de custo_pago: o padrão é a soma de bookings[*].valor dos bookings pendentes/em andamento. Campo ADITIVO e opcional."
+    },
     "documentos_necessarios": {
       "type": "array",
       "description": "Documentos/exigências para a viagem. Cruzado pelo Auditor com documentos.json.",
@@ -481,6 +496,15 @@
         "confirmada": {
           "type": "boolean",
           "description": "Atalho legacy para status=confirmado. Mantido para compat com migração de hospedagem.confirmada."
+        },
+        "reembolsavel": {
+          "type": "boolean",
+          "description": "Reserva pode ser cancelada com devolução do valor. Ausente = desconhecido; apenas `false` explícito acende o selo 'não reembolsável' no card. Campo ADITIVO e opcional."
+        },
+        "origem_dado": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]*-[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "description": "Proveniência do dado no formato 'fonte-AAAA-MM-DD' (ex: 'gmail-2026-08-24'). Preenchido pela varredura de e-mails (docs/rotinas/sync-gmail.md); exibido de forma discreta no detalhe da viagem. Campo ADITIVO e opcional."
         },
         "notas": { "type": "string" }
       },
