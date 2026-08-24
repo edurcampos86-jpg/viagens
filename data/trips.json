@@ -3959,49 +3959,118 @@
     },
     {
       "id": "floripa-2026",
-      "name": "Florianópolis",
+      "name": "Florianópolis — Folianópolis",
       "sub": "Florianópolis · SC",
-      "status": "draft",
+      "status": "em_planejamento",
       "continent": "Americas",
       "country": "Brasil",
       "flag": "🇧🇷",
-      "emoji": "🏄",
+      "emoji": "🎭",
+      "year": 2026,
+      "month": 10,
+      "label": "Out 2026",
+      "startDate": "2026-10-30",
+      "endDate": "2026-11-02",
       "lat": -27.5954,
       "lon": -48.548,
       "col": "#A85A7D",
-      "type": "leisure",
+      "pax": "2 (Eduardo + Jodson)",
+      "nts": 3,
+      "type": "festival",
+      "companhia": [
+        "Jodson"
+      ],
+      "highlights": [
+        "Folianópolis"
+      ],
       "memory": "",
       "logistics": {
         "hotels": [],
         "restaurants": [],
-        "tips": "Voos LATAM comprados em 23/08/2026. Aguardando o e-mail detalhado da LATAM para preencher datas, horários e valores."
+        "tips": "Voos LATAM fechados (reserva FGCIPY, Economy Light, assentos já pagos). Falta hospedagem em Florianópolis para 30/10 a 02/11."
       },
       "pendencias": [
-        "datas e horários dos voos (aguardando e-mail detalhado LATAM)",
-        "valores dos voos",
-        "hospedagem"
+        "hospedagem em Florianópolis"
       ],
       "bookings": {
         "flights": [
           {
             "id": "floripa-2026-fl-001",
-            "titulo": "LATAM · reserva FGCIPY",
+            "titulo": "LA3625 SSA→CGH",
             "status": "confirmado",
             "confirmada": true,
+            "data": "2026-10-30",
+            "partida": "2026-10-30T14:25",
+            "chegada": "2026-10-30T17:00",
             "criticidade": "alta",
             "localizador": "FGCIPY",
-            "origem_dado": "gmail-2026-08-24",
-            "notas": "Comprado em 23/08/2026. Bilhete LA9573462LVKB. Data, horário e valor a confirmar no e-mail detalhado da LATAM."
+            "valor": 749.36,
+            "moeda": "BRL",
+            "reembolsavel": false,
+            "origem_dado": "latam-2026-08-23",
+            "pax": [
+              "Eduardo",
+              "Jodson"
+            ],
+            "cabine": "Economy Light",
+            "notas": "LATAM. Ida trecho 1 — Salvador→São Paulo (Congonhas). O valor lançado aqui é o total da reserva FGCIPY (4 trechos): BRL 749,36 em cartão + 132.329 Milhas LATAM Pass, incluindo BRL 536,00 de assentos e BRL 213,36 de taxas. Emitida em 23/08/2026."
           },
           {
             "id": "floripa-2026-fl-002",
-            "titulo": "LATAM · reserva FHTODW",
+            "titulo": "LA3064 CGH→FLN",
             "status": "confirmado",
             "confirmada": true,
+            "data": "2026-10-30",
+            "partida": "2026-10-30T19:00",
+            "chegada": "2026-10-30T20:05",
             "criticidade": "alta",
-            "localizador": "FHTODW",
-            "origem_dado": "gmail-2026-08-24",
-            "notas": "Comprado em 23/08/2026. Bilhete LA9575288RDVE. Data, horário e valor a confirmar no e-mail detalhado da LATAM."
+            "localizador": "FGCIPY",
+            "reembolsavel": false,
+            "origem_dado": "latam-2026-08-23",
+            "pax": [
+              "Eduardo",
+              "Jodson"
+            ],
+            "cabine": "Economy Light",
+            "notas": "LATAM. Ida trecho 2 — São Paulo (Congonhas)→Florianópolis. Valor lançado no trecho 1 da reserva."
+          },
+          {
+            "id": "floripa-2026-fl-003",
+            "titulo": "LA3093 FLN→CGH",
+            "status": "confirmado",
+            "confirmada": true,
+            "data": "2026-11-02",
+            "partida": "2026-11-02T19:20",
+            "chegada": "2026-11-02T20:30",
+            "criticidade": "alta",
+            "localizador": "FGCIPY",
+            "reembolsavel": false,
+            "origem_dado": "latam-2026-08-23",
+            "pax": [
+              "Eduardo",
+              "Jodson"
+            ],
+            "cabine": "Economy Light",
+            "notas": "LATAM. Volta trecho 1 — Florianópolis→São Paulo (Congonhas). Valor lançado no trecho 1 da reserva."
+          },
+          {
+            "id": "floripa-2026-fl-004",
+            "titulo": "LA3686 CGH→SSA",
+            "status": "confirmado",
+            "confirmada": true,
+            "data": "2026-11-02",
+            "partida": "2026-11-02T21:30",
+            "chegada": "2026-11-02T23:55",
+            "criticidade": "alta",
+            "localizador": "FGCIPY",
+            "reembolsavel": false,
+            "origem_dado": "latam-2026-08-23",
+            "pax": [
+              "Eduardo",
+              "Jodson"
+            ],
+            "cabine": "Economy Light",
+            "notas": "LATAM. Volta trecho 2 — São Paulo (Congonhas)→Salvador. Valor lançado no trecho 1 da reserva."
           }
         ],
         "stays": [],
@@ -4014,8 +4083,144 @@
       },
       "checklist": [],
       "tags": [
-        "rascunho",
-        "sul"
+        "festival",
+        "sul",
+        "praia"
+      ],
+      "created_at": "2026-08-24T00:00:00Z",
+      "updated_at": "2026-08-24T00:00:00Z",
+      "_schema": 2
+    },
+    {
+      "id": "floripa-reveillon-2026",
+      "name": "Florianópolis — Réveillon",
+      "sub": "Florianópolis · SC",
+      "status": "em_planejamento",
+      "continent": "Americas",
+      "country": "Brasil",
+      "flag": "🇧🇷",
+      "emoji": "🎆",
+      "year": 2026,
+      "month": 12,
+      "label": "Dez 2026 · Jan 2027",
+      "startDate": "2026-12-25",
+      "endDate": "2027-01-06",
+      "lat": -27.5954,
+      "lon": -48.548,
+      "col": "#5BA3D9",
+      "pax": "2 (Eduardo + Jodson)",
+      "nts": 12,
+      "type": "event",
+      "companhia": [
+        "Jodson"
+      ],
+      "highlights": [
+        "Virada do ano em Florianópolis"
+      ],
+      "memory": "",
+      "logistics": {
+        "hotels": [],
+        "restaurants": [],
+        "tips": "Voos LATAM fechados (reserva FHTODW, Economy Light + LATAM Flex 7 dias). Falta hospedagem para 12 noites, 25/12 a 06/01 — alta temporada, fechar cedo."
+      },
+      "pendencias": [
+        "hospedagem em Florianópolis (12 noites, alta temporada)"
+      ],
+      "bookings": {
+        "flights": [
+          {
+            "id": "floripa-reveillon-2026-fl-001",
+            "titulo": "LA3625 SSA→CGH",
+            "status": "confirmado",
+            "confirmada": true,
+            "data": "2026-12-25",
+            "partida": "2026-12-25T14:25",
+            "chegada": "2026-12-25T17:00",
+            "criticidade": "alta",
+            "localizador": "FHTODW",
+            "valor": 933.36,
+            "moeda": "BRL",
+            "reembolsavel": false,
+            "origem_dado": "latam-2026-08-23",
+            "pax": [
+              "Eduardo",
+              "Jodson"
+            ],
+            "cabine": "Economy Light",
+            "notas": "LATAM. Ida trecho 1 — Salvador→São Paulo (Congonhas). O valor lançado aqui é o total da reserva FHTODW (4 trechos): BRL 933,36 em cartão + 143.918 Milhas LATAM Pass, incluindo BRL 536,00 de assentos, BRL 184,00 de LATAM Flex 7 dias e BRL 213,36 de taxas. Emitida em 23/08/2026."
+          },
+          {
+            "id": "floripa-reveillon-2026-fl-002",
+            "titulo": "LA3064 CGH→FLN",
+            "status": "confirmado",
+            "confirmada": true,
+            "data": "2026-12-25",
+            "partida": "2026-12-25T19:00",
+            "chegada": "2026-12-25T20:05",
+            "criticidade": "alta",
+            "localizador": "FHTODW",
+            "reembolsavel": false,
+            "origem_dado": "latam-2026-08-23",
+            "pax": [
+              "Eduardo",
+              "Jodson"
+            ],
+            "cabine": "Economy Light",
+            "notas": "LATAM. Ida trecho 2 — São Paulo (Congonhas)→Florianópolis. Valor lançado no trecho 1 da reserva."
+          },
+          {
+            "id": "floripa-reveillon-2026-fl-003",
+            "titulo": "LA3093 FLN→CGH",
+            "status": "confirmado",
+            "confirmada": true,
+            "data": "2027-01-06",
+            "partida": "2027-01-06T19:20",
+            "chegada": "2027-01-06T20:30",
+            "criticidade": "alta",
+            "localizador": "FHTODW",
+            "reembolsavel": false,
+            "origem_dado": "latam-2026-08-23",
+            "pax": [
+              "Eduardo",
+              "Jodson"
+            ],
+            "cabine": "Economy Light",
+            "notas": "LATAM. Volta trecho 1 — Florianópolis→São Paulo (Congonhas). Valor lançado no trecho 1 da reserva."
+          },
+          {
+            "id": "floripa-reveillon-2026-fl-004",
+            "titulo": "LA3686 CGH→SSA",
+            "status": "confirmado",
+            "confirmada": true,
+            "data": "2027-01-06",
+            "partida": "2027-01-06T21:30",
+            "chegada": "2027-01-06T23:55",
+            "criticidade": "alta",
+            "localizador": "FHTODW",
+            "reembolsavel": false,
+            "origem_dado": "latam-2026-08-23",
+            "pax": [
+              "Eduardo",
+              "Jodson"
+            ],
+            "cabine": "Economy Light",
+            "notas": "LATAM. Volta trecho 2 — São Paulo (Congonhas)→Salvador. Valor lançado no trecho 1 da reserva."
+          }
+        ],
+        "stays": [],
+        "experiences": []
+      },
+      "budget": {
+        "planned": {},
+        "actual": {},
+        "currency": "BRL"
+      },
+      "checklist": [],
+      "tags": [
+        "réveillon",
+        "sul",
+        "praia",
+        "ano-novo"
       ],
       "created_at": "2026-08-24T00:00:00Z",
       "updated_at": "2026-08-24T00:00:00Z",
