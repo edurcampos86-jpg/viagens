@@ -32,7 +32,7 @@ npm run test:benchmarks  # confirma compute_benchmarks.py executa
 | `src/components/wizard.js` | nextStep nas 3 fases principais (3) |
 | `src/components/checklist.js` | TH/BR/Schengen/idempotência (4) |
 | `src/agents/customs.js` | run doméstica vs internacional (2) |
-| `src/core/planning-radar.js` | badges de pendência (veto por reserva confirmada), tons da contagem regressiva, selo não-reembolsável, origem_dado, mini-resumo financeiro (21) |
+| `src/core/planning-radar.js` | badges de pendência (veto por reserva confirmada), tons da contagem regressiva, selo não-reembolsável, origem_dado, mini-resumo financeiro, transições automáticas da Fase B (29) |
 
 ## O que NÃO está coberto aqui
 

@@ -194,3 +194,43 @@ export function tripCosts(trip) {
     fromOverride: overridePago != null || overrideRestante != null,
   };
 }
+
+// ── Fase B · transições automáticas ─────────────────────────────────────
+//
+// As duas regras abaixo são de RENDERIZAÇÃO: nada aqui reescreve
+// data/trips.json. O arquivo continua sendo a fonte da verdade editada por
+// humanos (e pelo fluxo de docs/rotinas/sync-gmail.md); a app apenas
+// interpreta o estado declarado. Ver docs/rotinas/sync-gmail.md §Transições
+// automáticas.
+//
+// REGRA 1 — confirmada-parcial → confirmada.
+//   Uma viagem em `em_planejamento` com `pendencias` vazio já é, na prática,
+//   uma viagem confirmada: a ordem foi executada ao atingir o preço e não
+//   sobrou buraco. Exibimos como "confirmada" sem mexer no status do JSON.
+//
+// REGRA 2 — viagem vencida vira histórico.
+//   Viagem cuja data final já passou sai do radar de planejamento e aparece
+//   no acervo de memórias com o selo "aguardando registro de memórias" —
+//   fechamento de posição vira histórico. O status no JSON segue `planned`
+//   até alguém escrever a memória e promover para `done`.
+
+// effectiveStatus(trip) → status exibido na UI (nunca gravado). Sem `today`
+// de propósito: a regra 1 não tem componente temporal, só olha as pendências.
+export function effectiveStatus(trip) {
+  const status = trip?.status;
+  if (status === 'em_planejamento' && getPendencias(trip).length === 0) return 'planned';
+  return status;
+}
+
+// True quando a viagem já terminou mas ainda não virou memória (`done`).
+// Sem endDate a viagem nunca vence sozinha — é preciso decisão humana.
+export function isPastPlan(trip, today) {
+  if (!RADAR_STATUSES.has(trip?.status)) return false;
+  const d = daysBetween(today, trip?.endDate);
+  return d != null && d < 0;
+}
+
+// Viagens que o acervo de memórias deve exibir com o selo de pendência.
+export function awaitsMemoryRecord(trip, today) {
+  return isPastPlan(trip, today) && !String(trip?.memory || '').trim();
+}

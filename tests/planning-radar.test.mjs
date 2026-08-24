@@ -30,6 +30,9 @@ const {
   origensDado,
   pendenciaBadges,
   tripCosts,
+  effectiveStatus,
+  isPastPlan,
+  awaitsMemoryRecord,
 } = await import(`${ROOT}/src/core/planning-radar.js`);
 
 const { computeActualFromBookings } = await import(`${ROOT}/src/components/budget.js`);
@@ -247,6 +250,55 @@ test('trip vazia/undefined não quebra nada', () => {
     assert.equal(tripCosts(t).pago, 0);
     assert.deepEqual(origensDado(t), []);
   }
+});
+
+// ── Fase B · transições automáticas ─────────────────────────────────────
+
+test('regra 1: em_planejamento sem pendências é exibido como confirmada', () => {
+  assert.equal(effectiveStatus({ status: 'em_planejamento', pendencias: [] }), 'planned');
+  assert.equal(effectiveStatus({ status: 'em_planejamento' }), 'planned');
+});
+
+test('regra 1: com pendência aberta, Maceió segue em_planejamento', () => {
+  assert.equal(effectiveStatus(MACEIO), 'em_planejamento');
+});
+
+test('regra 1 não mexe em outros status (draft/planned/wishlist/done)', () => {
+  for (const st of ['draft', 'planned', 'wishlist', 'done']) {
+    assert.equal(effectiveStatus({ status: st, pendencias: [] }), st);
+  }
+});
+
+test('regra 1 é só de renderização — não escreve no objeto da viagem', () => {
+  const t = { status: 'em_planejamento', pendencias: [] };
+  const antes = JSON.stringify(t);
+  effectiveStatus(t);
+  assert.equal(JSON.stringify(t), antes);
+});
+
+test('regra 2: viagem com data final passada sai do radar', () => {
+  assert.ok(isPastPlan({ status: 'planned', endDate: '2026-06-07' }, HOJE));
+  assert.ok(isPastPlan({ status: 'em_planejamento', endDate: '2026-08-23' }, HOJE));
+  assert.ok(!isPastPlan({ status: 'planned', endDate: HOJE }, HOJE)); // hoje ainda conta
+  assert.ok(!isPastPlan(MACEIO, HOJE));
+});
+
+test('regra 2: viagem sem endDate nunca vence sozinha (exige decisão humana)', () => {
+  assert.ok(!isPastPlan(FLORIPA, HOJE));
+  assert.ok(!isPastPlan({ status: 'draft' }, HOJE));
+});
+
+test('regra 2: `done` e `wishlist` ficam fora — já não estão no radar', () => {
+  assert.ok(!isPastPlan({ status: 'done', endDate: '2021-01-01' }, HOJE));
+  assert.ok(!isPastPlan({ status: 'wishlist', endDate: '2021-01-01' }, HOJE));
+});
+
+test('selo "aguardando registro" só enquanto a memória não foi escrita', () => {
+  const vencida = { status: 'planned', endDate: '2026-06-07' };
+  assert.ok(awaitsMemoryRecord(vencida, HOJE));
+  assert.ok(!awaitsMemoryRecord({ ...vencida, memory: 'Foi inesquecível.' }, HOJE));
+  assert.ok(awaitsMemoryRecord({ ...vencida, memory: '   ' }, HOJE)); // só espaço = vazio
+  assert.ok(!awaitsMemoryRecord(MACEIO, HOJE));
 });
 
 console.log(`\n${passed} passed, ${failed} failed.`);

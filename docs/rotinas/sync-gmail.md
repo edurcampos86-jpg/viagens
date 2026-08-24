@@ -139,6 +139,19 @@ falta esse registro.
 Na varredura semanal, viagens nesse estado são candidatas naturais a virar
 `status: "done"` com o campo `memory` preenchido.
 
+### Onde essas regras vivem
+
+| Regra                                   | Função                           | Consumido por                                                 |
+| --------------------------------------- | -------------------------------- | ------------------------------------------------------------- |
+| 1 — `confirmada-parcial` → `confirmada` | `effectiveStatus(trip)`          | chip de status do card em `planjCard`                         |
+| 2 — vencida vira histórico              | `isPastPlan(trip, hoje)`         | filtro de `renderPlanejamento` e do acervo em `renderMemoria` |
+| 2 — selo da pendência                   | `awaitsMemoryRecord(trip, hoje)` | entrada da timeline em `renderMemTimeline`                    |
+
+As três são puras e testadas em `tests/planning-radar.test.mjs`. Nenhuma
+escreve no `trips.json`: se a UI e o arquivo divergirem, quem está certo é o
+arquivo — e o trabalho desta rotina é justamente fazer o arquivo alcançar a
+realidade.
+
 ## Gatilho recorrente
 
 **Toda segunda-feira, 8h (BRT), via Claude Chat.**
