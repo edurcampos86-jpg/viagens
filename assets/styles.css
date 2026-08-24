@@ -2767,6 +2767,167 @@ body.plan-page-open { background: var(--surface2); }
 [data-theme="dark"] .planj-badge.ok    { color: #7dd494; }
 
 /* ════════════════════════════════════════════════════════════════
+   RADAR DE PLANEJAMENTO — badges de pendência, contagem regressiva,
+   selo de tarifa e mini-resumo financeiro.
+   Identidade: Fraunces (display) + Inter (texto), ink #2B2440,
+   violeta #6B4FB8, rosa-ameixa #A85A7D. Sem score, sem ranking —
+   só o que está faltando, quando vence e quanto já saiu do bolso.
+   ════════════════════════════════════════════════════════════════ */
+
+/* Badges "⚠ sem voo" / "⚠ sem hotel" herdam o formato do pill .planj-badge e
+   só trocam a cor para a paleta do radar. Precisam da dupla classe para ter
+   especificidade maior que .planj-badge.warn, definido acima. */
+.planj-badge.planj-badge-voo {
+  background: var(--vc-radar-violeta-soft);
+  color: var(--vc-radar-violeta);
+}
+.planj-badge.planj-badge-hotel {
+  background: var(--vc-radar-ameixa-soft);
+  color: var(--vc-radar-ameixa);
+}
+/* No escuro, [data-theme="dark"] .planj-badge.warn (definido acima) tem a
+   mesma especificidade e venceria por ordem — daí o override explícito. Os
+   tokens --vc-radar-* já clareiam sozinhos no tema escuro. */
+[data-theme='dark'] .planj-badge.planj-badge-voo {
+  color: var(--vc-radar-violeta);
+}
+[data-theme='dark'] .planj-badge.planj-badge-hotel {
+  color: var(--vc-radar-ameixa);
+}
+
+/* Contagem regressiva: "faltam N dias e sem voo".
+   violeta > 60 dias · rosa-ameixa 30–60 · vermelho < 30. */
+.planj-card-cd {
+  margin-top: 8px;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border-left: 3px solid currentColor;
+}
+.planj-cd-violeta {
+  color: var(--vc-radar-violeta);
+  background: var(--vc-radar-violeta-soft);
+}
+.planj-cd-ameixa {
+  color: var(--vc-radar-ameixa);
+  background: var(--vc-radar-ameixa-soft);
+}
+.planj-cd-vermelho {
+  color: var(--vc-radar-vermelho);
+  background: var(--vc-radar-vermelho-soft);
+}
+
+/* Selo de reembolso — vermelho para tarifa não reembolsável (ou proteção já
+   vencida), verde enquanto a reserva está protegida por prazo. Sempre em
+   caixa baixa para não competir com o nome da viagem. */
+.planj-seal {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 6px;
+  padding: 3px 9px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+  cursor: help;
+  /* O contêiner é grid: sem isto o pill estica na largura toda. */
+  width: fit-content;
+  justify-self: start;
+}
+.planj-seal-vermelho {
+  color: var(--vc-radar-vermelho);
+  background: var(--vc-radar-vermelho-soft);
+}
+.planj-seal-verde {
+  color: var(--vc-radar-verde);
+  background: var(--vc-radar-verde-soft);
+}
+
+/* Mini-resumo financeiro: "R$ X pago · ~R$ Y a comprometer". */
+.planj-card-money {
+  margin-top: 8px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--vc-radar-ink);
+  opacity: 0.85;
+}
+.planj-card-money strong {
+  font-weight: 800;
+  color: var(--vc-radar-violeta);
+}
+
+/* Chip de status derivado (Fase B · regra 1): `em_planejamento` sem
+   pendências é exibido como "Confirmada". */
+.planj-card-status {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--vc-radar-ink);
+  background: var(--vc-radar-violeta-soft);
+  /* O contêiner é grid: sem isto o pill estica na largura toda. */
+  width: fit-content;
+  justify-self: start;
+}
+.planj-status-planned {
+  color: var(--vc-radar-violeta);
+}
+.planj-status-em_planejamento {
+  color: var(--vc-radar-ameixa);
+  background: var(--vc-radar-ameixa-soft);
+}
+.planj-status-draft {
+  color: var(--vc-radar-ink);
+  background: transparent;
+  border: 1px dashed currentColor;
+  opacity: 0.65;
+}
+
+/* Selo do acervo de memórias (Fase B · regra 2): viagem já vencida que ainda
+   não teve a memória escrita. */
+.mem-entry-pending {
+  display: inline-flex;
+  align-items: center;
+  margin: 4px 0 2px;
+  padding: 3px 10px;
+  border: 1px dashed var(--vc-radar-ameixa);
+  border-radius: 999px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  color: var(--vc-radar-ameixa);
+  width: fit-content;
+  justify-self: start;
+}
+
+/* Proveniência do dado no detalhe da viagem (bookings[].origem_dado).
+   Discreta de propósito — o detalhe completo fica no tooltip. */
+.rs-origin {
+  margin-top: 2px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  color: var(--vc-radar-ink);
+  opacity: 0.5;
+  cursor: help;
+}
+
+/* ════════════════════════════════════════════════════════════════
    FASE 7a — EDIÇÕES LOCAIS + EXPORTAR
    ════════════════════════════════════════════════════════════════ */
 
