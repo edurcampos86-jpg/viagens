@@ -14,6 +14,9 @@ import {
   origensDado,
   tripCosts,
   refundSeal,
+  effectiveStatus,
+  isPastPlan,
+  awaitsMemoryRecord,
 } from '../src/core/planning-radar.js';
 import { applyChecklistOrder, moveItem, isItemOverdue } from '../src/core/checklist-order.js';
 import { renderEventos } from '../src/components/eventos.js';
@@ -2922,7 +2925,13 @@ let memMap, memTileLayer;
 
 function renderMemoria() {
   const trips = state.trips || [];
-  const done = trips.filter(t => t.status === 'done')
+  // FASE B · REGRA 2 — o acervo é `done` MAIS as viagens de planejamento cuja
+  // data final já passou: fechamento de posição vira histórico. Elas entram
+  // com o selo "aguardando registro de memórias" e só viram `done` de fato
+  // quando alguém escrever a memória — promoção humana, via a rotina em
+  // docs/rotinas/sync-gmail.md.
+  const hoje = todayISO();
+  const done = trips.filter(t => t.status === 'done' || isPastPlan(t, hoje))
     .sort((a, b) => (b.year - a.year) || (b.month - a.month));
 
   // Meta no header
@@ -3004,6 +3013,7 @@ function renderMemTimeline(done) {
           <div class="mem-entry-meta">
             <div class="mem-entry-kicker">${t.label || ''} · ${CONTINENT_NAMES[t.continent] || ''}</div>
             <h3 class="mem-entry-name"><a href="#plan/${t.id}">${t.name}</a></h3>
+            ${awaitsMemoryRecord(t, todayISO()) ? '<div class="mem-entry-pending">aguardando registro de memórias</div>' : ''}
             <div class="mem-entry-sub">${t.sub || ''}</div>
             ${t.memory ? `<p class="mem-entry-memory">${t.memory}</p>` : ''}
             <div class="mem-entry-tags">
@@ -3049,7 +3059,13 @@ function renderPlanejamento() {
   // RADAR_STATUSES (planning-radar.js) = planned + em_planejamento + draft.
   // Antes o kanban só olhava 'planned' e as viagens nos outros dois status
   // ficavam invisíveis no modo Planejamento.
-  const planned     = trips.filter(t => RADAR_STATUSES.has(t.status));
+  //
+  // FASE B · REGRA 2 — viagem cuja data final já passou sai daqui e reaparece
+  // no acervo de memórias com o selo "aguardando registro de memórias"
+  // (renderMemoria). Regra de RENDERIZAÇÃO: o status no data/trips.json não é
+  // reescrito.
+  const hoje        = todayISO();
+  const planned     = trips.filter(t => RADAR_STATUSES.has(t.status) && !isPastPlan(t, hoje));
 
   // Próximas: planned + daysUntil <= 90 (e >= 0)
   // Confirmadas: planned + daysUntil > 90 (ou daysUntil null = sem data firme)
@@ -3168,6 +3184,12 @@ function planjCard(t) {
        </div>`
     : '';
 
+  // FASE B · REGRA 1 — uma viagem em `em_planejamento` sem nenhuma pendência
+  // já é, na prática, confirmada. O chip mostra "Confirmada" sem tocar no
+  // status do data/trips.json, que segue sendo a fonte da verdade humana.
+  const statusDerivado = effectiveStatus(t);
+  const statusChip = `<span class="planj-card-status planj-status-${statusDerivado}">${statusLabel(statusDerivado)}</span>`;
+
   const targets = ['planned', 'wishlist'].filter(s => s !== t.status);
   const menuItems = targets.map(s => {
     const ic = s === 'planned' ? '✓' : '★';
@@ -3188,6 +3210,7 @@ function planjCard(t) {
         <h4 class="planj-card-name">${t.name}</h4>
         ${t.sub ? `<div class="planj-card-sub">${t.sub}</div>` : ''}
         <div class="planj-card-dates">${dates}</div>
+        ${t.status !== 'wishlist' ? statusChip : ''}
         ${cdRadar ? `<div class="planj-card-cd planj-cd-${cdRadar.tone}">${cdRadar.label}</div>` : ''}
         ${seloReembolso}
         ${resumoFin}

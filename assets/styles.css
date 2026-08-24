@@ -2863,6 +2863,58 @@ body.plan-page-open { background: var(--surface2); }
   color: var(--vc-radar-violeta);
 }
 
+/* Chip de status derivado (Fase B · regra 1): `em_planejamento` sem
+   pendências é exibido como "Confirmada". */
+.planj-card-status {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--vc-radar-ink);
+  background: var(--vc-radar-violeta-soft);
+  /* O contêiner é grid: sem isto o pill estica na largura toda. */
+  width: fit-content;
+  justify-self: start;
+}
+.planj-status-planned {
+  color: var(--vc-radar-violeta);
+}
+.planj-status-em_planejamento {
+  color: var(--vc-radar-ameixa);
+  background: var(--vc-radar-ameixa-soft);
+}
+.planj-status-draft {
+  color: var(--vc-radar-ink);
+  background: transparent;
+  border: 1px dashed currentColor;
+  opacity: 0.65;
+}
+
+/* Selo do acervo de memórias (Fase B · regra 2): viagem já vencida que ainda
+   não teve a memória escrita. */
+.mem-entry-pending {
+  display: inline-flex;
+  align-items: center;
+  margin: 4px 0 2px;
+  padding: 3px 10px;
+  border: 1px dashed var(--vc-radar-ameixa);
+  border-radius: 999px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  color: var(--vc-radar-ameixa);
+  width: fit-content;
+  justify-self: start;
+}
+
 /* Proveniência do dado no detalhe da viagem (bookings[].origem_dado).
    Discreta de propósito — o detalhe completo fica no tooltip. */
 .rs-origin {
